@@ -1,12 +1,24 @@
 {
-  "name": "scripts",
+  "name": "crowdtransit-scripts",
   "version": "1.0.0",
-  "description": "",
+  "description": "GTFS import scripts for CrowdTransit",
   "main": "index.js",
+  "type": "commonjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "import:all": "node import-all.js",
+    "import:agency": "node import-agency.js",
+    "index:geofire": "node update-geofire.js",
+    "verify": "node verify-import.js"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "adm-zip": "^0.5.18",
+    "csv-parser": "^3.2.1",
+    "dotenv": "^17.4.2",
+    "firebase-admin": "^14.1.0",
+    "geofire": "^6.0.0",
+    "node-fetch": "^3.3.2"
+  }
 }
