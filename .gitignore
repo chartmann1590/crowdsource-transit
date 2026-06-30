@@ -1,0 +1,35 @@
+# Android
+android/.gradle/
+android/local.properties
+android/app/build/
+android/build/
+*.keystore
+*.jks
+
+# Web
+web/node_modules/
+web/dist/
+web/.env
+web/.env.local
+
+# Firebase
+.firebase/
+firebase-debug.log
+
+# Scripts
+scripts/node_modules/
+scripts/.env
+
+# Google Services
+android/app/google-services.json
+web/src/firebase-config.ts
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
