@@ -194,7 +194,7 @@ Dark overlay gradient: `rgba(15,23,36,0) → rgba(15,23,36,0.95)`
 | 7 | User Profile | `8344c47f0971442e9d5850c23f33e093` | Stats, reviews, settings |
 | 8 | Nearby List View | `00c4949bf1a7403d92b74dbf0e2d4b1f` | List alternative to map view |
 | 9 | Onboarding | `1bbefdea1e9144ea911a3398dec2c7ce` | Welcome + permissions |
-| 10 | Directions to Stop | — | Timed out; regenerate if needed |
+| 10 | Directions to Stop | `9f6a429aaded4ea4ba84e510dd88b28e` | Map + bottom sheet walk steps |
 
 ### Web Pages (DESKTOP, React + Vite)
 
@@ -207,7 +207,7 @@ Dark overlay gradient: `rgba(15,23,36,0) → rgba(15,23,36,0.95)`
 | 5 | User Profile | `883ff703078845a1b4f66f70a848dac0` | Centered 720px, stats + reviews |
 | 6 | Search Results | `7463df12f84f4c7ebb3368f672d03b49` | Two-col: results + filter sidebar |
 | 7 | Add Stop | `2cdba7666b094bd095626964971b87dc` | Map pin + centered form |
-| 8 | About | — | Not generated; simple marketing page |
+| 8 | About | `ebdb80cd009d41b6b3fa75c9f00dbb0b` | Hero, features, stats, GitHub CTA |
 
 ---
 
