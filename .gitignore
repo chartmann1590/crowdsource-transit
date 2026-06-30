@@ -19,6 +19,8 @@ firebase-debug.log
 # Scripts
 scripts/node_modules/
 scripts/.env
+scripts/service-account.json
+scripts/data/gtfs/
 
 # Google Services
 android/app/google-services.json

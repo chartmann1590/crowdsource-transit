@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "crowdtransit-app"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

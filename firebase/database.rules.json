@@ -1,6 +1,33 @@
 {
   "rules": {
-    ".read": true,
-    ".write": true
+    "agencies": { ".read": true, ".write": false },
+    "routes": { ".read": true, ".write": false },
+    "stops": {
+      ".read": true,
+      ".write": false,
+      "$stopId": {
+        "ratingSum": { ".write": "auth != null" },
+        "ratingCount": { ".write": "auth != null" },
+        "commentCount": { ".write": "auth != null" }
+      }
+    },
+    "ratings": {
+      ".read": true,
+      "$targetType": { "$targetId": { "$userId": { ".write": "auth != null && auth.uid === $userId" } } }
+    },
+    "comments": {
+      ".read": true,
+      "$targetType": { "$targetId": { "$commentId": { ".write": "auth != null" } } }
+    },
+    "users": {
+      ".read": true,
+      "$userId": { ".write": "auth != null && auth.uid === $userId" }
+    },
+    "crowdsourced": {
+      ".read": true,
+      "$submissionId": { ".write": "auth != null" }
+    },
+    "geofire": { ".read": true, ".write": false },
+    "meta": { ".read": true, ".write": false }
   }
 }

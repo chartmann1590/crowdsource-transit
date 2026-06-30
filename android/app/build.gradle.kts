@@ -28,6 +28,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+
 }
 
 dependencies {
@@ -36,6 +38,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.navigation:navigation-compose:2.8.5")
 
@@ -53,7 +56,7 @@ dependencies {
 
     implementation("com.google.android.gms:play-services-auth:21.3.0")
 
-    implementation("org.maplibre.gl:android-sdk:11.5.2")
+    implementation("org.maplibre.gl:android-sdk:11.8.0")
 
     implementation("com.firebase:geofire-android:3.2.0")
 
@@ -63,6 +66,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
 
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // Force 16 KB-aligned version; the Compose BOM pulls in an older build via
+    // androidx.graphics:graphics-core that contains a misaligned libandroidx.graphics.path.so
+    implementation("androidx.graphics:graphics-path:1.0.1")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
