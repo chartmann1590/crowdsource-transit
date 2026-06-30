@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.crowdtransit.app"
+    namespace = "com.charles.crowdtransit.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.crowdtransit.app"
+        applicationId = "com.charles.crowdtransit.app"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

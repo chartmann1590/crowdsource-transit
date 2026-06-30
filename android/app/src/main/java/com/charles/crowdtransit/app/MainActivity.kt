@@ -1,4 +1,4 @@
-package com.crowdtransit.app
+package com.charles.crowdtransit.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
