@@ -10,22 +10,17 @@ export function Home() {
   const navigate = useNavigate();
   const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState({ lat: 37.7749, lng: -122.4194 });
-  const [userLocated, setUserLocated] = useState(false);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setMapCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setUserLocated(true);
       },
-      () => setUserLocated(true),
+      () => {},
     );
   }, []);
 
-  const { stops: nearbyStops, loading } = useNearbyStops(
-    userLocated ? mapCenter.lat : null,
-    userLocated ? mapCenter.lng : null,
-  );
+  const { stops: nearbyStops, loading } = useNearbyStops(mapCenter.lat, mapCenter.lng);
 
   return (
     <div className={styles.container}>
