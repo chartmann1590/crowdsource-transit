@@ -11,12 +11,15 @@ interface StopDetailProps {
 export function StopDetail({ stop }: StopDetailProps) {
   const avgRating = stop.ratingCount > 0 ? stop.ratingSum / stop.ratingCount : 0;
 
+  const location = [stop.city, stop.state || stop.country]
+    .filter(Boolean)
+    .join(', ');
+
   return (
     <div className={styles.container}>
       <h1 className={styles.name}>{stop.name}</h1>
       <p className={styles.location}>
-        {stop.city}, {stop.state}
-        {stop.code ? ` • Stop #${stop.code}` : ''}
+        {[location, stop.code && `Stop #${stop.code}`].filter(Boolean).join(' • ') || '—'}
       </p>
 
       <div className={styles.badges}>

@@ -13,6 +13,10 @@ interface StopCardProps {
 export function StopCard({ stop, selected, onClick, onViewDetail }: StopCardProps) {
   const avgRating = stop.ratingCount > 0 ? stop.ratingSum / stop.ratingCount : 0;
 
+  const location = [stop.city, stop.state || stop.country]
+    .filter(Boolean)
+    .join(', ');
+
   return (
     <div
       className={`${styles.card} ${selected ? styles.selected : ''}`}
@@ -20,9 +24,7 @@ export function StopCard({ stop, selected, onClick, onViewDetail }: StopCardProp
     >
       <div className={styles.header}>
         <span className={styles.name}>{stop.name}</span>
-        <span className={styles.city}>
-          {stop.city}, {stop.state}
-        </span>
+        {location && <span className={styles.city}>{location}</span>}
       </div>
       <div className={styles.badges}>
         {(stop.transitTypes || []).map((type) => (
