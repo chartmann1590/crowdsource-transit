@@ -23,10 +23,15 @@ export function useNearbyStops(
 
     lastFetchPos.current = { lat, lng };
     setLoading(true);
-    getNearbyStops(lat, lng).then((results) => {
-      setStops(results);
-      setLoading(false);
-    });
+    getNearbyStops(lat, lng)
+      .then((results) => {
+        setStops(results);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('useNearbyStops fetch failed:', err);
+        setLoading(false);
+      });
   }, [lat, lng]);
 
   return { stops, loading };

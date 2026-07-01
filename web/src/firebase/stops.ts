@@ -23,22 +23,40 @@ function statsFrom(snapshot: Record<string, unknown> | null): {
   };
 }
 
+const FIREBASE_TIMEOUT_MS = 5000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
+  ]);
+}
+
 export async function getStopStats(stopId: string) {
-  const snap = await get(ref(database, `stopStats/${stopId}`));
+  const snap = await withTimeout(get(ref(database, `stopStats/${stopId}`)), FIREBASE_TIMEOUT_MS);
   return statsFrom(snap.val() as Record<string, unknown> | null);
 }
 
 async function transitTypesFor(lat: number, lng: number): Promise<TransitType[]> {
   try {
-    return getRoutesNear(lat, lng);
+    const types = await withTimeout(
+      getRoutesNear(lat, lng) as unknown as Promise<TransitType[]>,
+      FIREBASE_TIMEOUT_MS,
+    );
+    return types;
   } catch {
     return [];
   }
 }
 
 export async function enrichedStop(tlStop: Stop): Promise<Stop> {
-  const stats = await getStopStats(tlStop.stopId);
-  const types = await transitTypesFor(tlStop.lat, tlStop.lng);
+  const statsPromise = getStopStats(tlStop.stopId).catch(
+    () => ({ ratingSum: 0, ratingCount: 0, commentCount: 0 }),
+  );
+  const typesPromise = transitTypesFor(tlStop.lat, tlStop.lng).catch(
+    () => [] as TransitType[],
+  );
+  const [stats, types] = await Promise.all([statsPromise, typesPromise]);
   return {
     ...tlStop,
     ...stats,
@@ -85,18 +103,23 @@ export async function getNearbyStops(
   radiusKm: number = 5,
   maxResults = 50,
 ): Promise<Stop[]> {
-  const radiusMeters = Math.min(Math.round(radiusKm * 1000), 10000);
-  const tlStops = await tlGetNearbyStops(lat, lng, radiusMeters, maxResults);
+  try {
+    const radiusMeters = Math.min(Math.round(radiusKm * 1000), 10000);
+    const tlStops = await tlGetNearbyStops(lat, lng, radiusMeters, maxResults);
 
-  const sorted = tlStops.sort((a, b) =>
-    haversineDistance(lat, lng, a.lat, a.lng) - haversineDistance(lat, lng, b.lat, b.lng)
-  );
+    const sorted = tlStops.sort((a, b) =>
+      haversineDistance(lat, lng, a.lat, a.lng) - haversineDistance(lat, lng, b.lat, b.lng)
+    );
 
-  const toEnrich = sorted.slice(0, MAX_TRANSIT_TYPE_LOOKUPS);
-  const enriched = await Promise.all(
-    toEnrich.map((stop) => enrichedStop(stop).catch(() => stop)),
-  );
-  return enriched;
+    const toEnrich = sorted.slice(0, MAX_TRANSIT_TYPE_LOOKUPS);
+    const enriched = await Promise.all(
+      toEnrich.map((stop) => enrichedStop(stop).catch(() => stop)),
+    );
+    return enriched;
+  } catch (err) {
+    console.error('getNearbyStops failed:', err);
+    return [];
+  }
 }
 
 export async function searchStops(query_: string): Promise<Stop[]> {
