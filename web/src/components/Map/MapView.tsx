@@ -15,23 +15,8 @@ interface MapViewProps {
   initialZoom?: number;
 }
 
-function buildMarkerElement(transitType: string, isSelected: boolean): HTMLDivElement {
-  const el = document.createElement('div');
-  const color = TRANSIT_COLORS[transitType] || '#1565C0';
-  const size = isSelected ? 22 : 16;
-  el.style.cssText = `
-    width: ${size}px;
-    height: ${size}px;
-    background: ${color};
-    border: 2px solid white;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-    transition: all 0.15s ease;
-    z-index: ${isSelected ? 10 : 1};
-  `;
-  return el;
-}
+const STOP_MARKERS_SOURCE = 'stops-source';
+const STOP_MARKERS_LAYER = 'stops-layer';
 
 export function MapView({
   stops,
@@ -44,41 +29,34 @@ export function MapView({
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const markersRef = useRef<maplibregl.Marker[]>([]);
   const hasUserInteracted = useRef(false);
 
-  const clearMarkers = useCallback(() => {
-    markersRef.current.forEach((m) => m.remove());
-    markersRef.current = [];
-  }, []);
-
-  const renderMarkers = useCallback(() => {
+  const updateStopsSource = useCallback(() => {
     const map = mapRef.current;
     if (!map) return;
-    clearMarkers();
 
-    stops.forEach((stop) => {
-      if (!stop.lat || !stop.lng) return;
-      const primaryType = stop.transitTypes?.[0] || 'bus';
-      const isSelected = stop.stopId === selectedStopId;
+    const source = map.getSource(STOP_MARKERS_SOURCE) as maplibregl.GeoJSONSource | undefined;
+    if (!source) return;
 
-      const el = buildMarkerElement(primaryType, isSelected);
+    const features = stops
+      .filter((s) => s.lat && s.lng)
+      .map((stop) => ({
+        type: 'Feature' as const,
+        geometry: {
+          type: 'Point' as const,
+          coordinates: [stop.lng, stop.lat],
+        },
+        properties: {
+          stopId: stop.stopId,
+          name: stop.name,
+          transitType: stop.transitTypes?.[0] || 'bus',
+          color: TRANSIT_COLORS[stop.transitTypes?.[0] || 'bus'] || '#1565C0',
+          selected: stop.stopId === selectedStopId,
+        },
+      }));
 
-      const popup = new maplibregl.Popup({ offset: 14, closeButton: false })
-        .setText(stop.name);
-
-      const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([stop.lng, stop.lat])
-        .setPopup(popup)
-        .addTo(map);
-
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        onStopClick?.(stop.stopId);
-      });
-      markersRef.current.push(marker);
-    });
-  }, [stops, selectedStopId, onStopClick, clearMarkers]);
+    source.setData({ type: 'FeatureCollection', features });
+  }, [stops, selectedStopId]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -104,7 +82,6 @@ export function MapView({
       }),
       'bottom-right',
     );
-
     map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
 
     map.on('moveend', (e) => {
@@ -114,24 +91,61 @@ export function MapView({
       onMapMove?.(center.lat, center.lng);
     });
 
-    map.on('load', () => renderMarkers());
+    map.on('load', () => {
+      map.addSource(STOP_MARKERS_SOURCE, {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+
+      map.addLayer({
+        id: STOP_MARKERS_LAYER,
+        type: 'circle',
+        source: STOP_MARKERS_SOURCE,
+        paint: {
+          'circle-radius': [
+            'case',
+            ['boolean', ['get', 'selected'], false],
+            10,
+            7,
+          ],
+          'circle-color': ['get', 'color'],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff',
+          'circle-opacity': 0.95,
+        },
+      });
+
+      map.on('click', STOP_MARKERS_LAYER, (e) => {
+        const props = e.features?.[0]?.properties;
+        if (props?.stopId) {
+          new maplibregl.Popup()
+            .setLngLat(e.lngLat)
+            .setText(props.name)
+            .addTo(map);
+          onStopClick?.(props.stopId);
+        }
+      });
+
+      map.on('mouseenter', STOP_MARKERS_LAYER, () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', STOP_MARKERS_LAYER, () => {
+        map.getCanvas().style.cursor = '';
+      });
+
+      updateStopsSource();
+    });
+
     mapRef.current = map;
 
     return () => {
-      clearMarkers();
       map.remove();
     };
   }, []);
 
   useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-    if (map.isStyleLoaded()) {
-      renderMarkers();
-    } else {
-      map.once('idle', () => renderMarkers());
-    }
-  }, [renderMarkers]);
+    updateStopsSource();
+  }, [updateStopsSource]);
 
   return <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />;
 }
