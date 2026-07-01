@@ -1,0 +1,12 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.status {
+  color: var(--color-on-surface-secondary);
+  font-size: 13px;
+  text-align: center;
+  padding: var(--space-lg);
+}

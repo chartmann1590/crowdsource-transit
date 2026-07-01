@@ -1,32 +1,57 @@
-# React + TypeScript + Vite
+# CrowdTransit Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React + TypeScript + Vite web client for CrowdTransit. Deployed to GitHub Pages.
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+cp .env.example .env.local   # configure Firebase credentials
+npm run dev                   # starts dev server at http://localhost:5173
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_FIREBASE_API_KEY` | Firebase API key |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase auth domain |
+| `VITE_FIREBASE_DATABASE_URL` | Firebase RTDB URL |
+| `VITE_FIREBASE_PROJECT_ID` | Firebase project ID |
+| `VITE_TRANSITLAND_API_KEY` | Transitland API key (optional) |
+
+## Build & Deploy
+
+```bash
+npm run build    # outputs to dist/
+npm run preview  # preview production build locally
+```
+
+Deployment to GitHub Pages is automated via `.github/workflows/deploy-web.yml` — pushes to `main` on `web/**` paths trigger a build and deploy.
+
+## Project Layout
+
+```
+web/src/
+├── components/
+│   ├── Auth/          # AuthProvider, LoginModal
+│   ├── Map/           # MapView, StopMarker, MapControls
+│   ├── Review/        # ReviewForm, ReviewCard, StarRating
+│   ├── Stop/          # StopCard, StopDetail, StopList
+│   ├── Transit/       # TransitBadge (colored type pills)
+│   └── UI/            # Navbar, SearchBar, LoadingSpinner
+├── firebase/          # Firebase config + data queries
+├── hooks/             # useAuth, useNearbyStops, useStop, useComments
+├── pages/             # Home, StopPage, RoutePage, SearchPage, etc.
+├── styles/            # Design tokens, globals, map overrides
+├── types/             # TypeScript transit data models
+└── utils/             # Distance calc, transit colors, formatting
+```
+
+## Tech
+
+- **React 19** with TypeScript
+- **Vite** for build tooling
+- **Firebase JS SDK** for auth + realtime database
+- **MapLibre GL JS** for vector maps (OpenStreetMap)
+- **react-router-dom v7** for client-side routing

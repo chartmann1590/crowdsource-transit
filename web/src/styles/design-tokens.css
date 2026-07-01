@@ -1,0 +1,51 @@
+:root {
+  --color-primary: #1565C0;
+  --color-primary-light: #1E88E5;
+  --color-primary-dark: #0D47A1;
+  --color-secondary: #FF6F00;
+  --color-secondary-light: #FFA000;
+  --color-secondary-dark: #E65100;
+
+  --color-surface-dark: #0F1724;
+  --color-surface: #1A2332;
+  --color-surface-elevated: #243044;
+  --color-surface-card: #2A3650;
+
+  --color-on-surface: #E8EAED;
+  --color-on-surface-secondary: #9AA0A6;
+  --color-on-primary: #FFFFFF;
+  --color-on-secondary: #000000;
+
+  --color-success: #00C853;
+  --color-warning: #FFB300;
+  --color-error: #F44336;
+  --color-rating: #FFC107;
+
+  --color-bus: #4CAF50;
+  --color-train: #2196F3;
+  --color-subway: #9C27B0;
+  --color-ferry: #00BCD4;
+  --color-tram: #FF9800;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 4px 8px rgba(0, 0, 0, 0.5);
+  --shadow-3: 0 8px 16px rgba(0, 0, 0, 0.6);
+
+  --font-display: 'Google Sans', system-ui, sans-serif;
+  --font-body: 'Roboto', system-ui, sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+}

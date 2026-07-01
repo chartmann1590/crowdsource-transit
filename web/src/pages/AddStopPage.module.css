@@ -1,0 +1,57 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-surface-dark);
+}
+
+.content {
+  flex: 1;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--space-lg);
+}
+
+.content h1 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--color-on-surface);
+  margin-bottom: var(--space-md);
+}
+
+.comingSoon {
+  color: var(--color-on-surface-secondary);
+  font-size: 14px;
+}
+
+.promptCard {
+  text-align: center;
+  padding: var(--space-xl);
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-elevated);
+  border-radius: var(--radius-lg);
+}
+
+.promptCard h2 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--color-on-surface);
+  margin-bottom: var(--space-sm);
+}
+
+.promptCard p {
+  color: var(--color-on-surface-secondary);
+  font-size: 13px;
+  margin-bottom: var(--space-lg);
+}
+
+.signInBtn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: white;
+  font-size: 13px;
+  cursor: pointer;
+}
