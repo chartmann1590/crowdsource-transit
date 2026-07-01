@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { ref, push } from 'firebase/database';
-import { database } from '../../firebase/config';
 import { useAuth } from '../Auth/AuthContext';
 import { LoginModal } from '../Auth/LoginModal';
 import { StarRating } from './StarRating';
+import { submitRating } from '../../firebase/ratings';
+import { addComment } from '../../firebase/comments';
 import styles from './ReviewForm.module.css';
 
 interface ReviewFormProps {
@@ -50,11 +50,11 @@ export function ReviewForm({ targetType, targetId, onSuccess, onCancel }: Review
         : displayName
             .split(' ')
             .slice(0, 2)
-            .map((w: string) => w[0]?.toUpperCase() ?? 'R')
+            .map((w) => w[0]?.toUpperCase() ?? 'R')
             .join('');
 
-      const now = Date.now();
-      await push(ref(database, `comments/${targetType}/${targetId}`), {
+      await submitRating({ targetType, targetId, rating });
+      await addComment({
         userId: user.uid,
         displayName,
         isAnonymous,
@@ -64,10 +64,6 @@ export function ReviewForm({ targetType, targetId, onSuccess, onCancel }: Review
         text,
         transitType,
         rating,
-        helpfulCount: 0,
-        flagged: false,
-        createdAt: now,
-        updatedAt: now,
       });
       setRating(0);
       setText('');

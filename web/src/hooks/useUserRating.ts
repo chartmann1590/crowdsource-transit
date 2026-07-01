@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { database } from '../firebase/config';
+import type { Rating } from '../types/transit';
 
 export function useUserRating(
   userId: string | undefined,
@@ -13,7 +14,8 @@ export function useUserRating(
     if (!userId || !targetId) return;
     const r = ref(database, `ratings/${targetType}/${targetId}/${userId}`);
     const unsub = onValue(r, (snap) => {
-      setRating(snap.val() as number | null);
+      const val = snap.val() as Rating | null;
+      setRating(val?.overall ?? null);
     });
     return unsub;
   }, [userId, targetType, targetId]);

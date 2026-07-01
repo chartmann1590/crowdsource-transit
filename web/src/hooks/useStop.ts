@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ref, onValue } from 'firebase/database';
-import { database } from '../firebase/config';
+import { observeStopStats } from '../firebase/stops';
 import type { Stop } from '../types/transit';
 
 export function useStop(stopId: string | null) {
@@ -12,12 +11,12 @@ export function useStop(stopId: string | null) {
       setLoading(false);
       return;
     }
-    const r = ref(database, `stops/${stopId}`);
-    const unsub = onValue(r, (snap) => {
-      setStop(snap.val() as Stop | null);
+    setLoading(true);
+    const cleanup = observeStopStats(stopId, (updated) => {
+      setStop(updated);
       setLoading(false);
     });
-    return unsub;
+    return cleanup;
   }, [stopId]);
 
   return { stop, loading };

@@ -1,4 +1,4 @@
-import type { Stop } from '../types/transit';
+import type { Stop, TransitType } from '../types/transit';
 
 const TRANSITLAND_BASE = 'https://api.transit.land/api/v2/rest';
 const API_KEY = import.meta.env.VITE_TRANSITLAND_API_KEY as string;
@@ -22,7 +22,26 @@ interface TransitlandStopItem {
   };
 }
 
-function tlStopToStop(tl: TransitlandStopItem): Stop {
+interface TransitlandRoutesResponse {
+  routes: TransitlandRouteItem[];
+}
+
+interface TransitlandRouteItem {
+  route_type?: number;
+}
+
+function gtfsRouteTypeToTransitType(routeType: number): TransitType | 'transit' {
+  switch (routeType) {
+    case 0: return 'tram';
+    case 1: return 'subway';
+    case 2: return 'train';
+    case 3: return 'bus';
+    case 4: return 'ferry';
+    default: return 'transit';
+  }
+}
+
+export function tlStopToStop(tl: TransitlandStopItem, overrides?: Partial<Stop>): Stop {
   const coords = tl.geometry?.coordinates ?? [];
   return {
     stopId: tl.onestop_id,
@@ -56,6 +75,7 @@ function tlStopToStop(tl: TransitlandStopItem): Stop {
     addedAt: 0,
     lastUpdated: 0,
     active: true,
+    ...overrides,
   };
 }
 
@@ -70,7 +90,32 @@ async function fetchTransitland(path: string, params: Record<string, string>): P
     throw new Error(`Transitland API error: ${res.status} ${res.statusText}`);
   }
   const data: TransitlandStopResponse = await res.json();
-  return data.stops.map(tlStopToStop);
+  return data.stops.map((s) => tlStopToStop(s));
+}
+
+export async function getRoutesNear(
+  lat: number,
+  lng: number,
+  radiusMeters: number = 80,
+  limit: number = 10,
+): Promise<TransitType[]> {
+  const url = new URL(`${TRANSITLAND_BASE}/routes`);
+  url.searchParams.set('apikey', API_KEY);
+  url.searchParams.set('lat', String(lat));
+  url.searchParams.set('lon', String(lng));
+  url.searchParams.set('radius', String(Math.round(radiusMeters)));
+  url.searchParams.set('limit', String(limit));
+  try {
+    const res = await fetch(url.toString());
+    if (!res.ok) return [];
+    const data: TransitlandRoutesResponse = await res.json();
+    return data.routes
+      .map((r) => gtfsRouteTypeToTransitType(r.route_type ?? -1))
+      .filter((t): t is TransitType => t !== 'transit')
+      .filter((t, i, arr) => arr.indexOf(t) === i);
+  } catch {
+    return [];
+  }
 }
 
 export async function searchStops(query: string): Promise<Stop[]> {
