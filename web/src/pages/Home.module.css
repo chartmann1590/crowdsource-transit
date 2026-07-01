@@ -41,6 +41,38 @@
   font-size: 12px;
 }
 
+.geoBanner {
+  padding: var(--space-md);
+  background: var(--color-surface-elevated);
+  border-bottom: 1px solid var(--color-surface-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.geoBanner p {
+  margin: 0;
+  color: var(--color-on-surface-secondary);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.geoRetryButton {
+  align-self: flex-start;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.geoRetryButton:hover {
+  opacity: 0.9;
+}
+
 .mapContainer {
   flex: 1;
   position: relative;
