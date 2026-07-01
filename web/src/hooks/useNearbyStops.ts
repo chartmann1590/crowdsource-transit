@@ -28,16 +28,23 @@ export function useNearbyStops(
     if (!shouldRefetch) return;
 
     lastFetchPos.current = { lat, lng };
+    let cancelled = false;
     setLoading(true);
     getNearbyStops(lat, lng)
       .then((results) => {
+        if (cancelled) return;
         setStops(results);
         setLoading(false);
       })
       .catch((err) => {
+        if (cancelled) return;
         console.error('useNearbyStops fetch failed:', err);
         setLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [lat, lng, forceKey]);
 
   return { stops, loading };
