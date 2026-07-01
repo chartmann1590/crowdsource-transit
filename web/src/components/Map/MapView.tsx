@@ -27,13 +27,12 @@ export function MapView({
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<Map<string, maplibregl.Marker>>(new Map());
-  const hasAutoZoomed = useRef(false);
+  const hasUserInteracted = useRef(false);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    if (hasAutoZoomed.current) return;
-    hasAutoZoomed.current = true;
+    if (hasUserInteracted.current) return;
     map.flyTo({ center: [initialLng, initialLat], zoom: initialZoom });
   }, [initialLat, initialLng, initialZoom]);
 
@@ -57,7 +56,9 @@ export function MapView({
 
     map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
 
-    map.on('moveend', () => {
+    map.on('moveend', (e) => {
+      if (!e.originalEvent) return;
+      hasUserInteracted.current = true;
       const center = map.getCenter();
       onMapMove?.(center.lat, center.lng);
     });
