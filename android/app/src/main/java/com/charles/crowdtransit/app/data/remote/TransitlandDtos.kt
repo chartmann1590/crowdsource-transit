@@ -6,6 +6,12 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class TransitlandStopsResponse(
     val stops: List<TransitlandStop> = emptyList(),
+    val meta: TransitlandMeta? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandMeta(
+    val after: Long? = null,
 )
 
 @JsonClass(generateAdapter = true)
@@ -38,4 +44,16 @@ data class TransitlandRoutesResponse(
 @JsonClass(generateAdapter = true)
 data class TransitlandRoute(
     @Json(name = "route_type") val routeType: Int? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandOperatorsResponse(
+    val operators: List<TransitlandOperator> = emptyList(),
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandOperator(
+    @Json(name = "onestop_id") val onestopId: String = "",
+    val name: String? = null,
+    @Json(name = "short_name") val shortName: String? = null,
 )

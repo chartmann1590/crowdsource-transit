@@ -1,5 +1,6 @@
 package com.charles.crowdtransit.app.ui.screens.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,6 +41,7 @@ import com.charles.crowdtransit.app.ui.theme.SurfaceDark
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onDownloadsClick: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val useImperial by viewModel.useImperialUnits.collectAsStateWithLifecycle()
@@ -92,6 +97,30 @@ fun SettingsScreen(
                     onCheckedChange = { viewModel.toggleUnits() },
                     colors = SwitchDefaults.colors(checkedThumbColor = Primary),
                 )
+            }
+
+            Spacer(Modifier.height(24.dp))
+            Divider(color = OnSurfaceSecondary.copy(alpha = 0.2f))
+            Spacer(Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onDownloadsClick)
+                    .padding(vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Filled.Download, contentDescription = null, tint = Primary)
+                Spacer(Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Offline Downloads", style = MaterialTheme.typography.bodyLarge, color = OnSurface)
+                    Text(
+                        "Download agencies for offline use",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = OnSurfaceSecondary,
+                    )
+                }
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = OnSurfaceSecondary)
             }
         }
     }

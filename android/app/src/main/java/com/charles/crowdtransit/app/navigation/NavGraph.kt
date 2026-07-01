@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.charles.crowdtransit.app.ui.screens.auth.OnboardingScreen
 import com.charles.crowdtransit.app.ui.screens.crowdsource.AddStopScreen
+import com.charles.crowdtransit.app.ui.screens.downloads.DownloadsScreen
 import com.charles.crowdtransit.app.ui.screens.login.LoginScreen
 import com.charles.crowdtransit.app.ui.screens.map.MapHomeScreen
 import com.charles.crowdtransit.app.ui.screens.profile.ProfileScreen
@@ -50,6 +51,12 @@ fun CrowdTransitNavGraph(
         }
         composable(Screen.Settings.route) {
             SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onDownloadsClick = { navController.navigate(Screen.Downloads.route) },
+            )
+        }
+        composable(Screen.Downloads.route) {
+            DownloadsScreen(
                 onBack = { navController.popBackStack() },
             )
         }

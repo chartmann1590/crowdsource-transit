@@ -31,4 +31,17 @@ interface TransitlandApi {
         @Query("radius") radiusMeters: Int = 80,
         @Query("limit") limit: Int = 10,
     ): TransitlandRoutesResponse
+
+    @GET("api/v2/rest/operators")
+    suspend fun searchOperators(
+        @Query("search") search: String,
+        @Query("limit") limit: Int = 10,
+    ): TransitlandOperatorsResponse
+
+    @GET("api/v2/rest/stops")
+    suspend fun getStopsByAgency(
+        @Query("served_by_onestop_ids") agencyOnestopId: String,
+        @Query("limit") limit: Int = 100,
+        @Query("after") after: Long? = null,
+    ): TransitlandStopsResponse
 }

@@ -28,6 +28,7 @@ private const val MAX_TRANSIT_TYPE_LOOKUPS = 15
 class StopRepository @Inject constructor(
     private val db: FirebaseDatabase,
     private val transitlandApi: TransitlandApi,
+    private val offlineRepository: OfflineRepository,
 ) {
 
     private fun statsFrom(snapshot: DataSnapshot?): Triple<Long, Long, Long> = Triple(
@@ -76,30 +77,46 @@ class StopRepository @Inject constructor(
                 remote.toStop(ratingSum, ratingCount, commentCount).copy(transitTypes = transitTypes)
             }
 
-    suspend fun getStopsNearby(lat: Double, lng: Double, radiusKm: Double): List<Stop> = coroutineScope {
-        val radiusMeters = (radiusKm * 1000).toInt().coerceIn(1, MAX_RADIUS_METERS)
-        val remoteStops = transitlandApi.getStopsNearby(lat, lng, radiusMeters).stops
-        val sortedByDistance = remoteStops.sortedBy { remote ->
-            val coords = remote.geometry?.coordinates.orEmpty()
-            val stopLng = coords.getOrNull(0) ?: 0.0
-            val stopLat = coords.getOrNull(1) ?: 0.0
-            haversineKm(lat, lng, stopLat, stopLng)
+    suspend fun getStopsNearby(lat: Double, lng: Double, radiusKm: Double): List<Stop> {
+        return try {
+            coroutineScope {
+                val radiusMeters = (radiusKm * 1000).toInt().coerceIn(1, MAX_RADIUS_METERS)
+                val remoteStops = transitlandApi.getStopsNearby(lat, lng, radiusMeters).stops
+                val sortedByDistance = remoteStops.sortedBy { remote ->
+                    val coords = remote.geometry?.coordinates.orEmpty()
+                    val stopLng = coords.getOrNull(0) ?: 0.0
+                    val stopLat = coords.getOrNull(1) ?: 0.0
+                    haversineKm(lat, lng, stopLat, stopLng)
+                }
+                sortedByDistance.take(MAX_TRANSIT_TYPE_LOOKUPS).map { remote ->
+                    async { enrichedStop(remote) }
+                }.map { it.await() }
+            }
+        } catch (e: Exception) {
+            offlineRepository.getCachedStopsNearby(lat, lng, radiusKm)
         }
-        sortedByDistance.take(MAX_TRANSIT_TYPE_LOOKUPS).map { remote ->
-            async { enrichedStop(remote) }
-        }.map { it.await() }
     }
 
-    suspend fun searchStops(query: String): List<Stop> = coroutineScope {
-        val remoteStops = transitlandApi.searchStops(query).stops
-        remoteStops.map { remote ->
-            async { enrichedStop(remote) }
-        }.map { it.await() }
+    suspend fun searchStops(query: String): List<Stop> {
+        return try {
+            coroutineScope {
+                val remoteStops = transitlandApi.searchStops(query).stops
+                remoteStops.map { remote ->
+                    async { enrichedStop(remote) }
+                }.map { it.await() }
+            }
+        } catch (e: Exception) {
+            offlineRepository.searchCachedStops(query)
+        }
     }
 
     suspend fun getStop(stopId: String): Stop? {
-        val remote = transitlandApi.getStopByOnestopId(stopId).stops.firstOrNull() ?: return null
-        return enrichedStop(remote)
+        return try {
+            val remote = transitlandApi.getStopByOnestopId(stopId).stops.firstOrNull() ?: return null
+            enrichedStop(remote)
+        } catch (e: Exception) {
+            offlineRepository.getCachedStop(stopId)
+        }
     }
 
     suspend fun getStopsByIds(ids: List<String>): List<Stop> = ids.mapNotNull { getStop(it) }
