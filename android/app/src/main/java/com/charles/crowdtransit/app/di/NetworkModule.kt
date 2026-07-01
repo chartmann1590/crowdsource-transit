@@ -8,12 +8,14 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Dispatcher
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -36,8 +38,15 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(apiKeyInterceptor: Interceptor): OkHttpClient =
-        OkHttpClient.Builder()
+    fun provideOkHttpClient(apiKeyInterceptor: Interceptor): OkHttpClient {
+        val dispatcher = Dispatcher().apply {
+            maxRequests = 32
+            maxRequestsPerHost = 32
+        }
+        return OkHttpClient.Builder()
+            .dispatcher(dispatcher)
+            .connectTimeout(5, TimeUnit.SECONDS)
+            .readTimeout(5, TimeUnit.SECONDS)
             .addInterceptor(apiKeyInterceptor)
             .addInterceptor(
                 HttpLoggingInterceptor().apply {
@@ -49,6 +58,7 @@ object NetworkModule {
                 },
             )
             .build()
+    }
 
     @Provides
     @Singleton

@@ -22,7 +22,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 private const val MAX_RADIUS_METERS = 10_000
-private const val MAX_TRANSIT_TYPE_LOOKUPS = 30
+private const val MAX_TRANSIT_TYPE_LOOKUPS = 15
 
 @Singleton
 class StopRepository @Inject constructor(

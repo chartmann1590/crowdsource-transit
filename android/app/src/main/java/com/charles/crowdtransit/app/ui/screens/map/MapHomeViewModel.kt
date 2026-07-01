@@ -6,6 +6,7 @@ import com.charles.crowdtransit.app.data.preferences.UserPreferencesStore
 import com.charles.crowdtransit.app.data.repository.StopRepository
 import com.charles.crowdtransit.model.Stop
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,6 +14,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.*
+
+private const val MIN_RELOAD_DISTANCE_KM = 0.3
 
 data class MapHomeUiState(
     val nearbyStops: List<Stop> = emptyList(),
@@ -43,6 +46,10 @@ class MapHomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(MapHomeUiState())
     val uiState: StateFlow<MapHomeUiState> = _uiState.asStateFlow()
 
+    private var loadJob: Job? = null
+    private var lastLoadedLat: Double? = null
+    private var lastLoadedLng: Double? = null
+
     init {
         viewModelScope.launch {
             try {
@@ -55,11 +62,20 @@ class MapHomeViewModel @Inject constructor(
 
     fun onLocationUpdate(lat: Double, lng: Double) {
         _uiState.update { it.copy(userLat = lat, userLng = lng) }
-        loadNearbyStops(lat, lng)
+        val prevLat = lastLoadedLat
+        val prevLng = lastLoadedLng
+        val shouldReload = prevLat == null || prevLng == null ||
+            haversineKm(prevLat, prevLng, lat, lng) > MIN_RELOAD_DISTANCE_KM
+        if (shouldReload) {
+            loadNearbyStops(lat, lng)
+        }
     }
 
     private fun loadNearbyStops(lat: Double, lng: Double) {
-        viewModelScope.launch {
+        loadJob?.cancel()
+        lastLoadedLat = lat
+        lastLoadedLng = lng
+        loadJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
                 val stops = stopRepository.getStopsNearby(lat, lng, radiusKm = 5.0)
