@@ -7,15 +7,21 @@ const MIN_RELOAD_DISTANCE_KM = 0.3;
 export function useNearbyStops(
   lat: number | null,
   lng: number | null,
+  forceKey: number = 0,
 ) {
   const [stops, setStops] = useState<Stop[]>([]);
   const [loading, setLoading] = useState(false);
   const lastFetchPos = useRef<{ lat: number; lng: number } | null>(null);
+  const lastForceKey = useRef(forceKey);
 
   useEffect(() => {
     if (!lat || !lng) return;
 
+    const forceRefetch = forceKey !== lastForceKey.current;
+    lastForceKey.current = forceKey;
+
     const shouldRefetch =
+      forceRefetch ||
       !lastFetchPos.current ||
       haversineDist(lat, lng, lastFetchPos.current.lat, lastFetchPos.current.lng) >= MIN_RELOAD_DISTANCE_KM;
 
@@ -32,7 +38,7 @@ export function useNearbyStops(
         console.error('useNearbyStops fetch failed:', err);
         setLoading(false);
       });
-  }, [lat, lng]);
+  }, [lat, lng, forceKey]);
 
   return { stops, loading };
 }
