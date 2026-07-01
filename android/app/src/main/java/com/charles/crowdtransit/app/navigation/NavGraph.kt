@@ -13,6 +13,7 @@ import com.charles.crowdtransit.app.ui.screens.map.MapHomeScreen
 import com.charles.crowdtransit.app.ui.screens.profile.ProfileScreen
 import com.charles.crowdtransit.app.ui.screens.route.RouteDetailScreen
 import com.charles.crowdtransit.app.ui.screens.search.SearchScreen
+import com.charles.crowdtransit.app.ui.screens.settings.SettingsScreen
 import com.charles.crowdtransit.app.ui.screens.stop.RateStopScreen
 import com.charles.crowdtransit.app.ui.screens.stop.StopDetailScreen
 
@@ -27,8 +28,13 @@ fun CrowdTransitNavGraph(
                 onFinish = {
                     navController.navigate(Screen.MapHome.route) {
                         popUpTo(Screen.Onboarding.route) { inclusive = true }
-                    }
-                }
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+            )
+        }
+    }
+}
             )
         }
         composable(Screen.MapHome.route) {
@@ -70,6 +76,7 @@ fun CrowdTransitNavGraph(
         composable(Screen.Profile.route) {
             ProfileScreen(
                 onBack = { navController.popBackStack() },
+                onSettingsClick = { navController.navigate(Screen.Settings.route) },
             )
         }
         composable(Screen.AddStop.route) {

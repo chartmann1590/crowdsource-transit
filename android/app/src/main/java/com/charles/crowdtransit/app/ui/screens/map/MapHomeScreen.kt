@@ -23,12 +23,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -38,6 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.charles.crowdtransit.app.ui.components.MapLibreView
 import com.charles.crowdtransit.app.ui.components.SearchBar
 import com.charles.crowdtransit.app.ui.components.StopCard
+import com.charles.crowdtransit.app.ui.theme.Error
 import com.charles.crowdtransit.app.ui.theme.OnSurfaceSecondary
 import com.charles.crowdtransit.app.ui.theme.Primary
 import com.charles.crowdtransit.app.ui.theme.SurfaceElevated
@@ -55,6 +59,9 @@ fun MapHomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sheetState = rememberBottomSheetScaffoldState()
     val context = LocalContext.current
+    val isExpanded by remember {
+        derivedStateOf { sheetState.bottomSheetState.currentValue == SheetValue.Expanded }
+    }
 
     LaunchedEffect(Unit) {
         if (hasLocationPermission(context)) {
@@ -68,37 +75,52 @@ fun MapHomeScreen(
 
     BottomSheetScaffold(
         scaffoldState = sheetState,
-        sheetPeekHeight = 180.dp,
+        sheetPeekHeight = 120.dp,
         sheetContainerColor = SurfaceElevated,
         sheetContent = {
-            Column(modifier = Modifier.padding(16.dp).navigationBarsPadding()) {
+            Column(modifier = Modifier.padding(12.dp).navigationBarsPadding()) {
                 Text(
                     "Nearby Stops",
                     style = MaterialTheme.typography.titleMedium,
                 )
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(8.dp))
                 if (uiState.isLoading) {
                     CircularProgressIndicator(modifier = Modifier.padding(16.dp), color = Primary)
+                } else if (uiState.error != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(vertical = 8.dp),
+                    ) {
+                        Text(
+                            text = "Couldn't load stops: ${uiState.error}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Error,
+                        )
+                    }
                 } else if (uiState.nearbyStops.isEmpty()) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(vertical = 12.dp),
+                        modifier = Modifier.padding(vertical = 8.dp),
                     ) {
                         Icon(Icons.Filled.LocationOn, contentDescription = null, tint = OnSurfaceSecondary)
                         Text(
-                            text = if (uiState.userLat == null) "Waiting for your location..." else "No transit stops found within 1km.",
+                            text = if (uiState.userLat == null) "Waiting for location..." else "No transit stops found within 5km",
                             style = MaterialTheme.typography.bodyMedium,
                             color = OnSurfaceSecondary,
                         )
                     }
                 } else {
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(uiState.nearbyStops, key = { it.stopId }) { stop ->
                             StopCard(
                                 stop = stop,
+                                distanceMeters = uiState.distances[stop.stopId],
+                                useImperial = uiState.useImperialUnits,
+                                compact = !isExpanded,
                                 onClick = { onStopClick(stop.stopId) },
-                                modifier = Modifier.width(240.dp),
+                                modifier = Modifier.width(if (isExpanded) 240.dp else 170.dp),
                             )
                         }
                     }
@@ -130,7 +152,7 @@ fun MapHomeScreen(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
-                    .padding(bottom = 180.dp)
+                    .padding(bottom = 120.dp)
                     .size(56.dp),
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Add Stop")

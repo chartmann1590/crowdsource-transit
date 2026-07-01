@@ -1,9 +1,5 @@
 ﻿package com.charles.crowdtransit.app.ui.components
 
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -12,20 +8,33 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
+import com.charles.crowdtransit.app.ui.theme.Primary
 import com.charles.crowdtransit.model.Stop
-import org.maplibre.android.MapLibre
-import org.maplibre.android.maps.MapView
-import org.maplibre.android.maps.MapLibreMap
-import org.maplibre.android.maps.Style
-import org.maplibre.android.geometry.LatLng
+import org.json.JSONArray
+import org.json.JSONObject
 import org.maplibre.android.camera.CameraUpdateFactory
-import org.maplibre.android.annotations.MarkerOptions
-import androidx.compose.runtime.MutableState
+import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.maps.MapLibreMap
+import org.maplibre.android.maps.MapView
+import org.maplibre.android.maps.Style
+import org.maplibre.android.style.layers.CircleLayer
+import org.maplibre.android.style.layers.PropertyFactory
+import org.maplibre.android.style.sources.GeoJsonSource
 
 private const val OSM_STYLE = "https://tiles.openfreemap.org/styles/liberty"
+private const val STOPS_SOURCE = "stops-source"
+private const val STOPS_LAYER = "stops-layer"
+private const val USER_SOURCE = "user-source"
+private const val USER_LAYER = "user-layer"
+
+private fun hexFromColor(color: androidx.compose.ui.graphics.Color): String {
+    val r = (color.red * 255).toInt()
+    val g = (color.green * 255).toInt()
+    val b = (color.blue * 255).toInt()
+    return String.format("#%02X%02X%02X", r, g, b)
+}
 
 @Composable
 fun MapLibreView(
@@ -36,21 +45,10 @@ fun MapLibreView(
     onStopPinClick: (String) -> Unit = {},
     onLocationUpdate: (Double, Double) -> Unit = { _, _ -> },
 ) {
-    val context = LocalContext.current
     var mapView by remember { mutableStateOf<MapView?>(null) }
     var mapboxMap by remember { mutableStateOf<MapLibreMap?>(null) }
-
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { granted -> }
-
-    LaunchedEffect(Unit) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        }
-    }
+    var styleReady by remember { mutableStateOf(false) }
+    var hasCenteredOnUser by remember { mutableStateOf(false) }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -67,39 +65,93 @@ fun MapLibreView(
                 mv.getMapAsync { map ->
                     mapboxMap = map
                     map.setStyle(Style.Builder().fromUri(OSM_STYLE)) {
-                        map.uiSettings.isAttributionEnabled = false
-                        map.uiSettings.isLogoEnabled = false
+                        styleReady = true
                     }
                 }
                 mv.onResume()
             }
         },
-        update = { mv ->
-            val map = mapboxMap ?: return@AndroidView
-            if (map.style == null) return@AndroidView
-
-            map.clear()
-
-            stops.forEach { stop ->
-                map.addMarker(
-                    MarkerOptions()
-                        .position(LatLng(stop.lat, stop.lng))
-                        .title(stop.name)
-                        .snippet(stop.stopId)
-                )
-            }
-
-            if (userLat != null && userLng != null) {
-                map.animateCamera(
-                    CameraUpdateFactory.newLatLngZoom(LatLng(userLat, userLng), 12.0),
-                )
-            } else if (stops.isNotEmpty()) {
-                val avgLat = stops.map { it.lat }.average()
-                val avgLng = stops.map { it.lng }.average()
-                map.animateCamera(
-                    CameraUpdateFactory.newLatLngZoom(LatLng(avgLat, avgLng), 10.0),
-                )
-            }
-        }
     )
+
+    LaunchedEffect(styleReady, stops, userLat, userLng) {
+        if (!styleReady) return@LaunchedEffect
+        val map = mapboxMap ?: return@LaunchedEffect
+        val style = map.style ?: return@LaunchedEffect
+
+        if (style.getSource(STOPS_SOURCE) == null) {
+            style.addSource(GeoJsonSource(STOPS_SOURCE))
+            style.addLayer(
+                CircleLayer(STOPS_LAYER, STOPS_SOURCE).apply {
+                    setProperties(
+                        PropertyFactory.circleRadius(9f),
+                        PropertyFactory.circleStrokeWidth(2.5f),
+                        PropertyFactory.circleStrokeColor("#FFFFFF"),
+                        PropertyFactory.circleColor(hexFromColor(Primary)),
+                    )
+                }
+            )
+        }
+
+        if (style.getSource(USER_SOURCE) == null) {
+            style.addSource(GeoJsonSource(USER_SOURCE))
+            style.addLayer(
+                CircleLayer(USER_LAYER, USER_SOURCE).apply {
+                    setProperties(
+                        PropertyFactory.circleRadius(10f),
+                        PropertyFactory.circleStrokeWidth(3f),
+                        PropertyFactory.circleStrokeColor("#FFFFFF"),
+                        PropertyFactory.circleColor("#4285F4"),
+                    )
+                }
+            )
+        }
+
+        val featuresArr = JSONArray()
+        for (stop in stops) {
+            featuresArr.put(JSONObject().apply {
+                put("type", "Feature")
+                put("geometry", JSONObject().apply {
+                    put("type", "Point")
+                    put("coordinates", JSONArray().apply {
+                        put(stop.lng)
+                        put(stop.lat)
+                    })
+                })
+            })
+        }
+        val fc = JSONObject().apply {
+            put("type", "FeatureCollection")
+            put("features", featuresArr)
+        }
+        val source = style.getSourceAs<GeoJsonSource>(STOPS_SOURCE)
+        source?.setGeoJson(fc.toString())
+
+        val userSource = style.getSourceAs<GeoJsonSource>(USER_SOURCE)
+        if (userLat != null && userLng != null) {
+            val userGeoJson = JSONObject().apply {
+                put("type", "Feature")
+                put("geometry", JSONObject().apply {
+                    put("type", "Point")
+                    put("coordinates", JSONArray().apply {
+                        put(userLng)
+                        put(userLat)
+                    })
+                })
+            }
+            userSource?.setGeoJson(userGeoJson.toString())
+            if (!hasCenteredOnUser) {
+                hasCenteredOnUser = true
+                map.animateCamera(
+                    CameraUpdateFactory.newLatLngZoom(LatLng(userLat, userLng), 15.0),
+                )
+            }
+        } else if (!hasCenteredOnUser && stops.isNotEmpty()) {
+            hasCenteredOnUser = true
+            val avgLat = stops.map { it.lat }.average()
+            val avgLng = stops.map { it.lng }.average()
+            map.animateCamera(
+                CameraUpdateFactory.newLatLngZoom(LatLng(avgLat, avgLng), 10.0),
+            )
+        }
+    }
 }

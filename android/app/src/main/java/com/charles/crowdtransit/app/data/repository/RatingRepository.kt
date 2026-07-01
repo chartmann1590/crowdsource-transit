@@ -52,7 +52,7 @@ class RatingRepository @Inject constructor(
 
         db.reference.child("ratings/$targetType/$targetId/${user.uid}").setValue(rating).await()
 
-        val targetRef = db.reference.child(if (targetType == "stop") "stops/$targetId" else "routes/$targetId")
+        val targetRef = db.reference.child(if (targetType == "stop") "stopStats/$targetId" else "routes/$targetId")
 
         if (prevRating == null) {
             targetRef.child("ratingSum").runTransaction(object : com.google.firebase.database.Transaction.Handler {

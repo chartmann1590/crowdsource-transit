@@ -12,6 +12,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -79,6 +80,26 @@ fun SearchScreen(
                     cursorColor = Primary,
                 ),
             )
+
+            if (uiState.error != null) {
+                Text(
+                    text = uiState.error!!,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            } else if (uiState.isSearching) {
+                Text(
+                    text = "Searching...",
+                    color = OnSurfaceSecondary,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            } else if (uiState.query.length >= 2 && uiState.results.isEmpty()) {
+                Text(
+                    text = "No stops found for \"${uiState.query}\".",
+                    color = OnSurfaceSecondary,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(uiState.results, key = { it.stopId }) { stop ->

@@ -12,6 +12,14 @@
         "commentCount": { ".write": "auth != null" }
       }
     },
+    "stopStats": {
+      ".read": true,
+      "$stopId": {
+        "ratingSum": { ".write": "auth != null" },
+        "ratingCount": { ".write": "auth != null" },
+        "commentCount": { ".write": "auth != null" }
+      }
+    },
     "ratings": {
       ".read": true,
       "$targetType": { "$targetId": { "$userId": { ".write": "auth != null && auth.uid === $userId" } } }

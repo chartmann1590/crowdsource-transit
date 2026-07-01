@@ -39,28 +39,49 @@ private fun accentColorFor(transitTypes: List<String>) = when (transitTypes.firs
     else -> Primary
 }
 
+private fun formatDistance(meters: Float, useImperial: Boolean): String {
+    if (useImperial) {
+        val feet = meters * 3.28084f
+        return if (feet < 5280f) {
+            "${feet.toInt()} ft"
+        } else {
+            String.format("%.1f mi", feet / 5280f)
+        }
+    }
+    return if (meters < 1000f) {
+        "${meters.toInt()} m"
+    } else {
+        String.format("%.1f km", meters / 1000f)
+    }
+}
+
 @Composable
 fun StopCard(
     stop: Stop,
     distanceMeters: Float? = null,
+    useImperial: Boolean = false,
+    compact: Boolean = false,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val pad = if (compact) 10.dp else 16.dp
+    val gap = if (compact) 4.dp else 8.dp
+
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(if (compact) 16.dp else 24.dp))
             .background(SurfaceCard)
             .clickable { onClick() },
     ) {
         androidx.compose.foundation.layout.Box(
             modifier = Modifier
                 .fillMaxHeight()
-                .width(6.dp)
+                .width(if (compact) 4.dp else 6.dp)
                 .background(accentColorFor(stop.transitTypes)),
         )
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(pad),
+            verticalArrangement = Arrangement.spacedBy(gap),
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -69,11 +90,11 @@ fun StopCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = stop.name,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = if (compact) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.titleMedium,
                         color = OnSurface,
-                        maxLines = 2,
+                        maxLines = if (compact) 1 else 2,
                     )
-                    if (stop.city.isNotBlank()) {
+                    if (!compact && stop.city.isNotBlank()) {
                         Text(
                             text = listOf(stop.city, stop.state).filter { it.isNotBlank() }.joinToString(", "),
                             style = MaterialTheme.typography.bodyMedium,
@@ -82,35 +103,36 @@ fun StopCard(
                     }
                 }
                 if (distanceMeters != null) {
-                    val distText = if (distanceMeters < 1000) {
-                        "${distanceMeters.toInt()}m"
-                    } else {
-                        String.format("%.1fkm", distanceMeters / 1000f)
-                    }
                     Text(
-                        text = distText,
-                        style = MaterialTheme.typography.labelSmall,
+                        text = formatDistance(distanceMeters, useImperial),
+                        style = if (compact) MaterialTheme.typography.labelSmall else MaterialTheme.typography.labelSmall,
                         color = Primary,
                     )
                 }
             }
 
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                items(stop.transitTypes) { type ->
-                    TransitBadge(type = type, label = type.replaceFirstChar { it.uppercase() })
+            if (!compact) {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    if (stop.transitTypes.isEmpty()) {
+                        item { TransitBadge(type = "transit", label = "Transit") }
+                    } else {
+                        items(stop.transitTypes) { type ->
+                            TransitBadge(type = type, label = type.replaceFirstChar { it.uppercase() })
+                        }
+                    }
                 }
-            }
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                StarRating(rating = stop.averageRating, starSize = 14.dp)
-                Text(
-                    text = "(${stop.ratingCount})",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = OnSurfaceSecondary,
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    StarRating(rating = stop.averageRating, starSize = 14.dp)
+                    Text(
+                        text = "(${stop.ratingCount})",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = OnSurfaceSecondary,
+                    )
+                }
             }
         }
     }

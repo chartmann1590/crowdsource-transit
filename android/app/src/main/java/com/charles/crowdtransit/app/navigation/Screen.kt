@@ -15,4 +15,5 @@ sealed class Screen(val route: String) {
     object RateStop : Screen("rate/{stopId}") {
         fun createRoute(stopId: String) = "rate/$stopId"
     }
+    object Settings : Screen("settings")
 }

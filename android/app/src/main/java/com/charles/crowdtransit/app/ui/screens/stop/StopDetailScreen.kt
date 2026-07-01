@@ -118,13 +118,22 @@ fun StopDetailScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Text(stop.name, style = MaterialTheme.typography.headlineMedium, color = OnSurface)
-                    Text("${stop.city}, ${stop.state}",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = OnSurfaceSecondary)
+                    val location = listOf(stop.city, stop.state).filter { it.isNotBlank() }.joinToString(", ")
+                    if (location.isNotBlank()) {
+                        Text(
+                            location,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = OnSurfaceSecondary,
+                        )
+                    }
 
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        stop.transitTypes.forEach { type ->
-                            TransitBadge(type = type)
+                        if (stop.transitTypes.isEmpty()) {
+                            TransitBadge(type = "transit", label = "Transit")
+                        } else {
+                            stop.transitTypes.forEach { type ->
+                                TransitBadge(type = type, label = type.replaceFirstChar { it.uppercase() })
+                            }
                         }
                     }
 

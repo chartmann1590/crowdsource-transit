@@ -63,7 +63,7 @@ class CommentRepository @Inject constructor(
         ref.setValue(comment).await()
 
         if (targetType == "stop") {
-            db.reference.child("stops/$targetId/commentCount")
+            db.reference.child("stopStats/$targetId/commentCount")
                 .runTransaction(object : com.google.firebase.database.Transaction.Handler {
                     override fun doTransaction(mutableData: com.google.firebase.database.MutableData): com.google.firebase.database.Transaction.Result {
                         val count = mutableData.getValue(Long::class.java) ?: 0L
