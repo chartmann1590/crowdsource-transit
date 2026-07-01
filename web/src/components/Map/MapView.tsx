@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { Stop } from '../../types/transit';
@@ -15,6 +15,24 @@ interface MapViewProps {
   initialZoom?: number;
 }
 
+function buildMarkerElement(transitType: string, isSelected: boolean): HTMLDivElement {
+  const el = document.createElement('div');
+  const color = TRANSIT_COLORS[transitType] || '#1565C0';
+  const size = isSelected ? 22 : 16;
+  el.style.cssText = `
+    width: ${size}px;
+    height: ${size}px;
+    background: ${color};
+    border: 2px solid white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    transition: all 0.15s ease;
+    z-index: ${isSelected ? 10 : 1};
+  `;
+  return el;
+}
+
 export function MapView({
   stops,
   selectedStopId,
@@ -26,8 +44,41 @@ export function MapView({
 }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const markersRef = useRef<Map<string, maplibregl.Marker>>(new Map());
+  const markersRef = useRef<maplibregl.Marker[]>([]);
   const hasUserInteracted = useRef(false);
+
+  const clearMarkers = useCallback(() => {
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+  }, []);
+
+  const renderMarkers = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    clearMarkers();
+
+    stops.forEach((stop) => {
+      if (!stop.lat || !stop.lng) return;
+      const primaryType = stop.transitTypes?.[0] || 'bus';
+      const isSelected = stop.stopId === selectedStopId;
+
+      const el = buildMarkerElement(primaryType, isSelected);
+
+      const popup = new maplibregl.Popup({ offset: 14, closeButton: false })
+        .setText(stop.name);
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([stop.lng, stop.lat])
+        .setPopup(popup)
+        .addTo(map);
+
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        onStopClick?.(stop.stopId);
+      });
+      markersRef.current.push(marker);
+    });
+  }, [stops, selectedStopId, onStopClick, clearMarkers]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -63,10 +114,11 @@ export function MapView({
       onMapMove?.(center.lat, center.lng);
     });
 
+    map.on('load', () => renderMarkers());
     mapRef.current = map;
 
     return () => {
-      markersRef.current.forEach((m) => m.remove());
+      clearMarkers();
       map.remove();
     };
   }, []);
@@ -74,46 +126,12 @@ export function MapView({
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-
-    const checkStyle = () => {
-      if (!map.isStyleLoaded()) {
-        setTimeout(checkStyle, 100);
-        return;
-      }
-
-      markersRef.current.forEach((m) => m.remove());
-      markersRef.current.clear();
-
-      stops.forEach((stop) => {
-        if (!stop.lat || !stop.lng) return;
-
-        const primaryType = stop.transitTypes?.[0] || 'bus';
-        const color = TRANSIT_COLORS[primaryType] || '#1565C0';
-        const isSelected = stop.stopId === selectedStopId;
-
-        const el = document.createElement('div');
-        el.style.cssText = `
-          width: ${isSelected ? '20px' : '14px'};
-          height: ${isSelected ? '20px' : '14px'};
-          background: ${color};
-          border: 2px solid white;
-          border-radius: 50%;
-          cursor: pointer;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-          transition: all 0.2s ease;
-        `;
-
-        const marker = new maplibregl.Marker({ element: el })
-          .setLngLat([stop.lng, stop.lat])
-          .addTo(map);
-
-        el.addEventListener('click', () => onStopClick?.(stop.stopId));
-        markersRef.current.set(stop.stopId, marker);
-      });
-    };
-
-    checkStyle();
-  }, [stops, selectedStopId, onStopClick]);
+    if (map.isStyleLoaded()) {
+      renderMarkers();
+    } else {
+      map.once('idle', () => renderMarkers());
+    }
+  }, [renderMarkers]);
 
   return <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />;
 }
