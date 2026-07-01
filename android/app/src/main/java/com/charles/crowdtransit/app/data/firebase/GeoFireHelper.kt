@@ -15,7 +15,7 @@ class GeoFireHelper @Inject constructor(
     private val db: FirebaseDatabase,
 ) {
     private val geoFire by lazy {
-        GeoFire(db.reference.child("stop_locations"))
+        GeoFire(db.reference.child("geofire").child("stops"))
     }
 
     suspend fun queryRadius(lat: Double, lng: Double, radiusKm: Double): List<String> =

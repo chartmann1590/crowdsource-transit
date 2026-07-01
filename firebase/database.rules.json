@@ -5,6 +5,7 @@
     "stops": {
       ".read": true,
       ".write": false,
+      ".indexOn": ["name"],
       "$stopId": {
         "ratingSum": { ".write": "auth != null" },
         "ratingCount": { ".write": "auth != null" },
@@ -27,7 +28,11 @@
       ".read": true,
       "$submissionId": { ".write": "auth != null" }
     },
-    "geofire": { ".read": true, ".write": false },
+    "geofire": {
+      ".read": true,
+      ".write": false,
+      "stops": { ".indexOn": ["g"] }
+    },
     "meta": { ".read": true, ".write": false }
   }
 }

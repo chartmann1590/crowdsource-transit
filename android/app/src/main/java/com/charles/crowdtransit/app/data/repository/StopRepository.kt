@@ -18,19 +18,19 @@ class StopRepository @Inject constructor(
 ) {
 
     fun observeStop(stopId: String): Flow<Stop?> =
-        db.reference.child("stops/")
+        db.reference.child("stops").child(stopId)
             .observeAsFlow()
             .map { it?.getValue<Stop>() }
 
     suspend fun getStopsNearby(lat: Double, lng: Double, radiusKm: Double): List<Stop> {
         val nearbyIds = geoFireHelper.queryRadius(lat, lng, radiusKm)
         return nearbyIds.mapNotNull { stopId ->
-            db.reference.child("stops/").get().await().getValue<Stop>()
+            db.reference.child("stops").child(stopId).get().await().getValue<Stop>()
         }
     }
 
     suspend fun getStop(stopId: String): Stop? =
-        db.reference.child("stops/")
+        db.reference.child("stops").child(stopId)
             .get().await()
             .getValue<Stop>()
 

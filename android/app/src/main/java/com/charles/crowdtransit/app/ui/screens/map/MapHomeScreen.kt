@@ -3,32 +3,45 @@
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.charles.crowdtransit.app.ui.components.MapLibreView
 import com.charles.crowdtransit.app.ui.components.SearchBar
 import com.charles.crowdtransit.app.ui.components.StopCard
+import com.charles.crowdtransit.app.ui.theme.OnSurfaceSecondary
+import com.charles.crowdtransit.app.ui.theme.Primary
 import com.charles.crowdtransit.app.ui.theme.SurfaceElevated
+import kotlinx.coroutines.flow.catch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +54,17 @@ fun MapHomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sheetState = rememberBottomSheetScaffoldState()
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        if (hasLocationPermission(context)) {
+            locationFlow(context)
+                .catch { }
+                .collect { location ->
+                    viewModel.onLocationUpdate(location.lat, location.lng)
+                }
+        }
+    }
 
     BottomSheetScaffold(
         scaffoldState = sheetState,
@@ -54,7 +78,20 @@ fun MapHomeScreen(
                 )
                 Spacer(Modifier.height(12.dp))
                 if (uiState.isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                    CircularProgressIndicator(modifier = Modifier.padding(16.dp), color = Primary)
+                } else if (uiState.nearbyStops.isEmpty()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(vertical = 12.dp),
+                    ) {
+                        Icon(Icons.Filled.LocationOn, contentDescription = null, tint = OnSurfaceSecondary)
+                        Text(
+                            text = if (uiState.userLat == null) "Waiting for your location..." else "No transit stops found within 1km.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = OnSurfaceSecondary,
+                        )
+                    }
                 } else {
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         items(uiState.nearbyStops, key = { it.stopId }) { stop ->
@@ -86,6 +123,18 @@ fun MapHomeScreen(
                     .statusBarsPadding()
                     .padding(horizontal = 16.dp, vertical = 12.dp),
             )
+
+            FloatingActionButton(
+                onClick = onAddStopClick,
+                containerColor = Primary,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+                    .padding(bottom = 180.dp)
+                    .size(56.dp),
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = "Add Stop")
+            }
         }
     }
 }

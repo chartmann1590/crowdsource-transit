@@ -41,7 +41,7 @@ fun TransitBadge(
 
     Row(
         modifier = modifier
-            .background(bgColor, RoundedCornerShape(999.dp))
+            .background(bgColor.copy(alpha = 0.2f), RoundedCornerShape(999.dp))
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -49,13 +49,13 @@ fun TransitBadge(
         Icon(
             painter = painterResource(icon),
             contentDescription = type,
-            tint = Color.White,
+            tint = bgColor,
             modifier = Modifier.size(12.dp),
         )
         if (label.isNotEmpty()) {
             Text(
                 text = label,
-                color = Color.White,
+                color = bgColor,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium,
             )

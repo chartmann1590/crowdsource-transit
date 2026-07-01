@@ -16,12 +16,12 @@ class RouteRepository @Inject constructor(
 ) {
 
     fun observeRoute(routeId: String): Flow<Route?> =
-        db.reference.child("routes/")
+        db.reference.child("routes").child(routeId)
             .observeAsFlow()
             .map { it?.getValue<Route>() }
 
     suspend fun getRoute(routeId: String): Route? =
-        db.reference.child("routes/")
+        db.reference.child("routes").child(routeId)
             .get().await()
             .getValue<Route>()
 

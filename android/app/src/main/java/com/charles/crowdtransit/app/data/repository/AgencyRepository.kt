@@ -13,7 +13,7 @@ class AgencyRepository @Inject constructor(
 ) {
 
     suspend fun getAgency(agencyId: String): Agency? =
-        db.reference.child("agencies/")
+        db.reference.child("agencies").child(agencyId)
             .get().await()
             .getValue<Agency>()
 }
