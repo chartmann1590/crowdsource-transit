@@ -28,7 +28,18 @@ class UserPreferencesStore @Inject constructor(
         }
     }
 
+    val hasCompletedOnboarding: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[KEY_HAS_ONBOARDED] ?: false
+    }
+
+    suspend fun setHasCompletedOnboarding(completed: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_HAS_ONBOARDED] = completed
+        }
+    }
+
     companion object {
         private val KEY_USE_IMPERIAL = booleanPreferencesKey("use_imperial_units")
+        private val KEY_HAS_ONBOARDED = booleanPreferencesKey("has_completed_onboarding")
     }
 }

@@ -8,20 +8,25 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
@@ -78,7 +83,12 @@ fun MapHomeScreen(
         sheetPeekHeight = 120.dp,
         sheetContainerColor = SurfaceElevated,
         sheetContent = {
-            Column(modifier = Modifier.padding(12.dp).navigationBarsPadding()) {
+            Column(
+                modifier = Modifier
+                    .heightIn(max = 340.dp)
+                    .padding(12.dp)
+                    .navigationBarsPadding(),
+            ) {
                 Text(
                     "Nearby Stops",
                     style = MaterialTheme.typography.titleMedium,
@@ -138,13 +148,27 @@ fun MapHomeScreen(
                 onLocationUpdate = viewModel::onLocationUpdate,
             )
 
-            SearchBar(
-                onClickSearch = onSearchClick,
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .statusBarsPadding()
                     .padding(horizontal = 16.dp, vertical = 12.dp),
-            )
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                SearchBar(
+                    onClickSearch = onSearchClick,
+                    modifier = Modifier.weight(1f),
+                )
+                IconButton(
+                    onClick = onProfileClick,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(SurfaceElevated, CircleShape),
+                ) {
+                    Icon(Icons.Filled.Person, contentDescription = "Profile")
+                }
+            }
 
             FloatingActionButton(
                 onClick = onAddStopClick,

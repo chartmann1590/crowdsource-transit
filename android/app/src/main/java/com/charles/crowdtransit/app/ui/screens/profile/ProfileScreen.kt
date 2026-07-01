@@ -45,6 +45,7 @@ import com.charles.crowdtransit.app.ui.theme.SurfaceDark
 fun ProfileScreen(
     onBack: () -> Unit,
     onSettingsClick: () -> Unit = {},
+    onSignInClick: () -> Unit = {},
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -116,14 +117,24 @@ fun ProfileScreen(
 
             Spacer(Modifier.weight(1f))
 
-            Button(
-                onClick = {
-                    viewModel.signOut()
-                    onBack()
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Error, contentColor = OnPrimary),
-            ) {
-                Text("Sign Out")
+            if (uiState.user?.isAnonymous == true) {
+                Button(
+                    onClick = onSignInClick,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Sign In / Create Account")
+                }
+            } else {
+                Button(
+                    onClick = {
+                        viewModel.signOut()
+                        onBack()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Error, contentColor = OnPrimary),
+                ) {
+                    Text("Sign Out")
+                }
             }
         }
     }

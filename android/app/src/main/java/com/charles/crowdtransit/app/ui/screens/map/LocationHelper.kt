@@ -23,9 +23,14 @@ fun hasLocationPermission(context: Context): Boolean =
 @SuppressLint("MissingPermission")
 fun locationFlow(context: Context): Flow<UserLocation> = callbackFlow {
     val client = LocationServices.getFusedLocationProviderClient(context)
-    val request = LocationRequest.Builder(10_000L)
-        .setPriority(Priority.PRIORITY_BALANCED_POWER_ACCURACY)
-        .setMinUpdateIntervalMillis(5_000L)
+
+    client.lastLocation.addOnSuccessListener { location ->
+        location?.let { trySend(UserLocation(it.latitude, it.longitude)) }
+    }
+
+    val request = LocationRequest.Builder(5_000L)
+        .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+        .setMinUpdateIntervalMillis(2_000L)
         .build()
 
     val callback = object : LocationCallback() {

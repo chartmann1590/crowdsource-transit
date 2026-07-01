@@ -10,7 +10,7 @@ interface TransitlandApi {
         @Query("lat") lat: Double,
         @Query("lon") lon: Double,
         @Query("radius") radiusMeters: Int,
-        @Query("limit") limit: Int = 20,
+        @Query("limit") limit: Int = 100,
     ): TransitlandStopsResponse
 
     @GET("api/v2/rest/stops")
@@ -23,4 +23,12 @@ interface TransitlandApi {
     suspend fun getStopByOnestopId(
         @Query("onestop_id") onestopId: String,
     ): TransitlandStopsResponse
+
+    @GET("api/v2/rest/routes")
+    suspend fun getRoutesNear(
+        @Query("lat") lat: Double,
+        @Query("lon") lon: Double,
+        @Query("radius") radiusMeters: Int = 80,
+        @Query("limit") limit: Int = 10,
+    ): TransitlandRoutesResponse
 }

@@ -57,6 +57,7 @@ fun OnboardingScreen(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
         locationGranted = granted
+        viewModel.markOnboardingComplete()
         onFinish()
     }
 
@@ -120,6 +121,7 @@ fun OnboardingScreen(
                 if (!locationGranted) {
                     locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                 } else {
+                    viewModel.markOnboardingComplete()
                     onFinish()
                 }
             },

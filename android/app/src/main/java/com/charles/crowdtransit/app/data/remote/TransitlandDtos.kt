@@ -29,3 +29,13 @@ data class TransitlandPlace(
     @Json(name = "adm0_name") val countryName: String? = null,
     @Json(name = "adm1_name") val stateName: String? = null,
 )
+
+@JsonClass(generateAdapter = true)
+data class TransitlandRoutesResponse(
+    val routes: List<TransitlandRoute> = emptyList(),
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandRoute(
+    @Json(name = "route_type") val routeType: Int? = null,
+)

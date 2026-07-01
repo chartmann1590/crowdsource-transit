@@ -1,6 +1,13 @@
 package com.charles.crowdtransit.app.navigation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -9,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.charles.crowdtransit.app.ui.screens.auth.OnboardingScreen
 import com.charles.crowdtransit.app.ui.screens.crowdsource.AddStopScreen
+import com.charles.crowdtransit.app.ui.screens.login.LoginScreen
 import com.charles.crowdtransit.app.ui.screens.map.MapHomeScreen
 import com.charles.crowdtransit.app.ui.screens.profile.ProfileScreen
 import com.charles.crowdtransit.app.ui.screens.route.RouteDetailScreen
@@ -20,8 +28,16 @@ import com.charles.crowdtransit.app.ui.screens.stop.StopDetailScreen
 @Composable
 fun CrowdTransitNavGraph(
     navController: NavHostController = rememberNavController(),
-    startDestination: String = Screen.Onboarding.route,
+    navGraphViewModel: NavGraphViewModel = hiltViewModel(),
 ) {
+    val hasCompletedOnboarding by navGraphViewModel.hasCompletedOnboarding.collectAsStateWithLifecycle()
+    val onboardingStatus = hasCompletedOnboarding
+    if (onboardingStatus == null) {
+        Box(modifier = androidx.compose.ui.Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
+        return
+    }
+    val startDestination = if (onboardingStatus) Screen.MapHome.route else Screen.Onboarding.route
+
     NavHost(navController = navController, startDestination = startDestination) {
         composable(Screen.Onboarding.route) {
             OnboardingScreen(
@@ -77,6 +93,13 @@ fun CrowdTransitNavGraph(
             ProfileScreen(
                 onBack = { navController.popBackStack() },
                 onSettingsClick = { navController.navigate(Screen.Settings.route) },
+                onSignInClick = { navController.navigate(Screen.Login.route) },
+            )
+        }
+        composable(Screen.Login.route) {
+            LoginScreen(
+                onBack = { navController.popBackStack() },
+                onSuccess = { navController.popBackStack() },
             )
         }
         composable(Screen.AddStop.route) {

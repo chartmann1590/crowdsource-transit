@@ -2,6 +2,7 @@
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.charles.crowdtransit.app.data.preferences.UserPreferencesStore
 import com.charles.crowdtransit.app.data.repository.AuthRepository
 import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,6 +23,7 @@ data class AuthUiState(
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val preferencesStore: UserPreferencesStore,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
@@ -52,6 +54,12 @@ class AuthViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message, isLoading = false) }
             }
+        }
+    }
+
+    fun markOnboardingComplete() {
+        viewModelScope.launch {
+            preferencesStore.setHasCompletedOnboarding(true)
         }
     }
 }
