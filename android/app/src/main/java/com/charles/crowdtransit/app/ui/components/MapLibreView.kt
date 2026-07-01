@@ -12,9 +12,10 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
 import com.charles.crowdtransit.app.ui.theme.Primary
 import com.charles.crowdtransit.model.Stop
-import org.json.JSONArray
-import org.json.JSONObject
 import org.maplibre.android.camera.CameraUpdateFactory
+import org.maplibre.geojson.Feature
+import org.maplibre.geojson.FeatureCollection
+import org.maplibre.geojson.Point
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
@@ -83,7 +84,7 @@ fun MapLibreView(
             style.addLayer(
                 CircleLayer(STOPS_LAYER, STOPS_SOURCE).apply {
                     setProperties(
-                        PropertyFactory.circleRadius(9f),
+                        PropertyFactory.circleRadius(11f),
                         PropertyFactory.circleStrokeWidth(2.5f),
                         PropertyFactory.circleStrokeColor("#FFFFFF"),
                         PropertyFactory.circleColor(hexFromColor(Primary)),
@@ -106,43 +107,19 @@ fun MapLibreView(
             )
         }
 
-        val featuresArr = JSONArray()
-        for (stop in stops) {
-            featuresArr.put(JSONObject().apply {
-                put("type", "Feature")
-                put("geometry", JSONObject().apply {
-                    put("type", "Point")
-                    put("coordinates", JSONArray().apply {
-                        put(stop.lng)
-                        put(stop.lat)
-                    })
-                })
-            })
-        }
-        val fc = JSONObject().apply {
-            put("type", "FeatureCollection")
-            put("features", featuresArr)
-        }
+        val features = stops.map { stop -> Feature.fromGeometry(Point.fromLngLat(stop.lng, stop.lat)) }
+        val fc = FeatureCollection.fromFeatures(features)
         val source = style.getSourceAs<GeoJsonSource>(STOPS_SOURCE)
-        source?.setGeoJson(fc.toString())
+        source?.setGeoJson(fc)
 
         val userSource = style.getSourceAs<GeoJsonSource>(USER_SOURCE)
         if (userLat != null && userLng != null) {
-            val userGeoJson = JSONObject().apply {
-                put("type", "Feature")
-                put("geometry", JSONObject().apply {
-                    put("type", "Point")
-                    put("coordinates", JSONArray().apply {
-                        put(userLng)
-                        put(userLat)
-                    })
-                })
-            }
-            userSource?.setGeoJson(userGeoJson.toString())
+            val userFeature = Feature.fromGeometry(Point.fromLngLat(userLng, userLat))
+            userSource?.setGeoJson(userFeature)
             if (!hasCenteredOnUser) {
                 hasCenteredOnUser = true
                 map.animateCamera(
-                    CameraUpdateFactory.newLatLngZoom(LatLng(userLat, userLng), 15.0),
+                    CameraUpdateFactory.newLatLngZoom(LatLng(userLat, userLng), 13.5),
                 )
             }
         } else if (!hasCenteredOnUser && stops.isNotEmpty()) {

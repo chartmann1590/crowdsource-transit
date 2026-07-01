@@ -1,4 +1,4 @@
-﻿package com.charles.crowdtransit.app.navigation
+package com.charles.crowdtransit.app.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -28,13 +28,13 @@ fun CrowdTransitNavGraph(
                 onFinish = {
                     navController.navigate(Screen.MapHome.route) {
                         popUpTo(Screen.Onboarding.route) { inclusive = true }
+                    }
+                }
+            )
+        }
         composable(Screen.Settings.route) {
             SettingsScreen(
                 onBack = { navController.popBackStack() },
-            )
-        }
-    }
-}
             )
         }
         composable(Screen.MapHome.route) {
