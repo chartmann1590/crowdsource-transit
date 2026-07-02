@@ -1,11 +1,11 @@
-# CrowdTransit Visual Redesign — "Sunny Transit"
+# CrowdTransit Redesign — "Sunny Transit"
 
 **Date:** 2026-07-02
-**Scope:** Full visual reskin of the web app and Android app. No feature changes, no layout/navigation restructuring, no data-layer changes. One shared design system applied to both platforms in one pass.
+**Scope:** Full visual reskin of the web app and Android app, plus four new interactive feature sets: gamification, live check-ins & quick reports, playful micro-interactions, and photos on stops. One shared design system applied to both platforms. Implementation is phased (see Phasing) so each phase ships working.
 
 ## Why
 
-The current design is a Stitch-generated dark "Technical Elegance" theme (muddy gray-blue surfaces, washed-out `#a9c7ff` primary). It clashes with the light map basemap (OpenFreeMap Liberty) both apps already use, and the user dislikes it. Direction chosen: **bright, friendly, modern** — light-first, bold color, big type.
+The current design is a Stitch-generated dark "Technical Elegance" theme (muddy gray-blue surfaces, washed-out `#a9c7ff` primary). It clashes with the light map basemap (OpenFreeMap Liberty) both apps already use, and the user dislikes it. Direction chosen: **bright, friendly, modern** — light-first, bold color, big type — and a more fun, interactive product overall.
 
 ## Design System
 
@@ -72,6 +72,53 @@ Android maps these onto the Material 3 typography scale in `Type.kt` (displaySma
 - **Map markers:** filled circles in mode color with white stroke (already GeoJSON circle layers) — recolor to the vivid mode palette; selected stop uses `primary` with larger radius.
 - **Rating stars:** `accent` amber filled, `outline` empty.
 
+## New Features
+
+All features work for anonymous users (Firebase anonymous auth already issues uids). RTDB is the only backend — no new infrastructure.
+
+### Gamification
+
+- **Points** for contributions, awarded client-side on successful write: +10 new stop, +5 review, +3 photo, +2 check-in or quick report.
+- **Levels** by total points: Pedestrian (0) → Commuter (50) → Regular (150) → Conductor (400) → Transit Legend (1000). Level shows as a colored ring around the profile avatar and next to usernames on reviews.
+- **Badges** for milestones: first review, first stop added, 10 stops, 25 reviews, first photo, 7-day contribution streak. Displayed as a grid on the profile page.
+- **Leaderboard** tab on the Profile page: top 50 by points, all-time. Anonymous users appear as "Anonymous Rider".
+- **Data:** `/users/{uid}/stats` (points, counts, streak, badges) and `/leaderboard/{uid}` (displayName, points) fanned out on the same client write. Security rules restrict writes to the owner's own nodes.
+- Streak = contributed on N consecutive calendar days (local time), stored as lastContributionDate + streakCount.
+
+### Live check-ins & quick reports
+
+- On any stop (sheet/detail page): one-tap **"I'm here"** check-in, plus quick-report chips: **On time / Late / Crowded / Empty / Not running**.
+- Reports and check-ins are live for **90 minutes** (client-filtered by timestamp; no server TTL needed).
+- **Stop detail** shows a live activity strip: "3 people here · reported Late 5 min ago".
+- **Map:** stops with activity in the last 90 minutes render a pulsing halo around the marker (extra animated circle layer driven by the same GeoJSON source).
+- Realtime via RTDB listeners — updates appear without refresh on both platforms.
+- **Data:** `/activity/{stopId}/{pushId}` = { uid, type: checkin|on_time|late|crowded|empty|not_running, timestamp }. One check-in per user per stop per 90-minute window (client-enforced; rules require auth and own uid).
+
+### Playful micro-interactions
+
+- Confetti burst when points are earned (web: canvas-confetti; Android: Compose particle animation).
+- Marker drop-in bounce when stops load; pulsing halo on active stops.
+- Star rating stars pop/scale as tapped.
+- Springy bottom-sheet and page transitions (CSS transitions / Compose animateXAsState + spring specs).
+- Pull-to-refresh with a small bus animation (Android; web uses a bus-themed loading spinner).
+- Haptic feedback on Android for check-ins, ratings, and point awards.
+
+### Photos on stops
+
+- Camera/gallery attach button on stop detail and in the review form.
+- Client-side compression to max 800px / ~100KB JPEG, stored **base64 in RTDB** under `/photos/{stopId}/{pushId}` = { uid, data, timestamp }. Chosen because Firebase Storage is not configured and new buckets require a paid plan; at hobby scale this is fine and is swappable for Storage later behind the same interface.
+- Stop detail shows a horizontal photo strip; tap for fullscreen viewer with swipe.
+- Cap 10 photos per stop (client-enforced oldest-visible; rules cap payload size).
+
+## Phasing
+
+Each phase ships working, in order:
+
+1. **Phase A — Reskin + micro-interactions** (both platforms): design system, all screens restyled, animations/haptics.
+2. **Phase B — Live check-ins & quick reports** (data + UI + map halos).
+3. **Phase C — Gamification** (points/levels/badges/leaderboard, confetti hooks into Phase A animation work).
+4. **Phase D — Photos** (capture, compression, strip, viewer).
+
 ## Implementation Scope
 
 ### Web (`web/`)
@@ -94,6 +141,8 @@ Android maps these onto the Material 3 typography scale in `Type.kt` (displaySma
 ### Shared
 
 - **`DESIGN.md`** — rewrite as the new single source of truth (this palette, type, shape, component specs). The Stitch project references are removed.
+- **`firebase/database.rules.json`** — new rules for `/users/{uid}/stats`, `/leaderboard/{uid}`, `/activity/{stopId}`, `/photos/{stopId}` (auth required, owner-only writes where applicable, size cap on photo payloads).
+- New web deps: `canvas-confetti` (or equivalent tiny lib). Android: no new deps expected (Compose animation + built-in haptics).
 
 ## Error handling / risk
 
@@ -105,10 +154,13 @@ Android maps these onto the Material 3 typography scale in `Type.kt` (displaySma
 
 - Web: `npm run build` passes; visual pass over Home, Search, Route, Stop detail, Profile, About, Add-stop, login modal in the browser (light backgrounds, no leftover dark surfaces, legible text everywhere).
 - Android: `gradlew assembleDebug` passes; install on device/emulator and visually check each screen; grep confirms no orphaned dark palette constants.
+- Features (per phase): exercise the flow end-to-end on both platforms against the Firebase emulator or live RTDB — earn points and see confetti + updated leaderboard; check in on one client and watch the halo/activity strip appear live on another; upload a photo and view it fullscreen. Rules validated with `firebase_validate_security_rules` / emulator.
 
 ## Out of scope
 
 - Dark mode (can be added later on top of the token system)
-- Layout/navigation/feature changes
+- Layout/navigation restructuring beyond what the new features require
 - Map basemap changes
+- Firebase Storage, Cloud Functions, or any server-side aggregation (leaderboard fan-out is client-side)
+- Moderation/reporting tools for photos and reviews (future work)
 - New illustrations/branding assets beyond replacing the dark hero image
