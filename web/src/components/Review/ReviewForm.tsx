@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useAuth } from '../Auth/AuthContext';
 import { LoginModal } from '../Auth/LoginModal';
 import { StarRating } from './StarRating';
 import { submitRating } from '../../firebase/ratings';
 import { addComment } from '../../firebase/comments';
+import { awardPoints } from '../../firebase/gamification';
+import { uploadStopPhoto } from '../../firebase/photos';
 import styles from './ReviewForm.module.css';
 
 interface ReviewFormProps {
@@ -21,6 +23,9 @@ export function ReviewForm({ targetType, targetId, onSuccess, onCancel }: Review
   const [transitType, setTransitType] = useState('bus');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!user) {
     return (
@@ -34,6 +39,19 @@ export function ReviewForm({ targetType, targetId, onSuccess, onCancel }: Review
         {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
       </>
     );
+  }
+
+  function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  }
+
+  function removePhoto() {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -65,8 +83,17 @@ export function ReviewForm({ targetType, targetId, onSuccess, onCancel }: Review
         transitType,
         rating,
       });
+      await awardPoints('review');
+
+      if (photoFile && targetType === 'stop') {
+        await uploadStopPhoto(targetId, photoFile).catch((err) => {
+          console.error('Photo upload failed:', err);
+        });
+      }
+
       setRating(0);
       setText('');
+      removePhoto();
       onSuccess?.();
     } finally {
       setSubmitting(false);
@@ -111,6 +138,35 @@ export function ReviewForm({ targetType, targetId, onSuccess, onCancel }: Review
           ))}
         </div>
       </div>
+
+      {targetType === 'stop' && (
+        <div className={styles.photoRow}>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            hidden
+            onChange={handlePhotoSelect}
+          />
+          {photoPreview ? (
+            <div className={styles.photoPreview}>
+              <img src={photoPreview} alt="Attached preview" />
+              <button type="button" className={styles.photoRemove} onClick={removePhoto}>
+                ×
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className={styles.photoAttachBtn}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              📷 Attach photo
+            </button>
+          )}
+        </div>
+      )}
 
       <label className={styles.anonToggle}>
         <input

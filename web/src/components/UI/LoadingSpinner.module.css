@@ -3,14 +3,25 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-xl);
+  position: relative;
 }
 
 .spinner {
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.9s linear infinite;
+}
+
+.bus {
+  position: absolute;
+  animation: bounce 0.9s ease-in-out infinite;
 }
 
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(-1px) scale(1); }
+  50% { transform: translateY(1px) scale(1.08); }
 }

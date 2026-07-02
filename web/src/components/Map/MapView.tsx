@@ -8,6 +8,7 @@ import '../../styles/maplibre-overrides.css';
 interface MapViewProps {
   stops: Stop[];
   selectedStopId?: string | null;
+  activeStopIds?: Set<string>;
   onStopClick?: (stopId: string) => void;
   onMapMove?: (lat: number, lng: number) => void;
   initialLat?: number;
@@ -16,11 +17,14 @@ interface MapViewProps {
 }
 
 const STOP_MARKERS_SOURCE = 'stops-source';
+const STOP_HALO_LAYER = 'stops-halo-layer';
 const STOP_MARKERS_LAYER = 'stops-layer';
+const SELECTED_COLOR = '#00A862';
 
 export function MapView({
   stops,
   selectedStopId,
+  activeStopIds,
   onStopClick,
   onMapMove,
   initialLat = 37.7749,
@@ -50,13 +54,16 @@ export function MapView({
           stopId: stop.stopId,
           name: stop.name,
           transitType: stop.transitTypes?.[0] || 'bus',
-          color: TRANSIT_COLORS[stop.transitTypes?.[0] || 'bus'] || '#1565C0',
+          color: stop.stopId === selectedStopId
+            ? SELECTED_COLOR
+            : TRANSIT_COLORS[stop.transitTypes?.[0] || 'bus'] || '#00A862',
           selected: stop.stopId === selectedStopId,
+          active: activeStopIds?.has(stop.stopId) ?? false,
         },
       }));
 
     source.setData({ type: 'FeatureCollection', features });
-  }, [stops, selectedStopId]);
+  }, [stops, selectedStopId, activeStopIds]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -97,6 +104,20 @@ export function MapView({
         data: { type: 'FeatureCollection', features: [] },
       });
 
+      // Pulsing halo behind markers with recent live activity
+      map.addLayer({
+        id: STOP_HALO_LAYER,
+        type: 'circle',
+        source: STOP_MARKERS_SOURCE,
+        filter: ['==', ['get', 'active'], true],
+        paint: {
+          'circle-radius': 14,
+          'circle-color': '#00A862',
+          'circle-opacity': 0.25,
+          'circle-stroke-width': 0,
+        },
+      });
+
       map.addLayer({
         id: STOP_MARKERS_LAYER,
         type: 'circle',
@@ -105,13 +126,14 @@ export function MapView({
           'circle-radius': [
             'case',
             ['boolean', ['get', 'selected'], false],
-            10,
+            11,
             7,
           ],
           'circle-color': ['get', 'color'],
           'circle-stroke-width': 2,
           'circle-stroke-color': '#ffffff',
           'circle-opacity': 0.95,
+          'circle-radius-transition': { duration: 300, delay: 0 },
         },
       });
 
@@ -138,7 +160,23 @@ export function MapView({
 
     mapRef.current = map;
 
+    let rafId: number;
+    function animateHalo() {
+      const m = mapRef.current;
+      if (m && m.getLayer(STOP_HALO_LAYER)) {
+        const t = (Date.now() % 1600) / 1600;
+        const wave = Math.sin(t * Math.PI * 2) * 0.5 + 0.5; // 0..1
+        const radius = 10 + wave * 10;
+        const opacity = 0.35 - wave * 0.25;
+        m.setPaintProperty(STOP_HALO_LAYER, 'circle-radius', radius);
+        m.setPaintProperty(STOP_HALO_LAYER, 'circle-opacity', opacity);
+      }
+      rafId = requestAnimationFrame(animateHalo);
+    }
+    rafId = requestAnimationFrame(animateHalo);
+
     return () => {
+      cancelAnimationFrame(rafId);
       map.remove();
     };
   }, []);

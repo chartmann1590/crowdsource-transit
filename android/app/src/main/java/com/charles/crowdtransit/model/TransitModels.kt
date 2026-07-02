@@ -118,7 +118,94 @@ data class UserStats(
     val reviewCount: Long = 0L,
     val stopsAdded: Long = 0L,
     val helpfulVotes: Long = 0L,
-    val reportCount: Long = 0L
+    val reportCount: Long = 0L,
+    // Gamification (see /users/{uid}/stats)
+    val points: Long = 0L,
+    val photoCount: Long = 0L,
+    val checkinCount: Long = 0L,
+    val streakCount: Long = 0L,
+    val lastContributionDate: String = "", // yyyy-MM-dd, local time
+)
+
+/** Points a contribution type is worth. Awarded client-side right after a successful write. */
+enum class PointAction(val points: Int) {
+    NEW_STOP(10),
+    REVIEW(5),
+    PHOTO(3),
+    CHECK_IN(2),
+}
+
+enum class Level(val minPoints: Long, val displayName: String) {
+    PEDESTRIAN(0, "Pedestrian"),
+    COMMUTER(50, "Commuter"),
+    REGULAR(150, "Regular"),
+    CONDUCTOR(400, "Conductor"),
+    TRANSIT_LEGEND(1000, "Transit Legend");
+
+    companion object {
+        fun forPoints(points: Long): Level = entries.lastOrNull { points >= it.minPoints } ?: PEDESTRIAN
+    }
+}
+
+object Badges {
+    const val FIRST_REVIEW = "first_review"
+    const val FIRST_STOP = "first_stop"
+    const val TEN_STOPS = "ten_stops"
+    const val TWENTY_FIVE_REVIEWS = "twenty_five_reviews"
+    const val FIRST_PHOTO = "first_photo"
+    const val SEVEN_DAY_STREAK = "seven_day_streak"
+
+    val labels: Map<String, String> = mapOf(
+        FIRST_REVIEW to "First Review",
+        FIRST_STOP to "First Stop",
+        TEN_STOPS to "10 Stops Added",
+        TWENTY_FIVE_REVIEWS to "25 Reviews",
+        FIRST_PHOTO to "First Photo",
+        SEVEN_DAY_STREAK to "7-Day Streak",
+    )
+}
+
+/** /leaderboard/{uid} */
+data class LeaderboardEntry(
+    val displayName: String = "",
+    val points: Long = 0L,
+)
+
+/** /activity/{stopId}/{pushId}. Live for 90 minutes, filtered client-side by timestamp. */
+data class ActivityEvent(
+    val activityId: String = "",
+    val uid: String = "",
+    val type: String = "checkin", // checkin|on_time|late|crowded|empty|not_running
+    val timestamp: Long = 0L,
+)
+
+object ActivityType {
+    const val CHECKIN = "checkin"
+    const val ON_TIME = "on_time"
+    const val LATE = "late"
+    const val CROWDED = "crowded"
+    const val EMPTY = "empty"
+    const val NOT_RUNNING = "not_running"
+
+    val quickReportTypes = listOf(ON_TIME, LATE, CROWDED, EMPTY, NOT_RUNNING)
+
+    fun label(type: String): String = when (type) {
+        CHECKIN -> "Checked in"
+        ON_TIME -> "On time"
+        LATE -> "Late"
+        CROWDED -> "Crowded"
+        EMPTY -> "Empty"
+        NOT_RUNNING -> "Not running"
+        else -> type
+    }
+}
+
+/** /photos/{stopId}/{pushId} */
+data class StopPhoto(
+    val photoId: String = "",
+    val uid: String = "",
+    val data: String = "", // base64 JPEG, compressed to max 800px / ~100KB client-side
+    val timestamp: Long = 0L,
 )
 
 data class Report(

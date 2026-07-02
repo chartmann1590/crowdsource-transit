@@ -3,6 +3,7 @@
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charles.crowdtransit.app.data.preferences.UserPreferencesStore
+import com.charles.crowdtransit.app.data.repository.ActivityRepository
 import com.charles.crowdtransit.app.data.repository.StopRepository
 import com.charles.crowdtransit.model.Stop
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,12 +11,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.*
 
 private const val MIN_RELOAD_DISTANCE_KM = 0.3
+private const val MAX_ACTIVITY_WATCHED_STOPS = 15
 
 data class MapHomeUiState(
     val nearbyStops: List<Stop> = emptyList(),
@@ -25,6 +29,7 @@ data class MapHomeUiState(
     val userLng: Double? = null,
     val distances: Map<String, Float> = emptyMap(),
     val useImperialUnits: Boolean = false,
+    val activeStopIds: Set<String> = emptySet(),
 )
 
 private fun haversineKm(lat1: Double, lng1: Double, lat2: Double, lng2: Double): Double {
@@ -41,12 +46,14 @@ private fun haversineKm(lat1: Double, lng1: Double, lat2: Double, lng2: Double):
 class MapHomeViewModel @Inject constructor(
     private val stopRepository: StopRepository,
     private val preferencesStore: UserPreferencesStore,
+    private val activityRepository: ActivityRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MapHomeUiState())
     val uiState: StateFlow<MapHomeUiState> = _uiState.asStateFlow()
 
     private var loadJob: Job? = null
+    private var activityJob: Job? = null
     private var lastLoadedLat: Double? = null
     private var lastLoadedLng: Double? = null
 
@@ -87,15 +94,37 @@ class MapHomeViewModel @Inject constructor(
                 val distanceMap = sorted.associate { (stop, dist) ->
                     stop.stopId to (dist * 1000).toFloat()
                 }
+                val nearby = sorted.map { (stop, _) -> stop }
                 _uiState.update {
                     it.copy(
-                        nearbyStops = sorted.map { (stop, _) -> stop },
+                        nearbyStops = nearby,
                         distances = distanceMap,
                         isLoading = false,
                     )
                 }
+                watchActivity(nearby)
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message, isLoading = false) }
+            }
+        }
+    }
+
+    /** Watches recent activity for the nearby stops so the map can render pulsing halos. */
+    private fun watchActivity(stops: List<Stop>) {
+        activityJob?.cancel()
+        val watched = stops.take(MAX_ACTIVITY_WATCHED_STOPS)
+        if (watched.isEmpty()) {
+            _uiState.update { it.copy(activeStopIds = emptySet()) }
+            return
+        }
+        val flows: List<kotlinx.coroutines.flow.Flow<Pair<String, Boolean>>> = watched.map { stop ->
+            activityRepository.observeActivity(stop.stopId).map { events -> stop.stopId to events.isNotEmpty() }
+        }
+        activityJob = viewModelScope.launch {
+            combine(flows) { pairs: Array<Pair<String, Boolean>> ->
+                pairs.filter { it.second }.map { it.first }.toSet()
+            }.collect { activeIds ->
+                _uiState.update { it.copy(activeStopIds = activeIds) }
             }
         }
     }

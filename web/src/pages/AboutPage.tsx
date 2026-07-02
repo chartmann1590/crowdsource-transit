@@ -5,12 +5,11 @@ export function AboutPage() {
   return (
     <div className={styles.container}>
       <Navbar />
-      <div className={styles.content}>
+      <div className={styles.hero}>
         <h1>About CrowdTransit</h1>
-        <p className={styles.tagline}>
-          Community-powered transit information for everyone.
-        </p>
-
+        <p>Community-powered transit information for everyone.</p>
+      </div>
+      <div className={styles.content}>
         <section className={styles.section}>
           <h2>Our Mission</h2>
           <p>

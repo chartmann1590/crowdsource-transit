@@ -7,7 +7,7 @@ interface TransitBadgeProps {
 }
 
 export function TransitBadge({ type, label, size = 'md' }: TransitBadgeProps) {
-  const color = TRANSIT_COLORS[type] || '#1565C0';
+  const color = TRANSIT_COLORS[type] || '#00A862';
   const fontSize = size === 'sm' ? '10px' : '12px';
   const padding = size === 'sm' ? '2px 6px' : '3px 8px';
 

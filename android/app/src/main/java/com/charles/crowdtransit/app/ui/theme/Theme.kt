@@ -3,43 +3,62 @@
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 
-private val DarkColorScheme = darkColorScheme(
+// "Sunny Transit" light color scheme. Dark mode is out of scope for this redesign — the app
+// always renders this scheme regardless of the system setting.
+private val SunnyTransitColorScheme = lightColorScheme(
     primary = Primary,
     onPrimary = OnPrimary,
-    primaryContainer = PrimaryDark,
-    onPrimaryContainer = PrimaryLight,
+    primaryContainer = PrimaryLight,
+    onPrimaryContainer = PrimaryDark,
     secondary = Secondary,
     onSecondary = OnSecondary,
-    secondaryContainer = SecondaryDark,
-    onSecondaryContainer = SecondaryLight,
-    tertiary = RatingGold,
-    onTertiary = OnPrimary,
-    background = SurfaceDark,
+    secondaryContainer = SecondaryLight,
+    onSecondaryContainer = PrimaryDark,
+    tertiary = Accent,
+    onTertiary = OnSurface,
+    background = AppBackground,
     onBackground = OnSurface,
-    surface = SurfaceDark,
+    surface = Surface,
     onSurface = OnSurface,
     surfaceVariant = SurfaceElevated,
     onSurfaceVariant = OnSurfaceSecondary,
     surfaceContainerLowest = SurfaceContainerLowest,
     surfaceContainerLow = SurfaceContainerLow,
-    surfaceContainer = Surface,
+    surfaceContainer = SurfaceElevated,
     surfaceContainerHigh = SurfaceElevated,
     surfaceContainerHighest = SurfaceContainerHighest,
     outline = Outline,
     outlineVariant = OutlineVariant,
     error = Error,
-    onError = ErrorContainer,
+    onError = OnPrimary,
     errorContainer = ErrorContainer,
+    onErrorContainer = Error,
 )
 
 @Composable
-fun CrowdTransitTheme(content: @Composable () -> Unit) {
+fun CrowdTransitTheme(darkTheme: Boolean = false, content: @Composable () -> Unit) {
+    // darkTheme is intentionally ignored — this redesign forces the light "Sunny Transit" scheme.
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as? android.app.Activity)?.window ?: return@SideEffect
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+            val controller = WindowInsetsControllerCompat(window, view)
+            controller.isAppearanceLightStatusBars = true
+            controller.isAppearanceLightNavigationBars = true
+        }
+    }
+
     MaterialTheme(
-        colorScheme = DarkColorScheme,
+        colorScheme = SunnyTransitColorScheme,
         typography = CrowdTransitTypography,
         shapes = CrowdTransitShapes,
     ) {

@@ -4,6 +4,7 @@ import { MapView } from '../components/Map/MapView';
 import { StopList } from '../components/Stop/StopList';
 import { Navbar } from '../components/UI/Navbar';
 import { useNearbyStops } from '../hooks/useNearbyStops';
+import { useStopsActivity } from '../hooks/useStopsActivity';
 import styles from './Home.module.css';
 
 const DEFAULT_LAT = 37.7749;
@@ -65,6 +66,7 @@ export function Home() {
     mapCenter.lng,
     hasGpsFix ? 1 : 0,
   );
+  const activeStopIds = useStopsActivity(nearbyStops.map((s) => s.stopId));
 
   return (
     <div className={styles.container}>
@@ -119,6 +121,7 @@ export function Home() {
           <MapView
             stops={nearbyStops}
             selectedStopId={selectedStopId}
+            activeStopIds={activeStopIds}
             onStopClick={(id) => setSelectedStopId(id)}
             onMapMove={(lat, lng) => setMapCenter({ lat, lng })}
             initialLat={mapCenter.lat}

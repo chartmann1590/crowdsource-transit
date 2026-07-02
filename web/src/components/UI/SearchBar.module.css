@@ -5,28 +5,31 @@
 
 .icon {
   position: absolute;
-  left: 10px;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--color-on-surface-secondary);
+  color: var(--color-ink-faint);
   pointer-events: none;
 }
 
 .input {
   width: 100%;
-  padding: 8px 12px 8px 32px;
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-surface-card);
-  border-radius: var(--radius-sm);
-  color: var(--color-on-surface);
-  font-size: 13px;
+  padding: 12px 16px 12px 40px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-full);
+  color: var(--color-ink);
+  font-size: 15px;
   outline: none;
+  box-shadow: var(--shadow-1);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .input:focus {
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-tint);
 }
 
 .input::placeholder {
-  color: var(--color-on-surface-secondary);
+  color: var(--color-ink-faint);
 }

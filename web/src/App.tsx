@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './components/Auth/AuthContext';
+import { PointsToast } from './components/UI/PointsToast';
 import { Home } from './pages/Home';
 import { StopPage } from './pages/StopPage';
 import { ProfilePage } from './pages/ProfilePage';
@@ -22,6 +23,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
         </Routes>
       </BrowserRouter>
+      <PointsToast />
     </AuthProvider>
   );
 }

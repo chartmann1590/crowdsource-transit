@@ -144,6 +144,7 @@ fun MapHomeScreen(
                 stops = uiState.nearbyStops,
                 userLat = uiState.userLat,
                 userLng = uiState.userLng,
+                activeStopIds = uiState.activeStopIds,
                 onStopPinClick = onStopClick,
                 onLocationUpdate = viewModel::onLocationUpdate,
             )

@@ -1,9 +1,12 @@
-﻿package com.charles.crowdtransit.app.ui.screens.profile
+package com.charles.crowdtransit.app.ui.screens.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charles.crowdtransit.app.data.repository.AuthRepository
+import com.charles.crowdtransit.app.data.repository.GamificationRepository
+import com.charles.crowdtransit.model.Level
 import com.charles.crowdtransit.model.UserProfile
+import com.charles.crowdtransit.model.UserStats
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.getValue
@@ -22,11 +25,15 @@ data class ProfileUiState(
     val reviewCount: Long = 0,
     val stopsAdded: Long = 0,
     val helpfulVotes: Long = 0,
+    val stats: UserStats = UserStats(),
+    val badges: Map<String, Boolean> = emptyMap(),
+    val level: Level = Level.PEDESTRIAN,
 )
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val gamificationRepository: GamificationRepository,
     private val db: FirebaseDatabase,
 ) : ViewModel() {
 
@@ -38,6 +45,7 @@ class ProfileViewModel @Inject constructor(
         _uiState.update { it.copy(user = firebaseUser) }
         if (firebaseUser != null) {
             loadProfile(firebaseUser.uid)
+            observeGamification(firebaseUser.uid)
         }
     }
 
@@ -55,6 +63,27 @@ class ProfileViewModel @Inject constructor(
                     )
                 }
             } catch (_: Exception) { }
+        }
+    }
+
+    private fun observeGamification(uid: String) {
+        viewModelScope.launch {
+            gamificationRepository.observeUserStats(uid).collect { stats ->
+                val s = stats ?: UserStats()
+                _uiState.update {
+                    it.copy(
+                        stats = s,
+                        level = Level.forPoints(s.points),
+                        reviewCount = s.reviewCount,
+                        stopsAdded = s.stopsAdded,
+                    )
+                }
+            }
+        }
+        viewModelScope.launch {
+            gamificationRepository.observeBadges(uid).collect { badges ->
+                _uiState.update { it.copy(badges = badges) }
+            }
         }
     }
 

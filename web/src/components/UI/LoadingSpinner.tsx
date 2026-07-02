@@ -14,7 +14,7 @@ export function LoadingSpinner({ size = 32 }: LoadingSpinnerProps) {
         fill="none"
         className={styles.spinner}
       >
-        <circle cx="12" cy="12" r="10" stroke="var(--color-surface-elevated)" strokeWidth="3" />
+        <circle cx="12" cy="12" r="10" stroke="var(--color-outline)" strokeWidth="3" />
         <path
           d="M12 2a10 10 0 0 1 10 10"
           stroke="var(--color-primary)"
@@ -22,6 +22,7 @@ export function LoadingSpinner({ size = 32 }: LoadingSpinnerProps) {
           strokeLinecap="round"
         />
       </svg>
+      <span className={styles.bus} style={{ fontSize: size * 0.6 }} aria-hidden="true">🚌</span>
     </div>
   );
 }

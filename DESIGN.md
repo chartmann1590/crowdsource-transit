@@ -1,8 +1,8 @@
-# CrowdTransit Design System
+# CrowdTransit Design System — "Sunny Transit"
 
-> Single source of truth for all visual decisions. Generated from Google Stitch MCP, Phase 2.
-> Stitch Project ID: `2382527016111832252`
-> Design System ID: `assets/5797279417132822971`
+> Single source of truth for all visual decisions and interactive feature data model.
+> Superseded the original Stitch-generated dark theme (2026-07-02).
+> Full design rationale: `docs/superpowers/specs/2026-07-02-visual-redesign-design.md`
 
 ---
 
@@ -10,257 +10,255 @@
 
 - **App Name:** CrowdTransit
 - **Tagline:** Find your ride. Share the knowledge.
-- **Personality:** Helpful, community-driven, globally inclusive
-- **Aesthetic:** Technical Elegance — dark mode transit-forward, clean interfaces inspired by Citymapper/Google Maps transit but warmer and more community-feel
+- **Personality:** Fun, friendly, community-driven, a little playful
+- **Aesthetic:** Sunny Transit — bright, light-first, bold hero green, big rounded cards, oversized friendly type
+- **Fun factor:** confetti on contributions, live check-ins, gamified points/levels/badges, photos on stops
 
 ### Core Principles
-- Map is always center stage
-- Minimal chrome — let the data speak
-- Anonymous-friendly — no forced login blocking content
+- Map is always center stage, on a light basemap
+- Light backgrounds, soft shadows, generous rounding — nothing feels heavy
+- Anonymous-friendly — no forced login blocking content or contributions
 - Accessibility first — high contrast, 48dp minimum touch targets
+- Contributing should feel rewarding: instant feedback (points, confetti, live activity)
 
 ---
 
 ## Color Tokens
 
-### Dark Theme (Primary)
-
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `surface` | `#111319` | Base background (Level 0) |
-| `surface-dim` | `#111319` | Dimmed surface |
-| `surface-bright` | `#37393f` | Bright surface |
-| `surface-container-lowest` | `#0c0e14` | Lowest container |
-| `surface-container-low` | `#191c21` | Nav bars, fixed headers (Level 2) |
-| `surface-container` | `#1d2025` | Cards, interactive surfaces (Level 1) |
-| `surface-container-high` | `#272a30` | Modals, drawers (Level 3) |
-| `surface-container-highest` | `#32353b` | Transit line tags |
-| `on-surface` | `#e1e2ea` | Primary text on surface |
-| `on-surface-variant` | `#c2c6d4` | Secondary text |
-| `outline` | `#8c919d` | Borders, dividers |
-| `outline-variant` | `#424752` | Subtle borders |
-| `primary` | `#a9c7ff` | Primary interactive / brand |
-| `primary-container` | `#1565bf` | Primary container / distance badges |
-| `on-primary` | `#003063` | Text on primary |
-| `on-primary-container` | `#dae5ff` | Text on primary container |
-| `secondary` | `#b2c7f0` | Secondary interactive |
-| `secondary-container` | `#344a6c` | Secondary container |
-| `tertiary` | `#ffb68c` | Ratings, warm accents (star color) |
-| `tertiary-container` | `#a64c00` | Tertiary container |
-| `error` | `#ffb4ab` | Error states |
-| `error-container` | `#93000a` | Error container |
-| `background` | `#111319` | Page background |
-| `on-background` | `#e1e2ea` | Text on background |
+| `background` | `#FAFAF7` | Warm off-white page/screen background |
+| `surface` | `#FFFFFF` | Cards, sheets, nav bars |
+| `surface-sunken` | `#F1F1EC` | Input fields, wells, secondary chips |
+| `ink` | `#1A1D1B` | Primary text |
+| `ink-secondary` | `#5A605C` | Secondary text |
+| `ink-faint` | `#9AA19C` | Placeholders, disabled |
+| `outline` | `#E4E4DE` | Borders, dividers |
+| `primary` | `#00A862` | Hero green — buttons, links, active states, FAB, map accents |
+| `primary-dark` | `#007A47` | Hover/pressed, text-on-light-green |
+| `primary-tint` | `#E0F5EB` | Selected backgrounds, badges, chips |
+| `on-primary` | `#FFFFFF` | Text/icons on primary |
+| `accent` | `#FFB000` | Ratings stars, warm highlights |
+| `error` | `#DE3730` | Errors, destructive actions |
+| `success` | `#00A862` | Same as primary (green = go) |
 
 ### Semantic Transit Colors
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `transit-bus` | `#4CAF50` | Bus route / badge |
-| `transit-train` | `#3277d2` | Train / commuter rail |
-| `transit-subway` | `#9C27B0` | Subway / metro |
-| `transit-ferry` | `#00BCD4` | Ferry |
-| `rating-star` | `#ffb68c` | Star rating fill |
+| `transit-bus` | `#00A862` | Bus route / badge |
+| `transit-train` | `#2563EB` | Train / commuter rail |
+| `transit-subway` | `#8B2FC9` | Subway / metro |
+| `transit-ferry` | `#0891B2` | Ferry |
+| `transit-tram` | `#EA7317` | Tram |
+| `rating-star` | `#FFB000` | Star rating fill |
 
-### Override Colors (Stitch theme keys)
-
-| Key | Hex |
-|-----|-----|
-| `overridePrimaryColor` | `#3277d2` |
-| `overrideSecondaryColor` | `#63789d` |
-| `overrideTertiaryColor` | `#a64c00` |
-| `overrideNeutralColor` | `#75777e` |
+Mode badges: white text on solid mode color, fully rounded (pill).
 
 ---
 
 ## Typography
 
-Three-font strategy:
+One family everywhere: **Plus Jakarta Sans** (system-ui/sans-serif fallback).
 
-| Role | Font | Usage |
-|------|------|-------|
-| **Headline** | Manrope | Page titles, station names, hero text |
-| **Body** | Inter | Content, descriptions, UI text |
-| **Label** | Public Sans | Metadata, buttons, transit codes, badges |
-
-### Type Scale
-
-| Token | Font | Size | Weight | Line Height | Letter Spacing |
-|-------|------|------|--------|-------------|----------------|
-| `headline-lg` | Manrope | 32px | 700 | 40px | — |
-| `headline-md` | Manrope | 24px | 600 | 32px | — |
-| `body-lg` | Inter | 16px | 400 | 24px | — |
-| `body-md` | Inter | 14px | 400 | 20px | — |
-| `label-md` | Public Sans | 12px | 500 | 16px | 0.5px |
-| `label-sm-bold` | Public Sans | 12px | 700 | 16px | — |
+| Role | Size / Weight |
+|------|----------------|
+| Display (page titles) | 32px / 800 |
+| Headline (section, card titles) | 22px / 700 |
+| Title (stop names) | 17px / 700 |
+| Body | 15px / 400 |
+| Label / caption | 13px / 600, `ink-secondary` |
 
 ---
 
 ## Spacing Scale
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `xs` | 4px | Icon-label gap, tight grouping |
-| `sm` | 8px | Within-component spacing |
-| `md` | 16px | Card internal padding, component breathing room |
-| `lg` | 24px | Section separation |
-| `xl` | 32px | Major section separation |
-| `safe-margin` | 16px | Page edge margin |
-| `gutter` | 16px | Column gutter |
+| Token | Value |
+|-------|-------|
+| `xs` | 4px |
+| `sm` | 8px |
+| `md` | 16px |
+| `lg` | 24px |
+| `xl` | 32px |
+| `2xl` | 48px |
 
 ---
 
-## Shapes / Corners
+## Shape & Elevation
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `sm` | 0.25rem (4px) | — |
-| `DEFAULT` | 0.5rem (8px) | Buttons, inputs, segmented controls |
-| `md` | 0.75rem (12px) | — |
-| `lg` | 1rem (16px) | — |
-| `xl` | 1.5rem (24px) | Cards (standard) |
-| `full` | 9999px | FABs, badges, line numbers, pills |
+| `sm` | 4px | fine detail |
+| `md` | 14px | buttons, inputs |
+| `lg` | 20px | cards, sheets, modals |
+| `full` | 9999px | chips, badges, search bar, FAB |
 
-Stitch roundness setting: `ROUND_EIGHT`
+Shadows are soft and barely-there:
+- Card: `0 1px 2px rgba(26,29,27,.06), 0 4px 16px rgba(26,29,27,.08)`
+- Modal/bottom sheet: one level stronger, still soft (no heavy dark shadows)
 
----
+Prefer a 1px `outline` border + soft shadow over elevation stacking.
 
-## Elevation Model
-
-| Level | Surface Token | Usage |
-|-------|--------------|-------|
-| 0 — Base | `surface` `#111319` | Page background |
-| 1 — Cards | `surface-container` `#1d2025` | Stop cards, interactive surfaces |
-| 2 — Nav | `surface-container-low` `#191c21` | Fixed headers, bottom nav |
-| 3 — Overlays | `surface-container-high` `#272a30` | Modals, drawers, filter menus |
-
-Interaction: Active cards scale-down `scale-98` to simulate physical press.
+Interaction: cards scale down `0.98` on press (150ms ease-out).
 
 ---
 
 ## Components
 
-### Transit Badge
-Pill-shaped, full-rounded. Background: transit color at 20% opacity, text: transit color. Used for Bus/Train/Subway/Ferry labels inline.
+### Primary Button
+Solid `primary`, white text, pill, 48dp/px min height, subtle press scale.
+
+### Secondary Button
+`primary-tint` background, `primary-dark` text, pill.
+
+### Search Bar
+White pill, soft shadow, `ink-faint` placeholder.
 
 ### Stop Card
-- Left border accent: 6px, transit type color
-- Background: `surface-container`
-- Corner radius: `xl` (24px)
-- Padding: `md` (16px)
-- Shows: stop name (`headline-md`), transit badges, star rating, distance badge
+White, `lg` (20px) radius, stop name in Title weight, mode pills, distance badge (`primary-tint`), amber star rating.
 
 ### Star Rating
-Stars filled with `tertiary` (`#ffb68c`). Interactive (Android) and display (web) variants.
+Amber (`accent`) filled stars, `outline` empty. Stars scale/pop on tap.
 
-### FAB
-- 56×56px circle, `full` radius
-- Background: `primary-container`
-- Hides on scroll-down, reappears on scroll-up
+### Bottom Navigation / Navbar
+White surface, `primary` active icon + label, `ink-faint` inactive.
 
-### Segmented Control
-Track: `surface-container-low`, 4px padding. Active pill: `primary-container` with subtle shadow.
+### Map Markers
+Filled GeoJSON circle layers in mode color with white stroke. Selected stop: `primary`, larger radius. Stops with activity in the last 90 minutes: additional pulsing halo layer.
 
-### Bottom Navigation (Android)
-Fixed container, `rounded-t-xl` (24px) top corners. Active state: `primary-container` pill around icon+label.
+### Level Ring
+Colored ring around profile avatar; ring color/fill progresses with level (see Gamification).
 
-### Map Tiles
-Style: OpenFreeMap Liberty — `https://tiles.openfreemap.org/styles/liberty`
-Dark overlay gradient: `rgba(15,23,36,0) → rgba(15,23,36,0.95)`
+### Badge Grid
+Profile page grid of earned milestone badges, locked badges shown dimmed/outlined.
+
+### Quick Report Chips
+Pill chips on stop detail: On time / Late / Crowded / Empty / Not running.
 
 ---
 
 ## Motion
 
-- **Card press:** `scale(0.98)` on active, `scale(1)` on release — 150ms ease-out
-- **FAB:** slide-up on scroll-up, slide-down on scroll-down — 200ms ease-in-out
-- **Modal/Drawer:** slide-up from bottom — 300ms ease-out, backdrop fade 200ms
-- **Page transition:** shared element if stop card → stop detail
+- Card press: `scale(0.98)` → `scale(1)`, 150ms ease-out
+- Marker drop-in: bounce on load
+- Confetti burst: on any point-earning action
+- Bottom sheet / modal: spring-based slide-up
+- Pull-to-refresh: small bus animation (Android), bus-themed spinner (web)
+- Android: haptic feedback on check-ins, ratings, point awards
+
+---
+
+## Map Tiles
+
+Style: OpenFreeMap Liberty — `https://tiles.openfreemap.org/styles/liberty` (light basemap, unchanged — already matches the new light UI).
+
+---
+
+## Interactive Features — Data Model (Firebase RTDB)
+
+All features work for anonymous users (Firebase anonymous auth issues a uid). No new backend infrastructure — RTDB only. See `firebase/database.rules.json` for the enforced security rules.
+
+### Gamification
+
+- `/users/{uid}/stats` — `{ points, stopsAdded, reviewsWritten, photosAdded, checkins, streakCount, lastContributionDate, badges: { [badgeId]: true } }`. Owner-write only.
+- `/leaderboard/{uid}` — `{ displayName, points }`. Fanned out on the same write as stats. Owner-write only, public read, indexed on `points`.
+- **Points:** +10 new stop, +5 review, +3 photo, +2 check-in/report.
+- **Levels (by total points):** Pedestrian (0) → Commuter (50) → Regular (150) → Conductor (400) → Transit Legend (1000).
+- **Badges:** first review, first stop added, 10 stops, 25 reviews, first photo, 7-day contribution streak.
+- **Streak:** contributed on N consecutive calendar days (local time).
+
+### Live Check-ins & Quick Reports
+
+- `/activity/{stopId}/{pushId}` — `{ uid, type: checkin|on_time|late|crowded|empty|not_running, timestamp }`. Owner-write only (per push id), public read, indexed on `timestamp`.
+- Live for 90 minutes, client-filtered by timestamp (no server TTL).
+- Map: stops with recent activity get a pulsing halo. Stop detail: live activity strip ("3 people here · reported Late 5 min ago").
+
+### Photos on Stops
+
+- `/photos/{stopId}/{pushId}` — `{ uid, data (base64 JPEG, ≤800px / ~100KB, size-capped by rules), timestamp }`. Owner-write only (per push id), public read, indexed on `timestamp`.
+- Stored inline in RTDB (no Firebase Storage bucket configured — hobby-scale tradeoff, swappable later).
+- Cap 10 photos per stop (client-enforced).
 
 ---
 
 ## Screen Inventory
 
-### Android Screens (MOBILE, Kotlin + Jetpack Compose)
+### Android Screens (Kotlin + Jetpack Compose)
 
-| # | Screen | Stitch ID | Notes |
-|---|--------|-----------|-------|
-| 1 | Map Home | `4e03e3b002ea4f888d399af696ce02a8` | Full-screen map, bottom sheet nearby |
-| 2 | Stop Detail | `02832926ec5e42df80e8f000a6de79cc` | Hero stop name, reviews, actions |
-| 3 | Search | `a1152b8bf5f84545badce5f426d80f6e` | Search + filter + results |
-| 4 | Rate & Review | `9e59c11705a548dd854156e0b8d2c14f` | 5-star + subcategories + comment |
-| 5 | Route Detail | `a6ec6a00550647e2a0772e59c510853f` | Route map + stops list |
-| 6 | Add Stop | `f44a18ee5dfa4434aefb52c203f2acb1` | Map pin + form |
-| 7 | User Profile | `8344c47f0971442e9d5850c23f33e093` | Stats, reviews, settings |
-| 8 | Nearby List View | `00c4949bf1a7403d92b74dbf0e2d4b1f` | List alternative to map view |
-| 9 | Onboarding | `1bbefdea1e9144ea911a3398dec2c7ce` | Welcome + permissions |
-| 10 | Directions to Stop | `9f6a429aaded4ea4ba84e510dd88b28e` | Map + bottom sheet walk steps |
+| # | Screen | Notes |
+|---|--------|-------|
+| 1 | Map Home | Full-screen map, bottom sheet nearby, activity halos |
+| 2 | Stop Detail | Hero stop name, check-in/report chips, photo strip, reviews |
+| 3 | Search | Search + filter + results |
+| 4 | Rate & Review | 5-star + subcategories + comment + photo attach |
+| 5 | Route Detail | Route map + stops list |
+| 6 | Add Stop | Map pin + form |
+| 7 | User Profile | Stats, level ring, badges, leaderboard, reviews, settings |
+| 8 | Nearby List View | List alternative to map view |
+| 9 | Onboarding | Welcome + permissions |
+| 10 | Directions to Stop | Map + bottom sheet walk steps |
 
-### Web Pages (DESKTOP, React + Vite)
+### Web Pages (React + Vite)
 
-| # | Page | Stitch ID | Notes |
-|---|------|-----------|-------|
-| 1 | Map Home | `fd5e789112f64bcb8028d84d0e9ab925` | Full-viewport map + 320px sidebar |
-| 2 | Stop Detail | `1dba43615ea043c6a4cf6c09ecc731e9` | 50/50 map + reviews split |
-| 3 | Auth (Sign In / Register) | `52ea7343c2d441aaa6e9a630e493dfe9` | Centered card, Google SSO |
-| 4 | Route Explorer | `2099dd30cc96453898e64945174b5e18` | 380px sidebar + map |
-| 5 | User Profile | `883ff703078845a1b4f66f70a848dac0` | Centered 720px, stats + reviews |
-| 6 | Search Results | `7463df12f84f4c7ebb3368f672d03b49` | Two-col: results + filter sidebar |
-| 7 | Add Stop | `2cdba7666b094bd095626964971b87dc` | Map pin + centered form |
-| 8 | About | `ebdb80cd009d41b6b3fa75c9f00dbb0b` | Hero, features, stats, GitHub CTA |
+| # | Page | Notes |
+|---|------|-------|
+| 1 | Map Home | Full-viewport map + sidebar, activity halos |
+| 2 | Stop Detail | Map + reviews + check-in/report + photo strip |
+| 3 | Auth (Sign In / Register) | Centered card, Google SSO |
+| 4 | Route Explorer | Sidebar + map |
+| 5 | User Profile | Stats, level ring, badges, leaderboard, reviews |
+| 6 | Search Results | Results + filter sidebar |
+| 7 | Add Stop | Map pin + centered form |
+| 8 | About | Hero, features, stats, GitHub CTA |
 
 ---
 
-## Android Theme Implementation
+## Android Theme Implementation Reference
 
 ### Color.kt
+
 ```kotlin
-val PrimaryBlue = Color(0xFFA9C7FF)
-val PrimaryContainer = Color(0xFF1565BF)
-val OnPrimary = Color(0xFF003063)
-val OnPrimaryContainer = Color(0xFFDAE5FF)
-val Secondary = Color(0xFFB2C7F0)
-val SecondaryContainer = Color(0xFF344A6C)
-val Tertiary = Color(0xFFFFB68C)  // star ratings
-val TertiaryContainer = Color(0xFFA64C00)
-val Surface = Color(0xFF111319)
-val SurfaceContainerLow = Color(0xFF191C21)
-val SurfaceContainer = Color(0xFF1D2025)
-val SurfaceContainerHigh = Color(0xFF272A30)
-val SurfaceContainerHighest = Color(0xFF32353B)
-val OnSurface = Color(0xFFE1E2EA)
-val OnSurfaceVariant = Color(0xFFC2C6D4)
-val Outline = Color(0xFF8C919D)
-val OutlineVariant = Color(0xFF424752)
-val Error = Color(0xFFFFB4AB)
-val ErrorContainer = Color(0xFF93000A)
-val TransitBus = Color(0xFF4CAF50)
-val TransitTrain = Color(0xFF3277D2)
-val TransitSubway = Color(0xFF9C27B0)
-val TransitFerry = Color(0xFF00BCD4)
+val Background = Color(0xFFFAFAF7)
+val Surface = Color(0xFFFFFFFF)
+val SurfaceSunken = Color(0xFFF1F1EC)
+val Ink = Color(0xFF1A1D1B)
+val InkSecondary = Color(0xFF5A605C)
+val InkFaint = Color(0xFF9AA19C)
+val Outline = Color(0xFFE4E4DE)
+val Primary = Color(0xFF00A862)
+val PrimaryDark = Color(0xFF007A47)
+val PrimaryTint = Color(0xFFE0F5EB)
+val OnPrimary = Color(0xFFFFFFFF)
+val Accent = Color(0xFFFFB000)
+val ErrorColor = Color(0xFFDE3730)
+val TransitBus = Color(0xFF00A862)
+val TransitTrain = Color(0xFF2563EB)
+val TransitSubway = Color(0xFF8B2FC9)
+val TransitFerry = Color(0xFF0891B2)
+val TransitTram = Color(0xFFEA7317)
 ```
 
 ### Shape.kt
+
 ```kotlin
 val Shapes = Shapes(
     extraSmall = RoundedCornerShape(4.dp),
-    small = RoundedCornerShape(8.dp),
-    medium = RoundedCornerShape(12.dp),
-    large = RoundedCornerShape(16.dp),
-    extraLarge = RoundedCornerShape(24.dp)
+    small = RoundedCornerShape(14.dp),
+    medium = RoundedCornerShape(14.dp),
+    large = RoundedCornerShape(20.dp),
+    extraLarge = RoundedCornerShape(9999.dp)
 )
 ```
 
 ### Type.kt
+
 ```kotlin
-// Headlines: Manrope
-// Body: Inter
-// Labels: Public Sans (use default Roboto as fallback if custom fonts not bundled)
-val headlineLarge = TextStyle(fontFamily = ManropeFontFamily, fontSize = 32.sp, fontWeight = FontWeight.Bold, lineHeight = 40.sp)
-val headlineMedium = TextStyle(fontFamily = ManropeFontFamily, fontSize = 24.sp, fontWeight = FontWeight.SemiBold, lineHeight = 32.sp)
-val bodyLarge = TextStyle(fontFamily = InterFontFamily, fontSize = 16.sp, lineHeight = 24.sp)
-val bodyMedium = TextStyle(fontFamily = InterFontFamily, fontSize = 14.sp, lineHeight = 20.sp)
-val labelMedium = TextStyle(fontFamily = PublicSansFontFamily, fontSize = 12.sp, fontWeight = FontWeight.Medium, lineHeight = 16.sp, letterSpacing = 0.5.sp)
+// Single family: Plus Jakarta Sans (system sans-serif fallback)
+val displayLarge = TextStyle(fontFamily = JakartaFontFamily, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
+val headlineMedium = TextStyle(fontFamily = JakartaFontFamily, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+val titleMedium = TextStyle(fontFamily = JakartaFontFamily, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+val bodyMedium = TextStyle(fontFamily = JakartaFontFamily, fontSize = 15.sp, fontWeight = FontWeight.Normal)
+val labelMedium = TextStyle(fontFamily = JakartaFontFamily, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
 ```
 
 ---
@@ -269,94 +267,44 @@ val labelMedium = TextStyle(fontFamily = PublicSansFontFamily, fontSize = 12.sp,
 
 ```css
 :root {
-  /* Surfaces */
-  --color-background: #111319;
-  --color-surface: #111319;
-  --color-surface-container-lowest: #0c0e14;
-  --color-surface-container-low: #191c21;
-  --color-surface-container: #1d2025;
-  --color-surface-container-high: #272a30;
-  --color-surface-container-highest: #32353b;
+  --color-background: #FAFAF7;
+  --color-surface: #FFFFFF;
+  --color-surface-sunken: #F1F1EC;
 
-  /* Text */
-  --color-on-surface: #e1e2ea;
-  --color-on-surface-variant: #c2c6d4;
-  --color-outline: #8c919d;
-  --color-outline-variant: #424752;
+  --color-ink: #1A1D1B;
+  --color-ink-secondary: #5A605C;
+  --color-ink-faint: #9AA19C;
+  --color-outline: #E4E4DE;
 
-  /* Primary */
-  --color-primary: #a9c7ff;
-  --color-primary-container: #1565bf;
-  --color-on-primary: #003063;
-  --color-on-primary-container: #dae5ff;
+  --color-primary: #00A862;
+  --color-primary-dark: #007A47;
+  --color-primary-tint: #E0F5EB;
+  --color-on-primary: #FFFFFF;
 
-  /* Secondary */
-  --color-secondary: #b2c7f0;
-  --color-secondary-container: #344a6c;
+  --color-accent: #FFB000;
+  --color-error: #DE3730;
+  --color-success: #00A862;
 
-  /* Tertiary / Rating */
-  --color-tertiary: #ffb68c;
-  --color-rating-star: #ffb68c;
+  --color-transit-bus: #00A862;
+  --color-transit-train: #2563EB;
+  --color-transit-subway: #8B2FC9;
+  --color-transit-ferry: #0891B2;
+  --color-transit-tram: #EA7317;
+  --color-rating-star: #FFB000;
 
-  /* Error */
-  --color-error: #ffb4ab;
-  --color-error-container: #93000a;
-
-  /* Transit semantic */
-  --color-transit-bus: #4caf50;
-  --color-transit-train: #3277d2;
-  --color-transit-subway: #9c27b0;
-  --color-transit-ferry: #00bcd4;
-
-  /* Spacing */
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
   --space-lg: 24px;
   --space-xl: 32px;
+  --space-2xl: 48px;
 
-  /* Radius */
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
   --radius-full: 9999px;
 
-  /* Typography */
-  --font-headline: 'Manrope', sans-serif;
-  --font-body: 'Inter', sans-serif;
-  --font-label: 'Public Sans', sans-serif;
-
-  /* Map */
-  --map-tile-url: 'https://tiles.openfreemap.org/styles/liberty';
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
 }
 ```
-
----
-
-## Map Style
-
-- **Tile source:** OpenFreeMap Liberty — `https://tiles.openfreemap.org/styles/liberty`
-- **Library (Android):** MapLibre Native Android v11.5.2
-- **Library (Web):** MapLibre GL JS
-- **Stop pin colors:** Match transit type semantic colors above
-- **Selected stop:** Larger pin with glow ring in primary color
-- **Route polyline:** Transit type color, 4px width, 80% opacity
-
----
-
-## Asset Sizes
-
-### Android Icons
-- App icon: 108×108dp vector (`drawable/ic_launcher.xml`) — no mipmap dirs
-- Tab bar icons: 24dp, filled style
-- FAB icon: 24dp
-
-### Web
-- Favicon: 32×32 SVG
-- OG image: 1200×630
-
----
-
-*Generated 2026-06-30 using Google Stitch MCP.*
-*Do not edit manually — update via Stitch and re-export.*

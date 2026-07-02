@@ -1,39 +1,59 @@
-﻿package com.charles.crowdtransit.app.ui.theme
+package com.charles.crowdtransit.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// DESIGN.md token values (Stitch-generated dark theme)
-val Primary = Color(0xFFA9C7FF)
-val PrimaryLight = Color(0xFFDAE5FF)
-val PrimaryDark = Color(0xFF1565BF)
+// "Sunny Transit" design system — light theme (see docs/superpowers/specs/2026-07-02-visual-redesign-design.md)
 
-val Secondary = Color(0xFFB2C7F0)
-val SecondaryLight = Color(0xFFB2C7F0)
-val SecondaryDark = Color(0xFF344A6C)
+// Core surfaces
+val AppBackground = Color(0xFFFAFAF7) // warm off-white page background
+val Surface = Color(0xFFFFFFFF) // cards, sheets, nav bars
+val SurfaceElevated = Color(0xFFF1F1EC) // surface-sunken: inputs, wells, secondary chips
+val SurfaceCard = Color(0xFFFFFFFF)
+val SurfaceDark = AppBackground // kept for source-compat with existing screens using containerColor = SurfaceDark
+val SurfaceContainerLowest = Color(0xFFFFFFFF)
+val SurfaceContainerLow = Color(0xFFF6F6F1)
+val SurfaceContainerHighest = Color(0xFFE9E9E2)
 
-val SurfaceDark = Color(0xFF111319)
-val Surface = Color(0xFF1D2025)
-val SurfaceElevated = Color(0xFF272A30)
-val SurfaceCard = Color(0xFF1D2025)
-val SurfaceContainerLow = Color(0xFF191C21)
-val SurfaceContainerLowest = Color(0xFF0C0E14)
-val SurfaceContainerHighest = Color(0xFF32353B)
+// Ink (text) tokens
+val OnSurface = Color(0xFF1A1D1B) // ink
+val OnSurfaceSecondary = Color(0xFF5A605C) // ink-secondary
+val OnSurfaceFaint = Color(0xFF9AA19C) // ink-faint
 
-val OnSurface = Color(0xFFE1E2EA)
-val OnSurfaceSecondary = Color(0xFFC2C6D4)
-val OnPrimary = Color(0xFF003063)
-val OnSecondary = Color(0xFF1A2B4C)
-val Outline = Color(0xFF8C919D)
-val OutlineVariant = Color(0xFF424752)
+val Outline = Color(0xFFE4E4DE)
+val OutlineVariant = Color(0xFFE4E4DE)
 
-val Success = Color(0xFF4CAF50)
-val Warning = Color(0xFFFFB68C)
-val Error = Color(0xFFFFB4AB)
-val ErrorContainer = Color(0xFF93000A)
+// Brand / primary
+val Primary = Color(0xFF00A862) // hero green
+val PrimaryDark = Color(0xFF007A47)
+val PrimaryLight = Color(0xFFE0F5EB) // primary-tint
+val OnPrimary = Color(0xFFFFFFFF)
 
-val RatingGold = Color(0xFFFFB68C)
-val TransitBus = Color(0xFF4CAF50)
-val TransitTrain = Color(0xFF3277D2)
-val TransitSubway = Color(0xFF9C27B0)
-val TransitFerry = Color(0xFF00BCD4)
-val TransitTram = Color(0xFFFF9800)
+// Secondary kept as an alias of primary-tint so existing screens (SurfaceElevated-adjacent
+// buttons using "Secondary"/"OnSecondary") render as soft green pills rather than the old blue.
+val Secondary = PrimaryLight
+val SecondaryLight = PrimaryLight
+val SecondaryDark = PrimaryDark
+val OnSecondary = PrimaryDark
+
+val Accent = Color(0xFFFFB000) // amber — ratings, highlights
+val Success = Primary
+val Warning = Accent
+val Error = Color(0xFFDE3730)
+val ErrorContainer = Color(0xFFFBE4E2)
+
+val RatingGold = Accent
+val RatingEmpty = Outline
+
+// Transit-mode palette (vivid on light background)
+val TransitBus = Color(0xFF00A862)
+val TransitTrain = Color(0xFF2563EB)
+val TransitSubway = Color(0xFF8B2FC9)
+val TransitFerry = Color(0xFF0891B2)
+val TransitTram = Color(0xFFEA7317)
+
+// Gamification level colors (ring around avatar)
+val LevelPedestrian = Color(0xFF9AA19C)
+val LevelCommuter = Color(0xFF2563EB)
+val LevelRegular = Color(0xFF00A862)
+val LevelConductor = Color(0xFFEA7317)
+val LevelTransitLegend = Color(0xFFFFB000)

@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: var(--color-surface-dark);
+  background: var(--color-background);
 }
 
 .layout {
@@ -12,13 +12,13 @@
 }
 
 .sidebar {
-  width: 360px;
+  width: 380px;
   min-width: 280px;
   background: var(--color-surface);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-right: 1px solid var(--color-surface-elevated);
+  border-right: 1px solid var(--color-outline);
 }
 
 .sidebarHeader {
@@ -26,25 +26,27 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--color-surface-elevated);
+  border-bottom: 1px solid var(--color-outline);
 }
 
 .sidebarHeader h2 {
-  color: var(--color-on-surface);
-  font-size: 16px;
-  font-weight: 600;
+  font-family: var(--font-display);
+  color: var(--color-ink);
+  font-size: 18px;
+  font-weight: 700;
   margin: 0;
 }
 
 .count {
-  color: var(--color-on-surface-secondary);
+  color: var(--color-ink-secondary);
   font-size: 12px;
+  font-weight: 600;
 }
 
 .geoBanner {
   padding: var(--space-md);
-  background: var(--color-surface-elevated);
-  border-bottom: 1px solid var(--color-surface-elevated);
+  background: var(--color-primary-tint);
+  border-bottom: 1px solid var(--color-outline);
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
@@ -52,7 +54,7 @@
 
 .geoBanner p {
   margin: 0;
-  color: var(--color-on-surface-secondary);
+  color: var(--color-primary-dark);
   font-size: 13px;
   line-height: 1.4;
 }
@@ -62,15 +64,15 @@
   background: var(--color-primary);
   color: var(--color-on-primary);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   padding: 6px 14px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .geoRetryButton:hover {
-  opacity: 0.9;
+  background: var(--color-primary-dark);
 }
 
 .mapContainer {

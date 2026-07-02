@@ -16,6 +16,7 @@ export function StarRating({
   onRate,
 }: StarRatingProps) {
   const [hovered, setHovered] = useState(0);
+  const [poppedStar, setPoppedStar] = useState(0);
 
   return (
     <span style={{ display: 'inline-flex', gap: '2px' }}>
@@ -27,13 +28,22 @@ export function StarRating({
             width={size}
             height={size}
             viewBox="0 0 24 24"
-            fill={filled ? '#FFC107' : 'none'}
-            stroke={filled ? '#FFC107' : '#9AA0A6'}
+            fill={filled ? 'var(--color-accent)' : 'none'}
+            stroke={filled ? 'var(--color-accent)' : 'var(--color-outline)'}
             strokeWidth="1.5"
-            style={{ cursor: interactive ? 'pointer' : 'default' }}
+            style={{
+              cursor: interactive ? 'pointer' : 'default',
+              transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              transform: poppedStar === star ? 'scale(1.35)' : 'scale(1)',
+            }}
             onMouseEnter={() => interactive && setHovered(star)}
             onMouseLeave={() => interactive && setHovered(0)}
-            onClick={() => interactive && onRate?.(star)}
+            onClick={() => {
+              if (!interactive) return;
+              onRate?.(star);
+              setPoppedStar(star);
+              setTimeout(() => setPoppedStar(0), 200);
+            }}
           >
             <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
           </svg>

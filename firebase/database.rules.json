@@ -36,6 +36,31 @@
       ".read": true,
       "$submissionId": { ".write": "auth != null" }
     },
+    "leaderboard": {
+      ".read": true,
+      ".indexOn": ["points"],
+      "$userId": { ".write": "auth != null && auth.uid === $userId" }
+    },
+    "activity": {
+      ".read": true,
+      "$stopId": {
+        ".indexOn": ["timestamp"],
+        "$pushId": {
+          ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid)",
+          ".validate": "newData.hasChildren(['uid', 'type', 'timestamp']) && newData.child('uid').val() === auth.uid"
+        }
+      }
+    },
+    "photos": {
+      ".read": true,
+      "$stopId": {
+        ".indexOn": ["timestamp"],
+        "$pushId": {
+          ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid)",
+          ".validate": "newData.hasChildren(['uid', 'data', 'timestamp']) && newData.child('uid').val() === auth.uid && newData.child('data').val().length < 200000"
+        }
+      }
+    },
     "geofire": {
       ".read": true,
       ".write": false,

@@ -8,8 +8,8 @@
 }
 
 .empty {
-  color: var(--color-on-surface-secondary);
-  font-size: 13px;
+  color: var(--color-ink-secondary);
+  font-size: 14px;
   text-align: center;
   padding: var(--space-xl);
 }

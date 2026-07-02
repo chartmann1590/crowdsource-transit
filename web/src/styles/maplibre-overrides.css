@@ -3,31 +3,28 @@
 }
 
 .maplibregl-ctrl-group {
-  background: var(--color-surface-elevated) !important;
-  border: 1px solid var(--color-surface-card) !important;
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-outline) !important;
   border-radius: var(--radius-sm) !important;
+  box-shadow: var(--shadow-1) !important;
   overflow: hidden;
 }
 
 .maplibregl-ctrl-group button {
-  background: var(--color-surface-elevated) !important;
-  border-color: var(--color-surface-card) !important;
+  background: var(--color-surface) !important;
+  border-color: var(--color-outline) !important;
 }
 
 .maplibregl-ctrl-group button:hover {
-  background: var(--color-surface-card) !important;
-}
-
-.maplibregl-ctrl-group button span {
-  filter: invert(1);
+  background: var(--color-surface-sunken) !important;
 }
 
 .maplibregl-ctrl-attrib {
-  background: rgba(26, 35, 50, 0.8) !important;
-  color: var(--color-on-surface-secondary) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  color: var(--color-ink-secondary) !important;
   font-size: 10px !important;
 }
 
 .maplibregl-ctrl-attrib a {
-  color: var(--color-on-surface-secondary) !important;
+  color: var(--color-ink-secondary) !important;
 }

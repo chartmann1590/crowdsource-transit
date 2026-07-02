@@ -19,6 +19,7 @@ import com.charles.crowdtransit.app.ui.screens.crowdsource.AddStopScreen
 import com.charles.crowdtransit.app.ui.screens.downloads.DownloadsScreen
 import com.charles.crowdtransit.app.ui.screens.login.LoginScreen
 import com.charles.crowdtransit.app.ui.screens.map.MapHomeScreen
+import com.charles.crowdtransit.app.ui.screens.profile.LeaderboardScreen
 import com.charles.crowdtransit.app.ui.screens.profile.ProfileScreen
 import com.charles.crowdtransit.app.ui.screens.route.RouteDetailScreen
 import com.charles.crowdtransit.app.ui.screens.search.SearchScreen
@@ -101,6 +102,12 @@ fun CrowdTransitNavGraph(
                 onBack = { navController.popBackStack() },
                 onSettingsClick = { navController.navigate(Screen.Settings.route) },
                 onSignInClick = { navController.navigate(Screen.Login.route) },
+                onLeaderboardClick = { navController.navigate(Screen.Leaderboard.route) },
+            )
+        }
+        composable(Screen.Leaderboard.route) {
+            LeaderboardScreen(
+                onBack = { navController.popBackStack() },
             )
         }
         composable(Screen.Login.route) {

@@ -1,15 +1,16 @@
 .form {
   background: var(--color-surface);
-  border: 1px solid var(--color-surface-elevated);
+  border: 1px solid var(--color-outline);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
+  box-shadow: var(--shadow-1);
 }
 
 .title {
   font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-on-surface);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-ink);
   margin-bottom: var(--space-md);
 }
 
@@ -21,7 +22,7 @@
   display: block;
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-on-surface-secondary);
+  color: var(--color-ink-secondary);
   margin-bottom: var(--space-xs);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -29,14 +30,15 @@
 
 .textarea {
   width: 100%;
-  padding: var(--space-sm);
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-surface-card);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-outline);
   border-radius: var(--radius-sm);
-  color: var(--color-on-surface);
-  font-size: 13px;
+  color: var(--color-ink);
+  font-size: 14px;
   resize: vertical;
   outline: none;
+  transition: border-color 0.15s ease;
 }
 
 .textarea:focus {
@@ -44,7 +46,7 @@
 }
 
 .textarea::placeholder {
-  color: var(--color-on-surface-secondary);
+  color: var(--color-ink-faint);
 }
 
 .chips {
@@ -54,34 +56,96 @@
 }
 
 .chip {
-  padding: 4px 10px;
-  border: 1px solid var(--color-surface-card);
+  padding: 6px 12px;
+  border: 1px solid var(--color-outline);
   border-radius: var(--radius-full);
-  background: transparent;
-  color: var(--color-on-surface-secondary);
+  background: var(--color-surface);
+  color: var(--color-ink-secondary);
   font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .chip:hover {
-  border-color: var(--color-primary-light);
-  color: var(--color-on-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
 }
 
 .chipSelected {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: white;
+  color: var(--color-on-primary);
 }
 
 .anonToggle {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  font-size: 12px;
-  color: var(--color-on-surface-secondary);
+  font-size: 13px;
+  color: var(--color-ink-secondary);
   cursor: pointer;
   margin-bottom: var(--space-md);
+}
+
+.photoRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+}
+
+.photoAttachBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px dashed var(--color-outline);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-sunken);
+  color: var(--color-ink-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.photoAttachBtn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+}
+
+.photoPreview {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  border: 1px solid var(--color-outline);
+}
+
+.photoPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photoRemove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(26, 29, 27, 0.7);
+  color: white;
+  border: none;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .actions {
@@ -91,24 +155,29 @@
 }
 
 .cancelBtn {
-  padding: 6px 14px;
-  border: 1px solid var(--color-surface-card);
-  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-full);
   background: transparent;
-  color: var(--color-on-surface-secondary);
-  font-size: 12px;
+  color: var(--color-ink-secondary);
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .submitBtn {
-  padding: 6px 14px;
+  padding: 10px 20px;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   background: var(--color-primary);
-  color: white;
-  font-size: 12px;
-  font-weight: 500;
+  color: var(--color-on-primary);
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
 }
 
 .submitBtn:disabled {
@@ -120,22 +189,23 @@
   text-align: center;
   padding: var(--space-lg);
   background: var(--color-surface);
-  border: 1px solid var(--color-surface-elevated);
+  border: 1px solid var(--color-outline);
   border-radius: var(--radius-lg);
 }
 
 .prompt p {
-  color: var(--color-on-surface-secondary);
-  font-size: 13px;
+  color: var(--color-ink-secondary);
+  font-size: 14px;
   margin-bottom: var(--space-sm);
 }
 
 .signInBtn {
-  padding: 6px 14px;
+  padding: 8px 16px;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   background: var(--color-primary);
-  color: white;
-  font-size: 12px;
+  color: var(--color-on-primary);
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
 }

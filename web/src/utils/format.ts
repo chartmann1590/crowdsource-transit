@@ -28,3 +28,13 @@ export function truncate(str: string, max: number): string {
   if (str.length <= max) return str;
   return str.slice(0, max).trimEnd() + '...';
 }
+
+export function formatRelativeMinutes(timestamp: number): string {
+  const diffMs = Date.now() - timestamp;
+  const mins = Math.max(0, Math.floor(diffMs / 60000));
+  if (mins < 1) return 'just now';
+  if (mins === 1) return '1 min ago';
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  return hrs === 1 ? '1 hr ago' : `${hrs} hrs ago`;
+}

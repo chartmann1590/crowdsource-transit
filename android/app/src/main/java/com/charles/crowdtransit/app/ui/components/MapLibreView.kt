@@ -1,4 +1,4 @@
-﻿package com.charles.crowdtransit.app.ui.components
+package com.charles.crowdtransit.app.ui.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -8,10 +8,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
 import com.charles.crowdtransit.app.ui.theme.Primary
+import com.charles.crowdtransit.app.ui.theme.TransitBus
+import com.charles.crowdtransit.app.ui.theme.TransitFerry
+import com.charles.crowdtransit.app.ui.theme.TransitSubway
+import com.charles.crowdtransit.app.ui.theme.TransitTrain
+import com.charles.crowdtransit.app.ui.theme.TransitTram
 import com.charles.crowdtransit.model.Stop
+import kotlinx.coroutines.delay
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
@@ -20,15 +25,19 @@ import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
+import org.maplibre.android.style.expressions.Expression
 import org.maplibre.android.style.layers.CircleLayer
 import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.sources.GeoJsonSource
+import kotlin.math.sin
 
 private const val OSM_STYLE = "https://tiles.openfreemap.org/styles/liberty"
 private const val STOPS_SOURCE = "stops-source"
 private const val STOPS_LAYER = "stops-layer"
 private const val USER_SOURCE = "user-source"
 private const val USER_LAYER = "user-layer"
+private const val ACTIVE_SOURCE = "active-halo-source"
+private const val ACTIVE_HALO_LAYER = "active-halo-layer"
 
 private fun hexFromColor(color: androidx.compose.ui.graphics.Color): String {
     val r = (color.red * 255).toInt()
@@ -37,12 +46,22 @@ private fun hexFromColor(color: androidx.compose.ui.graphics.Color): String {
     return String.format("#%02X%02X%02X", r, g, b)
 }
 
+private fun modeColorHex(transitTypes: List<String>): String = when (transitTypes.firstOrNull()) {
+    "bus" -> hexFromColor(TransitBus)
+    "train" -> hexFromColor(TransitTrain)
+    "subway" -> hexFromColor(TransitSubway)
+    "ferry" -> hexFromColor(TransitFerry)
+    "tram" -> hexFromColor(TransitTram)
+    else -> hexFromColor(Primary)
+}
+
 @Composable
 fun MapLibreView(
     modifier: Modifier = Modifier,
     stops: List<Stop> = emptyList(),
     userLat: Double? = null,
     userLng: Double? = null,
+    activeStopIds: Set<String> = emptySet(),
     onStopPinClick: (String) -> Unit = {},
     onLocationUpdate: (Double, Double) -> Unit = { _, _ -> },
 ) {
@@ -87,9 +106,25 @@ fun MapLibreView(
                         PropertyFactory.circleRadius(11f),
                         PropertyFactory.circleStrokeWidth(2.5f),
                         PropertyFactory.circleStrokeColor("#FFFFFF"),
-                        PropertyFactory.circleColor(hexFromColor(Primary)),
+                        // Vivid mode-color palette, data-driven from each feature's "color" property.
+                        PropertyFactory.circleColor(Expression.get("color")),
                     )
                 }
+            )
+        }
+
+        if (style.getSource(ACTIVE_SOURCE) == null) {
+            style.addSource(GeoJsonSource(ACTIVE_SOURCE))
+            // Pulsing halo behind markers with recent (last 90 min) check-ins/reports.
+            style.addLayerBelow(
+                CircleLayer(ACTIVE_HALO_LAYER, ACTIVE_SOURCE).apply {
+                    setProperties(
+                        PropertyFactory.circleRadius(18f),
+                        PropertyFactory.circleColor(hexFromColor(Primary)),
+                        PropertyFactory.circleOpacity(0.35f),
+                    )
+                },
+                STOPS_LAYER,
             )
         }
 
@@ -107,7 +142,15 @@ fun MapLibreView(
             )
         }
 
-        val features = stops.map { stop -> Feature.fromGeometry(Point.fromLngLat(stop.lng, stop.lat)) }
+        val features = stops.map { stop ->
+            Feature.fromGeometry(
+                Point.fromLngLat(stop.lng, stop.lat),
+                com.google.gson.JsonObject().apply {
+                    addProperty("stopId", stop.stopId)
+                    addProperty("color", modeColorHex(stop.transitTypes))
+                },
+            )
+        }
         val fc = FeatureCollection.fromFeatures(features)
         val source = style.getSourceAs<GeoJsonSource>(STOPS_SOURCE)
         source?.setGeoJson(fc)
@@ -129,6 +172,33 @@ fun MapLibreView(
             map.animateCamera(
                 CameraUpdateFactory.newLatLngZoom(LatLng(avgLat, avgLng), 10.0),
             )
+        }
+    }
+
+    // Refresh which stops show a halo whenever the active set or stop list changes.
+    LaunchedEffect(styleReady, stops, activeStopIds) {
+        if (!styleReady) return@LaunchedEffect
+        val style = mapboxMap?.style ?: return@LaunchedEffect
+        val activeSource = style.getSourceAs<GeoJsonSource>(ACTIVE_SOURCE) ?: return@LaunchedEffect
+        val activeFeatures = stops.filter { activeStopIds.contains(it.stopId) }
+            .map { Feature.fromGeometry(Point.fromLngLat(it.lng, it.lat)) }
+        activeSource.setGeoJson(FeatureCollection.fromFeatures(activeFeatures))
+    }
+
+    // Gentle pulse animation on the halo layer (radius/opacity breathing).
+    LaunchedEffect(styleReady, activeStopIds) {
+        if (!styleReady || activeStopIds.isEmpty()) return@LaunchedEffect
+        val style = mapboxMap?.style ?: return@LaunchedEffect
+        val haloLayer = style.getLayerAs<CircleLayer>(ACTIVE_HALO_LAYER) ?: return@LaunchedEffect
+        var t = 0.0
+        while (true) {
+            val pulse = (sin(t) + 1f) / 2f // 0..1
+            haloLayer.setProperties(
+                PropertyFactory.circleRadius(16f + pulse.toFloat() * 10f),
+                PropertyFactory.circleOpacity(0.15f + pulse.toFloat() * 0.3f),
+            )
+            t += 0.35
+            delay(120)
         }
     }
 }

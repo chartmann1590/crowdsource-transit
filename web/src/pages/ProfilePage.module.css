@@ -2,95 +2,310 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--color-surface-dark);
+  background: var(--color-background);
 }
 
 .content {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: var(--space-lg);
+}
+
+.tabs {
+  display: flex;
+  gap: var(--space-xs);
+  background: var(--color-surface-sunken);
+  padding: 4px;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-lg);
+}
+
+.tab {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-ink-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tabActive {
+  background: var(--color-surface);
+  color: var(--color-primary-dark);
+  box-shadow: var(--shadow-1);
 }
 
 .profileCard {
   background: var(--color-surface);
-  border: 1px solid var(--color-surface-elevated);
+  border: 1px solid var(--color-outline);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
   padding: var(--space-xl);
   text-align: center;
-  width: 320px;
+  width: 420px;
+  max-width: 100%;
 }
 
-.avatar {
-  width: 64px;
-  height: 64px;
+.avatarRing {
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
-  background: var(--color-primary);
-  color: white;
+  padding: 5px;
+  margin: 0 auto var(--space-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  font-weight: 600;
-  margin: 0 auto var(--space-md);
+  transition: background 0.4s ease;
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 700;
 }
 
 .profileCard h2 {
   font-family: var(--font-display);
-  font-size: 18px;
-  color: var(--color-on-surface);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-ink);
   margin-bottom: var(--space-xs);
 }
 
 .email {
-  color: var(--color-on-surface-secondary);
+  color: var(--color-ink-secondary);
+  font-size: 12px;
+  margin-bottom: var(--space-sm);
+}
+
+.levelBadge {
+  display: inline-block;
+  padding: 4px 14px;
+  background: var(--color-primary-tint);
+  color: var(--color-primary-dark);
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.pointsText {
+  color: var(--color-ink-secondary);
   font-size: 12px;
   margin-bottom: var(--space-lg);
 }
 
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
+.statLabel {
+  font-size: 10px;
+  color: var(--color-ink-secondary);
+  font-weight: 600;
+}
+
+.badgesSection {
+  text-align: left;
+  margin-bottom: var(--space-lg);
+}
+
+.badgesSection h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink);
+  margin-bottom: var(--space-sm);
+}
+
+.badgesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+.badgeTile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-outline);
+  text-align: center;
+}
+
+.badgeEarned {
+  background: var(--color-primary-tint);
+  border-color: var(--color-primary);
+}
+
+.badgeLocked {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+.badgeIcon {
+  font-size: 22px;
+}
+
+.badgeLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
 .signOutBtn {
   padding: 8px 16px;
-  border: 1px solid var(--color-surface-card);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-full);
   background: transparent;
   color: var(--color-error);
   font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .signOutBtn:hover {
-  background: rgba(244, 67, 54, 0.1);
+  background: rgba(222, 55, 48, 0.08);
 }
 
 .promptCard {
   background: var(--color-surface);
-  border: 1px solid var(--color-surface-elevated);
+  border: 1px solid var(--color-outline);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
   text-align: center;
   max-width: 360px;
+  box-shadow: var(--shadow-1);
 }
 
 .promptCard h2 {
   font-family: var(--font-display);
   font-size: 18px;
-  color: var(--color-on-surface);
+  font-weight: 700;
+  color: var(--color-ink);
   margin-bottom: var(--space-sm);
 }
 
 .promptCard p {
-  color: var(--color-on-surface-secondary);
+  color: var(--color-ink-secondary);
   font-size: 13px;
   margin-bottom: var(--space-lg);
 }
 
 .signInBtn {
-  padding: 8px 16px;
+  padding: 10px 18px;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   background: var(--color-primary);
-  color: white;
+  color: var(--color-on-primary);
   font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
+}
+
+.leaderboardCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  padding: var(--space-xl);
+  width: 480px;
+  max-width: 100%;
+}
+
+.leaderboardCard h2 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-ink);
+  margin-bottom: var(--space-md);
+}
+
+.leaderboardStatus {
+  color: var(--color-ink-secondary);
+  font-size: 13px;
+  text-align: center;
+  padding: var(--space-lg);
+}
+
+.leaderboardList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.leaderboardRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.leaderboardRowSelf {
+  background: var(--color-primary-tint);
+}
+
+.rank {
+  width: 24px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-ink-faint);
+}
+
+.leaderboardName {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboardLevel {
+  font-size: 11px;
+  color: var(--color-primary-dark);
+  background: var(--color-primary-tint);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.leaderboardPoints {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-ink);
+  width: 60px;
+  text-align: right;
 }

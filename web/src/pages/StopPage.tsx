@@ -7,7 +7,8 @@ import { Navbar } from '../components/UI/Navbar';
 import { LoadingSpinner } from '../components/UI/LoadingSpinner';
 import { useStop } from '../hooks/useStop';
 import { useComments } from '../hooks/useComments';
-import { useState } from 'react';
+import { useStopsActivity } from '../hooks/useStopsActivity';
+import { useState, useMemo } from 'react';
 import styles from './StopPage.module.css';
 
 export function StopPage() {
@@ -16,6 +17,8 @@ export function StopPage() {
   const { stop, loading } = useStop(stopId ?? null);
   const { comments, loading: commentsLoading } = useComments('stop', stopId ?? null);
   const [showForm, setShowForm] = useState(false);
+  const watchedIds = useMemo(() => (stopId ? [stopId] : []), [stopId]);
+  const activeStopIds = useStopsActivity(watchedIds);
 
   if (loading) return <LoadingSpinner />;
   if (!stop) {
@@ -64,6 +67,7 @@ export function StopPage() {
         <main className={styles.mapContainer}>
           <MapView
             stops={[stop]}
+            activeStopIds={activeStopIds}
             initialLat={stop.lat}
             initialLng={stop.lng}
             initialZoom={16}
