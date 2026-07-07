@@ -42,12 +42,17 @@ jobs:
         env:
           ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
         run: |
-          curl -s \
+          HTTP_CODE=$(curl -s -o crashlytics_issues.json -w "%{http_code}" \
             -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-            "https://firebasecrashlytics.googleapis.com/v1alpha/projects/${FIREBASE_PROJECT_NUMBER}/apps/${FIREBASE_APP_ID}/reports/topIssues?pageSize=25" \
-            > crashlytics_issues.json
+            "https://firebasecrashlytics.googleapis.com/v1alpha/projects/${FIREBASE_PROJECT_NUMBER}/apps/${FIREBASE_APP_ID}/reports/topIssues?page_size=25")
+          echo "HTTP status: ${HTTP_CODE}"
           cat crashlytics_issues.json | jq .
-          if cat crashlytics_issues.json | jq -e '.error' > /dev/null 2>&1; then
+          if [ "${HTTP_CODE}" = "404" ]; then
+            echo "No Crashlytics data found for this app (will be available after first crash is reported)."
+            echo '{"groups":[]}' > crashlytics_issues.json
+          elif [ "${HTTP_CODE}" != "200" ]; then
+            echo "Crashlytics API returned HTTP ${HTTP_CODE} (see above)"; exit 1
+          elif cat crashlytics_issues.json | jq -e '.error' > /dev/null 2>&1; then
             echo "Crashlytics API returned an error (see above)"; exit 1
           fi
 
