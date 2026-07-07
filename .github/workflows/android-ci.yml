@@ -30,6 +30,9 @@ jobs:
         run: |
           echo "sdk.dir=${ANDROID_HOME}" > android/local.properties
           echo "transitland.apiKey=${{ secrets.TRANSITLAND_API_KEY }}" >> android/local.properties
+          echo "github.api.token=${{ secrets.GH_API_TOKEN }}" >> android/local.properties
+          echo "github.repo.owner=${{ secrets.GH_REPO_OWNER }}" >> android/local.properties
+          echo "github.repo.name=${{ secrets.GH_REPO_NAME }}" >> android/local.properties
 
       - name: Grant execute permission to gradlew
         run: chmod +x android/gradlew

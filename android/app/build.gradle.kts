@@ -31,6 +31,26 @@ android {
             "TRANSITLAND_API_KEY",
             "\"${localProperties.getProperty("transitland.apiKey", "")}\"",
         )
+        buildConfigField(
+            "String",
+            "GITHUB_API_TOKEN",
+            "\"${localProperties.getProperty("github.api.token", "")}\"",
+        )
+        buildConfigField(
+            "String",
+            "GITHUB_REPO_OWNER",
+            "\"${localProperties.getProperty("github.repo.owner", "")}\"",
+        )
+        buildConfigField(
+            "String",
+            "GITHUB_REPO_NAME",
+            "\"${localProperties.getProperty("github.repo.name", "")}\"",
+        )
+        buildConfigField(
+            "String",
+            "FEEDBACK_ASSETS_DIR",
+            "\"feedback-assets\"",
+        )
     }
 
     buildFeatures {
