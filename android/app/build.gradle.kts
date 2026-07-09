@@ -26,8 +26,11 @@ android {
         applicationId = "com.charles.crowdtransit.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        // CI passes -PappVersionCode/-PappVersionName (from the GitHub Actions run number) so
+        // every release build has a strictly-increasing versionCode, as Play Store requires.
+        // Local/unset builds fall back to a fixed dev version.
+        versionCode = (project.findProperty("appVersionCode") as String?)?.toIntOrNull() ?: 1
+        versionName = (project.findProperty("appVersionName") as String?) ?: "1.0.0"
         buildConfigField(
             "String",
             "TRANSITLAND_API_KEY",
