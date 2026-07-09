@@ -10,6 +10,18 @@ Community-powered public transit locator — find nearby bus stops, train statio
 
 ---
 
+## Screenshots
+
+<p>
+  <img src="play-store/graphics/phone/01-map.png" alt="Nearby stops map" width="200">
+  <img src="play-store/graphics/phone/03-stop-detail.png" alt="Stop detail with live schedule" width="200">
+  <img src="play-store/graphics/phone/04-route-detail.png" alt="Route detail with every stop" width="200">
+  <img src="play-store/graphics/phone/05-live-activity.png" alt="Live activity and check-ins" width="200">
+</p>
+
+Promo video, full-size screenshots, app icon, feature graphic, and the full Play
+Store listing text live in [`play-store/`](play-store/).
+
 ## Features
 
 - Interactive map with transit stops using OpenStreetMap (free, no API key required)

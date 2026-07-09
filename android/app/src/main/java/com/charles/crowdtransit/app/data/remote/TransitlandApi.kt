@@ -1,6 +1,7 @@
 package com.charles.crowdtransit.app.data.remote
 
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface TransitlandApi {
@@ -44,4 +45,18 @@ interface TransitlandApi {
         @Query("limit") limit: Int = 100,
         @Query("after") after: Long? = null,
     ): TransitlandStopsResponse
+
+    @GET("api/v2/rest/routes/{route_key}")
+    suspend fun getRouteWithStops(
+        @Path("route_key") routeKey: String,
+    ): TransitlandFullRoutesResponse
+
+    @GET("api/v2/rest/stops/{stop_key}/departures")
+    suspend fun getStopDepartures(
+        @Path("stop_key") stopKey: String,
+        @Query("relative_date") relativeDate: String = "TODAY",
+        @Query("next") nextSeconds: Int = 86400,
+        @Query("limit") limit: Int = 200,
+        @Query("include_alerts") includeAlerts: String = "false",
+    ): TransitlandDeparturesResponse
 }

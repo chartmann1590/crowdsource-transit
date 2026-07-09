@@ -22,6 +22,12 @@ data class TransitlandStop(
     @Json(name = "stop_desc") val stopDesc: String? = null,
     val geometry: TransitlandGeometry? = null,
     val place: TransitlandPlace? = null,
+    @Json(name = "route_stops") val routeStops: List<TransitlandRouteStop>? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandRouteStop(
+    val route: TransitlandRouteInfo? = null,
 )
 
 @JsonClass(generateAdapter = true)
@@ -46,6 +52,38 @@ data class TransitlandRoute(
     @Json(name = "route_type") val routeType: Int? = null,
 )
 
+// === Route detail (route + its ordered stops) ===
+
+@JsonClass(generateAdapter = true)
+data class TransitlandFullRoutesResponse(
+    val routes: List<TransitlandFullRoute> = emptyList(),
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandFullRoute(
+    @Json(name = "onestop_id") val onestopId: String? = null,
+    @Json(name = "route_id") val routeId: String? = null,
+    @Json(name = "route_short_name") val routeShortName: String? = null,
+    @Json(name = "route_long_name") val routeLongName: String? = null,
+    @Json(name = "route_type") val routeType: Int? = null,
+    @Json(name = "route_color") val routeColor: String? = null,
+    @Json(name = "route_text_color") val routeTextColor: String? = null,
+    val agency: TransitlandAgencyInfo? = null,
+    @Json(name = "route_stops") val routeStops: List<TransitlandRouteStopEntry>? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandRouteStopEntry(
+    val stop: TransitlandRouteStopPoint? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandRouteStopPoint(
+    @Json(name = "stop_id") val stopId: String? = null,
+    @Json(name = "stop_name") val stopName: String? = null,
+    val geometry: TransitlandGeometry? = null,
+)
+
 @JsonClass(generateAdapter = true)
 data class TransitlandOperatorsResponse(
     val operators: List<TransitlandOperator> = emptyList(),
@@ -56,4 +94,69 @@ data class TransitlandOperator(
     @Json(name = "onestop_id") val onestopId: String = "",
     val name: String? = null,
     @Json(name = "short_name") val shortName: String? = null,
+)
+
+// === Stop Departures ===
+
+@JsonClass(generateAdapter = true)
+data class TransitlandDeparturesResponse(
+    val stops: List<TransitlandDepartureStop> = emptyList(),
+    val meta: TransitlandMeta? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandDepartureStop(
+    @Json(name = "onestop_id") val onestopId: String? = null,
+    @Json(name = "stop_name") val stopName: String? = null,
+    val departures: List<TransitlandDeparture> = emptyList(),
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandDeparture(
+    // Transitland nests route info under `trip.route`, not as a sibling of `trip`.
+    val trip: TransitlandTrip = TransitlandTrip(),
+    val arrival: TransitlandTimeInfo? = null,
+    val departure: TransitlandTimeInfo? = null,
+    @Json(name = "arrival_time") val arrivalTime: String? = null,
+    @Json(name = "departure_time") val departureTime: String? = null,
+    @Json(name = "stop_headsign") val stopHeadsign: String? = null,
+    val interpolated: Int? = null,
+    // Transitland returns this as a plain string (e.g. "STATIC"), not an array.
+    @Json(name = "schedule_relationship") val scheduleRelationship: String? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandTimeInfo(
+    val scheduled: String? = null,
+    @Json(name = "scheduled_utc") val scheduledUtc: String? = null,
+    val estimated: String? = null,
+    @Json(name = "estimated_utc") val estimatedUtc: String? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandTrip(
+    @Json(name = "trip_id") val tripId: String? = null,
+    @Json(name = "trip_headsign") val tripHeadsign: String? = null,
+    @Json(name = "onestop_id") val onestopId: String? = null,
+    @Json(name = "trip_short_name") val tripShortName: String? = null,
+    val route: TransitlandRouteInfo? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandRouteInfo(
+    @Json(name = "onestop_id") val onestopId: String? = null,
+    @Json(name = "route_id") val routeId: String? = null,
+    @Json(name = "route_short_name") val routeShortName: String? = null,
+    @Json(name = "route_long_name") val routeLongName: String? = null,
+    @Json(name = "route_type") val routeType: Int? = null,
+    @Json(name = "route_color") val routeColor: String? = null,
+    @Json(name = "route_text_color") val routeTextColor: String? = null,
+    val agency: TransitlandAgencyInfo? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandAgencyInfo(
+    @Json(name = "onestop_id") val onestopId: String? = null,
+    @Json(name = "agency_name") val agencyName: String? = null,
+    @Json(name = "agency_id") val agencyId: String? = null,
 )

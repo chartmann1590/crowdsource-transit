@@ -1,0 +1,13 @@
+Category: Maps & Navigation
+Content rating: Everyone
+Price: Free
+Contains ads: No
+In-app purchases: None
+Website: (add production URL here)
+Support email: (add support email here)
+Privacy policy URL: (add privacy policy URL here)
+
+Tags / keywords (for reference only — Play Store no longer uses a keywords field,
+title/description ASO matters instead):
+transit, bus tracker, train tracker, public transit, bus stops, live bus times,
+train schedule, subway map, crowdsourced transit, nearby transit, transit reviews

@@ -72,9 +72,24 @@ export function observeStopStats(
   let active = true;
   let firebaseUnsub: (() => void) | null = null;
 
-  getStopByOnestopId(stopId).then((tlStop) => {
+  const isTransitlandId = /^[rsdf]-/.test(stopId);
+
+  async function fetchStopData(): Promise<Stop | null> {
+    if (isTransitlandId) {
+      const tlStop = await getStopByOnestopId(stopId);
+      if (tlStop) return tlStop;
+    }
+    // Fallback/Default for crowdsourced / non-Transitland stop
+    const snap = await get(ref(database, `stops/${stopId}`));
+    if (snap.exists()) {
+      return snap.val() as Stop;
+    }
+    return null;
+  }
+
+  fetchStopData().then((baseStop) => {
     if (!active) return;
-    if (!tlStop) {
+    if (!baseStop) {
       onUpdate(null);
       return;
     }
@@ -82,9 +97,11 @@ export function observeStopStats(
     firebaseUnsub = onValue(stopRef, async (snap) => {
       if (!active) return;
       const stats = statsFrom(snap.val() as Record<string, unknown> | null);
-      const types = await transitTypesFor(tlStop.lat, tlStop.lng);
+      const types = baseStop.transitTypes && baseStop.transitTypes.length > 0
+        ? baseStop.transitTypes
+        : await transitTypesFor(baseStop.lat, baseStop.lng);
       if (active) {
-        onUpdate({ ...tlStop, ...stats, transitTypes: types, verified: true });
+        onUpdate({ ...baseStop, ...stats, transitTypes: types });
       }
     });
   }).catch(() => {
@@ -131,7 +148,17 @@ export async function searchStops(query_: string): Promise<Stop[]> {
 }
 
 export async function getStop(stopId: string): Promise<Stop | null> {
-  const tlStop = await getStopByOnestopId(stopId);
-  if (!tlStop) return null;
-  return enrichedStop(tlStop);
+  const isTransitlandId = /^[rsdf]-/.test(stopId);
+  let baseStop: Stop | null = null;
+  if (isTransitlandId) {
+    baseStop = await getStopByOnestopId(stopId);
+  }
+  if (!baseStop) {
+    const snap = await get(ref(database, `stops/${stopId}`));
+    if (snap.exists()) {
+      baseStop = snap.val() as Stop;
+    }
+  }
+  if (!baseStop) return null;
+  return enrichedStop(baseStop);
 }

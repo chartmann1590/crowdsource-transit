@@ -1,4 +1,4 @@
-﻿export type TransitType = 'bus' | 'train' | 'subway' | 'ferry' | 'tram' | 'cable_car' | 'monorail' | 'funicular';
+export type TransitType = 'bus' | 'train' | 'subway' | 'ferry' | 'tram' | 'cable_car' | 'monorail' | 'funicular';
 
 export interface Agency {
   agencyId: string;
@@ -29,6 +29,7 @@ export interface Stop {
   city: string;
   transitTypes: TransitType[];
   routeIds: Record<string, boolean>;
+  agencyNames: string[];
   ratingSum: number;
   ratingCount: number;
   commentCount: number;
@@ -48,6 +49,7 @@ export interface Stop {
   addedAt: number;
   lastUpdated: number;
   active: boolean;
+  route_stops?: any[];
 }
 
 export interface Route {

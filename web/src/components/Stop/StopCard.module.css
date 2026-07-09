@@ -38,6 +38,13 @@
   font-size: 12px;
 }
 
+.agency {
+  display: block;
+  color: var(--color-ink-secondary);
+  font-size: 12px;
+  margin-bottom: var(--space-sm);
+}
+
 .badges {
   display: flex;
   flex-wrap: wrap;

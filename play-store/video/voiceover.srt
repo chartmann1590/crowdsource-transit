@@ -1,0 +1,44 @@
+1
+00:00:00,050 --> 00:00:03,984
+Ever stood at a bus stop with no idea what's coming, or when?
+
+2
+00:00:03,984 --> 00:00:10,065
+Meet CrowdTransit — the free app that finds every bus, train, and ferry stop near you.
+
+3
+00:00:10,065 --> 00:00:17,994
+See exactly who runs each stop, with real upcoming departures, tagged live when real-time data is available.
+
+4
+00:00:17,994 --> 00:00:23,697
+Tap any route, and see every single stop it makes, from one end of the line to the other.
+
+5
+00:00:23,697 --> 00:00:29,752
+Rate stops, report live conditions, and help your community know what's really happening, right now.
+
+6
+00:00:29,752 --> 00:00:30,703
+It's free.
+
+7
+00:00:30,703 --> 00:00:31,770
+No ads.
+
+8
+00:00:31,770 --> 00:00:32,838
+No catch.
+
+9
+00:00:32,838 --> 00:00:35,494
+Just find your ride, and share the knowledge.
+
+10
+00:00:35,494 --> 00:00:36,640
+CrowdTransit.
+
+11
+00:00:36,640 --> 00:00:37,838
+Available now.
+

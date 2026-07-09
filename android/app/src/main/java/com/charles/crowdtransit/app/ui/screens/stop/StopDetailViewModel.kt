@@ -14,8 +14,11 @@ import com.charles.crowdtransit.model.ActivityEvent
 import com.charles.crowdtransit.model.Comment
 import com.charles.crowdtransit.model.PointAction
 import com.charles.crowdtransit.model.Rating
+import com.charles.crowdtransit.model.ServedDeparture
+import com.charles.crowdtransit.model.ServedRoute
 import com.charles.crowdtransit.model.Stop
 import com.charles.crowdtransit.model.StopPhoto
+import com.charles.crowdtransit.app.data.repository.TransitlandRateLimitException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,6 +37,13 @@ data class StopDetailUiState(
     val photos: List<StopPhoto> = emptyList(),
     val hasCheckedInRecently: Boolean = false,
     val pointsBurst: Int? = null,
+    val servedRoutes: List<ServedRoute> = emptyList(),
+    val upcoming: List<ServedDeparture> = emptyList(),
+    val isLoadingSchedule: Boolean = false,
+    val scheduleRateLimited: Boolean = false,
+    val agencies: List<String> = emptyList(),
+    val resolvedStopId: String? = null,
+    val resolvedStopName: String? = null,
 )
 
 @HiltViewModel
@@ -52,10 +62,15 @@ class StopDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(StopDetailUiState())
     val uiState: StateFlow<StopDetailUiState> = _uiState.asStateFlow()
 
+    private var hasLoadedSchedule = false
+
     init {
         viewModelScope.launch {
             stopRepository.observeStop(stopId).collect { stop ->
                 _uiState.update { it.copy(stop = stop, isLoading = false) }
+                if (stop != null) {
+                    loadRoutesAndSchedule(stop)
+                }
             }
         }
         viewModelScope.launch {
@@ -75,6 +90,131 @@ class StopDetailViewModel @Inject constructor(
         viewModelScope.launch {
             photoRepository.observePhotos(stopId).collect { photos ->
                 _uiState.update { it.copy(photos = photos) }
+            }
+        }
+    }
+
+    private suspend fun loadRoutesAndSchedule(currentStop: Stop) {
+        if (hasLoadedSchedule) return
+        hasLoadedSchedule = true
+        _uiState.update { it.copy(isLoadingSchedule = true, scheduleRateLimited = false) }
+
+        val isTransitlandId = currentStop.stopId.startsWith("r-") || currentStop.stopId.startsWith("s-") ||
+                currentStop.stopId.startsWith("d-") || currentStop.stopId.startsWith("f-")
+
+        var targetStopId = currentStop.stopId
+        var targetStopName = currentStop.name
+
+        var loadedRoutes = emptyList<ServedRoute>()
+        var loadedAgencies = emptyList<String>()
+
+        // 1. If Firebase stop, pre-load static agency & routes from Firebase
+        if (!isTransitlandId) {
+            try {
+                val agency = currentStop.agencyId.takeIf { it.isNotBlank() }?.let { stopRepository.getAgency(it) }
+                val agencyName = agency?.name ?: ""
+                if (agencyName.isNotBlank()) {
+                    loadedAgencies = listOf(agencyName)
+                }
+
+                loadedRoutes = currentStop.routeIds.keys.mapNotNull { routeId ->
+                    stopRepository.getRoute(routeId)?.let { r ->
+                        ServedRoute(
+                            onestopId = r.routeId,
+                            routeId = r.routeId,
+                            shortName = r.shortName,
+                            longName = r.longName,
+                            routeType = null,
+                            transitType = r.type,
+                            color = r.color,
+                            textColor = r.textColor,
+                            agencyName = agencyName,
+                            nextDepartureTime = null,
+                        )
+                    }
+                }
+                _uiState.update {
+                    it.copy(
+                        servedRoutes = loadedRoutes,
+                        agencies = loadedAgencies
+                    )
+                }
+            } catch (e: Exception) {
+                // Ignore pre-load error, continue to coords resolution
+            }
+
+            // Find nearest Transitland stop within 200m (0.2km)
+            val nearby = try {
+                stopRepository.getStopsNearby(currentStop.lat, currentStop.lng, radiusKm = 0.2)
+            } catch (_: Exception) {
+                emptyList()
+            }
+            val nearestPublic = nearby.firstOrNull { s ->
+                s.stopId.startsWith("r-") || s.stopId.startsWith("s-") ||
+                        s.stopId.startsWith("d-") || s.stopId.startsWith("f-")
+            }
+            if (nearestPublic != null) {
+                targetStopId = nearestPublic.stopId
+                targetStopName = nearestPublic.name
+            } else {
+                _uiState.update {
+                    it.copy(
+                        isLoadingSchedule = false,
+                        scheduleRateLimited = false,
+                        resolvedStopId = null,
+                        resolvedStopName = null,
+                    )
+                }
+                return
+            }
+        }
+
+        // 2. Query departures for the target stop (could be the same public stop or resolved public stop)
+        try {
+            val result = stopRepository.getRoutesAndScheduleForStop(targetStopId)
+            val uniqueAgencies = result.routes.map { it.agencyName }.filter { it.isNotBlank() }.distinct()
+
+            _uiState.update {
+                it.copy(
+                    servedRoutes = if (loadedRoutes.isNotEmpty()) loadedRoutes else if (result.routes.isNotEmpty()) result.routes else it.servedRoutes,
+                    upcoming = result.upcoming,
+                    isLoadingSchedule = false,
+                    scheduleRateLimited = false,
+                    resolvedStopId = if (targetStopId != currentStop.stopId) targetStopId else null,
+                    resolvedStopName = if (targetStopId != currentStop.stopId) targetStopName else null,
+                    agencies = if (loadedAgencies.isNotEmpty()) loadedAgencies else if (uniqueAgencies.isNotEmpty()) uniqueAgencies else it.agencies
+                )
+            }
+        } catch (_: TransitlandRateLimitException) {
+            // Check if we can fallback to Transitland static routes
+            val fallbackRoutes = if (isTransitlandId) stopRepository.getStaticRoutesForStop(targetStopId) else emptyList()
+            val fallbackAgencies = fallbackRoutes.map { it.agencyName }.filter { it.isNotBlank() }.distinct()
+
+            _uiState.update {
+                it.copy(
+                    servedRoutes = if (loadedRoutes.isNotEmpty()) loadedRoutes else if (fallbackRoutes.isNotEmpty()) fallbackRoutes else it.servedRoutes,
+                    upcoming = emptyList(),
+                    isLoadingSchedule = false,
+                    scheduleRateLimited = true,
+                    resolvedStopId = if (targetStopId != currentStop.stopId) targetStopId else null,
+                    resolvedStopName = if (targetStopId != currentStop.stopId) targetStopName else null,
+                    agencies = if (loadedAgencies.isNotEmpty()) loadedAgencies else if (fallbackAgencies.isNotEmpty()) fallbackAgencies else it.agencies
+                )
+            }
+        } catch (_: Exception) {
+            // Check if we can fallback to Transitland static routes
+            val fallbackRoutes = if (isTransitlandId) stopRepository.getStaticRoutesForStop(targetStopId) else emptyList()
+            val fallbackAgencies = fallbackRoutes.map { it.agencyName }.filter { it.isNotBlank() }.distinct()
+
+            _uiState.update {
+                it.copy(
+                    servedRoutes = if (loadedRoutes.isNotEmpty()) loadedRoutes else if (fallbackRoutes.isNotEmpty()) fallbackRoutes else it.servedRoutes,
+                    upcoming = emptyList(),
+                    isLoadingSchedule = false,
+                    resolvedStopId = if (targetStopId != currentStop.stopId) targetStopId else null,
+                    resolvedStopName = if (targetStopId != currentStop.stopId) targetStopName else null,
+                    agencies = if (loadedAgencies.isNotEmpty()) loadedAgencies else if (fallbackAgencies.isNotEmpty()) fallbackAgencies else it.agencies
+                )
             }
         }
     }

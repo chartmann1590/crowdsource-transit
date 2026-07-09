@@ -89,6 +89,7 @@ fun CrowdTransitNavGraph(
             RouteDetailScreen(
                 routeId = routeId,
                 onBack = { navController.popBackStack() },
+                onStopClick = { navController.navigate(Screen.StopDetail.createRoute(it)) },
             )
         }
         composable(Screen.Search.route) {

@@ -36,17 +36,54 @@
 - Response stop object: `id`, `stop_id`, `stop_name`, `stop_code`, `stop_desc`, `onestop_id`,
   `geometry` (GeoJSON Point, `[lon, lat]`), `place.adm0_name`/`adm1_name` (country/state —
   no city field), `feed_version`, `level`, `parent`, `alerts[]`.
-  - **No `served_by_route_types` in the default stop response, and no working query
-    parameter to fetch "routes serving this specific stop" either** (confirmed against
-    the live `/routes` endpoint docs — its stop-related filters only go the other
-    direction: filter *stops* by route/agency, not routes by stop). Rather than guess
-    with an unreliable proximity-based workaround, Transitland-sourced stops show a
-    single generic "Transit" badge instead of per-mode Bus/Train/Subway/Ferry badges.
-    Locally crowdsourced stops (which store `transitTypes` directly, user-entered) keep
-    their accurate badges.
-  - No city name in the default schema; `place.adm1_name` (state/province) is available.
-    City will be left blank or backfilled from the nearest agency's known metro until/unless
-    a geocoding step is added later.
+- **No `served_by_route_types` in the default stop response** for the `/stops` list
+    endpoint. However, the **Stop Departures** endpoint
+    `GET /api/v2/rest/stops/{stop_key}/departures?relative_date=TODAY&next=86400`
+    does return per-departure `trip` + `route` + `agency` records, which we deduplicate
+    to derive the routes serving each stop and to populate the "Upcoming departures"
+    list on the Stop Detail screen (both web and Android). Free-tier; one extra call
+    per Stop Detail open, throttled client-side. See "Routes & Schedule" below.
+  - Locally crowdsourced stops (which store `transitTypes` directly, user-entered) keep
+    their accurate badges and show a "Schedule unavailable for community-added stops"
+    note instead of the departures section.
+   - No city name in the default schema; `place.adm1_name` (state/province) is available.
+     City will be left blank or backfilled from the nearest agency's known metro until/unless
+     a geocoding step is added later.
+
+## Routes & Schedule (Stop Detail enrichment)
+
+Added 2026-07-07. Reuses Transitland v2 REST Stop Departures endpoint (free tier,
+same `apikey` auth as everywhere else). No new Firebase nodes, no new GTFS import
+steps, no new dependencies.
+
+**Endpoint:** `GET /api/v2/rest/stops/{onestop_id}/departures`
+**Default query:** `relative_date=TODAY&next=86400&limit=200&include_alerts=false`
+
+**Derivation:**
+- **Routes serving this stop** = dedup of departure `route.onestop_id` across the full
+  service day, surfaced as colored pills (short name + long name + next-departure time).
+- **Upcoming departures** = departures with `departure_time >= now` (local), sorted
+  ascending, capped at 25 entries. Entries with `schedule_relationship.status != STATIC`
+  are tagged "LIVE".
+
+**Files touched:**
+- `web/src/api/transitland.ts` — `getRoutesAndScheduleServingStop()` + departure types
+- `web/src/components/Stop/StopDetail.tsx` — two new sections (Routes / Upcoming)
+- `web/src/components/Stop/StopDetail.module.css` — styles for the new sections
+- `android/.../data/remote/TransitlandApi.kt` — `getStopDepartures()` Retrofit method
+- `android/.../data/remote/TransitlandDtos.kt` — departure DTOs
+- `android/.../data/remote/TransitlandMapper.kt` — `toRoutesAndSchedule()` mapper
+- `android/.../data/repository/StopRepository.kt` — `getRoutesAndScheduleForStop()`
+- `android/.../ui/screens/stop/StopDetailViewModel.kt` — `servedRoutes`/`upcoming` state
+- `android/.../ui/screens/stop/StopDetailScreen.kt` — `RoutesServingStopSection` +
+  `UpcomingDeparturesSection` Composables, wires the previously-unused `onRouteClick`
+
+**Failure modes:**
+- HTTP 429 / 403 → `TransitlandRateLimitError` / `TransitlandRateLimitException` →
+  UI shows "Schedule info temporarily unavailable" instead of crashing.
+- Other HTTP errors → sections silently hidden (soft-fail).
+- Crowdsourced stops (no onestop-id) → sections skipped, "Schedule unavailable"
+  note shown.
 
 ## Architecture Change
 

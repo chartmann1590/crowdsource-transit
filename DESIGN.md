@@ -135,6 +135,21 @@ Profile page grid of earned milestone badges, locked badges shown dimmed/outline
 ### Quick Report Chips
 Pill chips on stop detail: On time / Late / Crowded / Empty / Not running.
 
+### Routes Serving This Stop
+Pill grid (web) / `LazyRow` of pills (Android) on stop detail. Each pill uses the
+route's GTFS `route_color` as background and `route_text_color` for text (defaulting
+to mode color from `--color-transit-*` when agency color is missing). Shows route
+short name (bold) + long name (small) + "Next HH:MM" of the next scheduled
+departure today. Tapping navigates to the route detail page. Hidden for
+crowdsourced stops.
+
+### Upcoming Departures
+List on stop detail, one row per departure: route short-name badge (route color
+background, white text) + `HH:MM` departure time (tabular-nums) + headsign. Realtime
+departures (`schedule_relationship != STATIC`) get a red "LIVE" tag. Empty state:
+"No scheduled departures in the near future." Loading state: small spinner +
+"Loading departures…". Rate-limited state: "Schedule info temporarily unavailable."
+
 ---
 
 ## Motion

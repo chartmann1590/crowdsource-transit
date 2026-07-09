@@ -73,3 +73,27 @@
   font-size: 15px;
   line-height: 1.8;
 }
+
+.promoVideo {
+  width: 100%;
+  max-width: 360px;
+  display: block;
+  margin: var(--space-md) auto;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
+  background: #000;
+}
+
+.screenshotStrip {
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  padding-bottom: var(--space-sm);
+}
+
+.screenshotStrip img {
+  height: 360px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-1);
+  flex-shrink: 0;
+}

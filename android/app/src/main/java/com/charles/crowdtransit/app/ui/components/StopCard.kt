@@ -101,6 +101,13 @@ fun StopCard(
                             color = OnSurfaceSecondary,
                         )
                     }
+                    if (!compact && stop.agencyNames.isNotEmpty()) {
+                        Text(
+                            text = stop.agencyNames.joinToString(", "),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = OnSurfaceSecondary,
+                        )
+                    }
                 }
                 if (distanceMeters != null) {
                     Text(

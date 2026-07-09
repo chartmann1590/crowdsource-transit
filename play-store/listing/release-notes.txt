@@ -1,0 +1,7 @@
+What's new in this release:
+
+• Live agency names on every stop — see exactly who runs it (MTA, MBTA, CDTA, and thousands more)
+• Real upcoming departures with LIVE tags for real-time data
+• Tap any route to see every stop it makes, in order, end to end
+• Faster, more reliable schedule loading, including for busy hub stations
+• Various bug fixes and stability improvements

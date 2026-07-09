@@ -26,6 +26,9 @@ export function StopCard({ stop, selected, onClick, onViewDetail }: StopCardProp
         <span className={styles.name}>{stop.name}</span>
         {location && <span className={styles.city}>{location}</span>}
       </div>
+      {(stop.agencyNames || []).length > 0 && (
+        <span className={styles.agency}>{stop.agencyNames.join(', ')}</span>
+      )}
       <div className={styles.badges}>
         {(stop.transitTypes || []).map((type) => (
           <TransitBadge key={type} type={type} size="sm" />

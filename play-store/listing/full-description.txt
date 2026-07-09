@@ -1,0 +1,45 @@
+CrowdTransit — Find your ride. Share the knowledge.
+
+CrowdTransit is a free, community-powered transit companion that shows you every bus, train, and ferry stop near you — who runs it, when it's coming, and where it goes. No subscriptions, no ads, no catch.
+
+WHY CROWDTRANSIT
+
+Most transit apps only cover one city or one agency. CrowdTransit pulls live, continuously-updated stop and schedule data from thousands of transit agencies across the US and abroad — MTA, MBTA, CDTA, WMATA, CTA, and thousands more you've never heard of, all in one app. If your local agency publishes real transit data, there's a good chance CrowdTransit already knows about it.
+
+WHAT YOU CAN DO
+
+🚏 Find every stop near you
+See every bus, train, subway, and ferry stop around your current location, or search any address or city in the country.
+
+🏢 See exactly who serves each stop
+Every stop shows its real transit agency by name — no more guessing which bus company actually runs the "42nd St" stop.
+
+🕒 Real upcoming departures
+Tap a stop to see its actual upcoming departures, tagged LIVE when real-time data is available, not just a static timetable.
+
+🗺️ Explore a full route, stop by stop
+Tap any route and see every single stop it makes, in order, from one end of the line to the other.
+
+⭐ Rate and review stops
+Leave a star rating and a review for any stop — is it covered? well-lit? always late? Help the next rider know what to expect.
+
+📍 Report live conditions
+Check in and flag a stop as on time, late, crowded, empty, or not running, so people already waiting there know what's really happening.
+
+📸 Add photos
+Snap a photo of a stop's signage, shelter, or platform to help others find it.
+
+➕ Add missing stops
+Found a stop that isn't listed? Add it yourself and help build out coverage for your community.
+
+📶 Download for offline use
+Save an agency's stops for offline access, so a dead zone doesn't leave you stranded.
+
+🏆 Earn points as you contribute
+Every review, photo, and check-in earns points and unlocks levels and badges — friendly competition for the most helpful local transit nerds.
+
+100% FREE, ALWAYS
+
+CrowdTransit is completely free with no ads and no in-app purchases. It's built by transit riders, for transit riders.
+
+Whether you're catching the bus to work, exploring a new city, or just tired of guessing when the next train shows up, CrowdTransit has your stop covered.

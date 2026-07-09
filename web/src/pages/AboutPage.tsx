@@ -32,6 +32,27 @@ export function AboutPage() {
         </section>
 
         <section className={styles.section}>
+          <h2>Get the App</h2>
+          <p>
+            CrowdTransit is free, with no ads and no in-app purchases. Get live stops,
+            schedules, and agency info for your city, right from your phone.
+          </p>
+          <video
+            className={styles.promoVideo}
+            src="/crowdsource-transit/press-kit/promo-video.mp4"
+            poster="/crowdsource-transit/press-kit/screenshot-stop-detail.png"
+            controls
+            playsInline
+          />
+          <div className={styles.screenshotStrip}>
+            <img src="/crowdsource-transit/press-kit/screenshot-map.png" alt="Map of nearby transit stops in CrowdTransit" />
+            <img src="/crowdsource-transit/press-kit/screenshot-stop-detail.png" alt="Stop detail screen showing service provider and live schedule" />
+            <img src="/crowdsource-transit/press-kit/screenshot-route-detail.png" alt="Route detail screen listing every stop on a route" />
+            <img src="/crowdsource-transit/press-kit/screenshot-live-activity.png" alt="Live activity check-in and route status reporting" />
+          </div>
+        </section>
+
+        <section className={styles.section}>
           <h2>Open Source</h2>
           <p>
             CrowdTransit is open source and built with modern web technologies.

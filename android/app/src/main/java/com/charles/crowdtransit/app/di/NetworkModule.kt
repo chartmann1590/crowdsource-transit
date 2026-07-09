@@ -48,7 +48,10 @@ object NetworkModule {
         return OkHttpClient.Builder()
             .dispatcher(dispatcher)
             .connectTimeout(5, TimeUnit.SECONDS)
-            .readTimeout(5, TimeUnit.SECONDS)
+            // Departures for busy hub stations (large stop_pattern/route payloads) can take
+            // longer than 5s to build server-side; 5s caused real timeouts on stations like
+            // Bristol Temple Meads. Matches the GitHub client's read timeout below.
+            .readTimeout(15, TimeUnit.SECONDS)
             .addInterceptor(apiKeyInterceptor)
             .addInterceptor(
                 HttpLoggingInterceptor().apply {

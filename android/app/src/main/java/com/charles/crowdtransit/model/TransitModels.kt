@@ -13,6 +13,7 @@ data class Stop(
     val city: String = "",
     val transitTypes: List<String> = emptyList(),
     val routeIds: Map<String, Boolean> = emptyMap(),
+    val agencyNames: List<String> = emptyList(),
     val ratingSum: Long = 0L,
     val ratingCount: Long = 0L,
     val commentCount: Long = 0L,
@@ -224,4 +225,55 @@ data class Report(
     val confirmCount: Long = 0L,
     val resolved: Boolean = false,
     val active: Boolean = true
+)
+
+/** A route that serves a stop, derived from Transitland stop-departures. */
+data class ServedRoute(
+    val onestopId: String = "",
+    val routeId: String = "",
+    val shortName: String = "",
+    val longName: String = "",
+    val routeType: Int? = null,
+    val transitType: String = "transit",
+    val color: String = "#00A862",
+    val textColor: String = "#FFFFFF",
+    val agencyName: String = "",
+    val nextDepartureTime: String? = null,
+)
+
+/** One stop along a route, in service order, derived from Transitland's route detail. */
+data class RouteStopSummary(
+    val gtfsStopId: String = "",
+    val name: String = "",
+    val lat: Double = 0.0,
+    val lng: Double = 0.0,
+)
+
+/** A route's metadata plus its ordered list of stops, derived from Transitland. */
+data class RouteWithStops(
+    val onestopId: String = "",
+    val routeId: String = "",
+    val shortName: String = "",
+    val longName: String = "",
+    val transitType: String = "transit",
+    val color: String = "#00A862",
+    val textColor: String = "#FFFFFF",
+    val agencyName: String = "",
+    val stops: List<RouteStopSummary> = emptyList(),
+)
+
+/** A single upcoming departure at a stop. */
+data class ServedDeparture(
+    val routeOnestopId: String = "",
+    val routeId: String = "",
+    val routeShortName: String = "",
+    val routeLongName: String = "",
+    val routeType: Int? = null,
+    val transitType: String = "transit",
+    val routeColor: String = "#00A862",
+    val headsign: String = "",
+    val departureTime: String = "",
+    val arrivalTime: String? = null,
+    val interpolated: Boolean = false,
+    val isRealtime: Boolean = false,
 )

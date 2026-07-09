@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -62,6 +63,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -182,6 +184,15 @@ fun StopDetailScreen(
                                 color = OnSurfaceSecondary,
                             )
                         }
+                        if (uiState.agencies.isNotEmpty()) {
+                            Text(
+                                text = "Service Provider: " + uiState.agencies.joinToString(", "),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Primary,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
 
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             if (stop.transitTypes.isEmpty()) {
@@ -265,6 +276,72 @@ fun StopDetailScreen(
                             viewModel.submitQuickReport(type)
                         },
                     )
+                }
+
+                if (shouldShowRoutesSection(stop, uiState)) {
+                    item {
+                        if (stop.crowdsourced && uiState.resolvedStopName != null) {
+                            Text(
+                                text = "Schedules linked from nearby stop: ${uiState.resolvedStopName}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = OnSurfaceSecondary,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        RoutesServingStopSection(
+                            routes = uiState.servedRoutes,
+                            isLoading = uiState.isLoadingSchedule,
+                            rateLimited = uiState.scheduleRateLimited,
+                            onRouteClick = onRouteClick,
+                        )
+                        Divider(color = SurfaceElevated, modifier = Modifier.padding(top = 12.dp))
+                    }
+                }
+
+                if (shouldShowDeparturesSection(stop, uiState)) {
+                    item {
+                        if (stop.crowdsourced && uiState.resolvedStopName != null) {
+                            Text(
+                                text = "Schedules linked from nearby stop: ${uiState.resolvedStopName}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = OnSurfaceSecondary,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        UpcomingDeparturesSection(
+                            departures = uiState.upcoming,
+                            isLoading = uiState.isLoadingSchedule,
+                            rateLimited = uiState.scheduleRateLimited,
+                            onRouteClick = onRouteClick,
+                        )
+                        Divider(color = SurfaceElevated, modifier = Modifier.padding(top = 12.dp))
+                    }
+                }
+
+                if (stop.crowdsourced) {
+                    if (uiState.isLoadingSchedule) {
+                        item {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = Primary)
+                                Text("Finding nearby public transit stop…", style = MaterialTheme.typography.bodySmall, color = OnSurfaceSecondary)
+                            }
+                        }
+                    } else if (uiState.resolvedStopId == null) {
+                        item {
+                            Text(
+                                "Schedule unavailable: no nearby public transit stop found.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = OnSurfaceSecondary,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            )
+                        }
+                    }
                 }
 
                 item {
@@ -479,4 +556,228 @@ private fun decodeBase64(data: String): Bitmap? = try {
     BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 } catch (_: Exception) {
     null
+}
+
+private fun hasOnestopId(stop: com.charles.crowdtransit.model.Stop): Boolean {
+    val sid = stop.stopId
+    return !stop.crowdsourced &&
+        (sid.startsWith("r-") || sid.startsWith("s-") || sid.startsWith("d-") || sid.startsWith("f-"))
+}
+
+private fun shouldShowRoutesSection(
+    stop: com.charles.crowdtransit.model.Stop,
+    uiState: StopDetailUiState,
+): Boolean {
+    return uiState.servedRoutes.isNotEmpty() || uiState.isLoadingSchedule || uiState.scheduleRateLimited
+}
+
+private fun shouldShowDeparturesSection(
+    stop: com.charles.crowdtransit.model.Stop,
+    uiState: StopDetailUiState,
+): Boolean {
+    val hasId = hasOnestopId(stop) || uiState.resolvedStopId != null
+    return hasId && (uiState.upcoming.isNotEmpty() || uiState.isLoadingSchedule || uiState.scheduleRateLimited)
+}
+
+@Composable
+private fun RoutesServingStopSection(
+    routes: List<com.charles.crowdtransit.model.ServedRoute>,
+    isLoading: Boolean,
+    rateLimited: Boolean,
+    onRouteClick: (String) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text("Routes serving this stop", style = MaterialTheme.typography.titleMedium, color = OnSurface)
+
+        when {
+            isLoading -> Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = Primary)
+                Text("Loading routes…", style = MaterialTheme.typography.bodyMedium, color = OnSurfaceSecondary)
+            }
+            rateLimited -> Text(
+                "Schedule info temporarily unavailable.",
+                style = MaterialTheme.typography.bodySmall,
+                color = OnSurfaceSecondary,
+            )
+            routes.isEmpty() -> Text(
+                "No route data found for this stop.",
+                style = MaterialTheme.typography.bodySmall,
+                color = OnSurfaceSecondary,
+            )
+            else -> LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(routes, key = { it.onestopId }) { route ->
+                    RoutePill(route = route, onClick = { onRouteClick(route.onestopId) })
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RoutePill(
+    route: com.charles.crowdtransit.model.ServedRoute,
+    onClick: () -> Unit,
+) {
+    val bgColor = remember(route.color) { parseHexColorOrNull(route.color) ?: Primary }
+    val textColor = remember(route.textColor) { parseHexColorOrNull(route.textColor) ?: androidx.compose.ui.graphics.Color.White }
+    Column(
+        modifier = Modifier
+            .clip(RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+            .background(bgColor)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .widthIn(max = 220.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(
+            route.shortName.ifBlank { route.transitType.replaceFirstChar { it.uppercase() } },
+            color = textColor,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
+        )
+        if (route.longName.isNotBlank() || route.agencyName.isNotBlank()) {
+            Text(
+                route.longName.ifBlank { route.agencyName },
+                color = textColor,
+                style = MaterialTheme.typography.labelSmall,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            )
+        }
+        route.nextDepartureTime?.let { next ->
+            Text(
+                "Next ${next.take(5)}",
+                color = textColor.copy(alpha = 0.85f),
+                style = MaterialTheme.typography.labelSmall,
+            )
+        }
+    }
+}
+
+@Composable
+private fun UpcomingDeparturesSection(
+    departures: List<com.charles.crowdtransit.model.ServedDeparture>,
+    isLoading: Boolean,
+    rateLimited: Boolean,
+    onRouteClick: (String) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text("Upcoming departures", style = MaterialTheme.typography.titleMedium, color = OnSurface)
+
+        when {
+            isLoading -> Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = Primary)
+                Text("Loading departures…", style = MaterialTheme.typography.bodyMedium, color = OnSurfaceSecondary)
+            }
+            rateLimited -> Text(
+                "Schedule info temporarily unavailable.",
+                style = MaterialTheme.typography.bodySmall,
+                color = OnSurfaceSecondary,
+            )
+            departures.isEmpty() -> Text(
+                "No scheduled departures in the near future.",
+                style = MaterialTheme.typography.bodySmall,
+                color = OnSurfaceSecondary,
+            )
+            else -> Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                departures.forEachIndexed { index, dep ->
+                    DepartureRow(
+                        departure = dep,
+                        onClick = { onRouteClick(dep.routeOnestopId) },
+                    )
+                    if (index < departures.lastIndex) {
+                        Divider(color = SurfaceElevated, thickness = 1.dp)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DepartureRow(
+    departure: com.charles.crowdtransit.model.ServedDeparture,
+    onClick: () -> Unit,
+) {
+    val badgeColor = remember(departure.routeColor) { parseHexColorOrNull(departure.routeColor) ?: Primary }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(4.dp))
+                .background(badgeColor)
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                departure.routeShortName.ifBlank { departure.transitType.replaceFirstChar { it.uppercase() } },
+                color = androidx.compose.ui.graphics.Color.White,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+        Text(
+            departure.departureTime.take(5),
+            style = MaterialTheme.typography.bodyMedium,
+            color = OnSurface,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.width(48.dp),
+        )
+        Text(
+            departure.headsign.ifBlank { departure.routeLongName.ifBlank { "—" } },
+            style = MaterialTheme.typography.bodyMedium,
+            color = OnSurfaceSecondary,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        if (departure.isRealtime) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(androidx.compose.ui.graphics.Color(0xFFDE3730))
+                    .padding(horizontal = 5.dp, vertical = 1.dp),
+            ) {
+                Text(
+                    "LIVE",
+                    color = androidx.compose.ui.graphics.Color.White,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+    }
+}
+
+private fun parseHexColorOrNull(hex: String): androidx.compose.ui.graphics.Color? {
+    if (hex.isBlank()) return null
+    val normalized = if (hex.startsWith("#")) hex else "#$hex"
+    return try {
+        androidx.compose.ui.graphics.Color(android.graphics.Color.parseColor(normalized))
+    } catch (_: Exception) {
+        null
+    }
 }

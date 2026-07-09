@@ -53,6 +53,7 @@ export function MapView({
         properties: {
           stopId: stop.stopId,
           name: stop.name,
+          agencyNames: (stop.agencyNames || []).join(', '),
           transitType: stop.transitTypes?.[0] || 'bus',
           color: stop.stopId === selectedStopId
             ? SELECTED_COLOR
@@ -140,9 +141,21 @@ export function MapView({
       map.on('click', STOP_MARKERS_LAYER, (e) => {
         const props = e.features?.[0]?.properties;
         if (props?.stopId) {
+          const content = document.createElement('div');
+          const nameEl = document.createElement('div');
+          nameEl.textContent = props.name;
+          nameEl.style.fontWeight = '700';
+          content.appendChild(nameEl);
+          if (props.agencyNames) {
+            const agencyEl = document.createElement('div');
+            agencyEl.textContent = props.agencyNames;
+            agencyEl.style.fontSize = '12px';
+            agencyEl.style.opacity = '0.75';
+            content.appendChild(agencyEl);
+          }
           new maplibregl.Popup()
             .setLngLat(e.lngLat)
-            .setText(props.name)
+            .setDOMContent(content)
             .addTo(map);
           onStopClick?.(props.stopId);
         }
