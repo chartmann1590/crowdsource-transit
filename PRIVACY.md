@@ -48,7 +48,7 @@ User-generated content (ratings, comments, photos, activity) remains visible unt
 ## Your Rights & Choices
 
 - **Anonymous browsing** – You can use the app without an account. Most features (map, stop details, schedules) are available anonymously.
-- **Account deletion** – Contact us at the email below to request deletion of your account and associated data.
+- **Account deletion** – Submit a request on our <a href="https://chartmann1590.github.io/crowdsource-transit/account-deletion.html" target="_blank">Account Deletion page</a>, or email us at the address below.
 - **Location** – You can deny or revoke location permission at any time via your device settings.
 - **Opt out of analytics** – You can disable analytics sharing via your device settings (Android: Settings > Privacy > Ads).
 

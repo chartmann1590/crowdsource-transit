@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Account Deletion — CrowdTransit</title>
+    <meta name="description" content="Request deletion of your CrowdTransit account and associated data." />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #FAFAF7;
+        color: #1a1a1a;
+        line-height: 1.6;
+        padding: 2rem 1rem;
+      }
+      .container { max-width: 680px; margin: 0 auto; }
+      h1 { font-size: 1.75rem; margin-bottom: 0.5rem; }
+      h2 { font-size: 1.2rem; margin-top: 2rem; margin-bottom: 0.75rem; }
+      p { margin-bottom: 1rem; }
+      ul { margin-bottom: 1rem; padding-left: 1.5rem; }
+      li { margin-bottom: 0.4rem; }
+      .card {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+      }
+      .card h3 { margin-bottom: 0.5rem; }
+      .btn {
+        display: inline-block;
+        background: #1a73e8;
+        color: #fff;
+        text-decoration: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+      }
+      .btn:hover { background: #1557b0; }
+      .footer { margin-top: 2rem; font-size: 0.85rem; color: #666; }
+      code { background: #eee; padding: 0.1rem 0.3rem; border-radius: 4px; font-size: 0.9em; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Account Deletion Request</h1>
+      <p>CrowdTransit</p>
+
+      <div class="card">
+        <h3>How to request deletion</h3>
+        <p>Send an email from the address associated with your CrowdTransit account to:</p>
+        <p><a class="btn" href="mailto:crowdtransit.app@gmail.com?subject=Account%20Deletion%20Request&body=I%20would%20like%20to%20request%20deletion%20of%20my%20CrowdTransit%20account%20and%20all%20associated%20data.%0A%0AMy%20account%20email%3A%20(enter%20your%20email%20here)%0A%0AReason%20(optional)%3A">Send Deletion Request Email</a></p>
+        <p style="font-size:0.9rem;color:#555;">
+          Or manually email <strong>crowdtransit.app@gmail.com</strong> with the subject line
+          "Account Deletion Request" and include the email address tied to your account.
+        </p>
+      </div>
+
+      <h2>What happens after you request deletion</h2>
+      <ol>
+        <li>We will verify the request by confirming it came from your account's email address.</li>
+        <li>We will process the deletion within <strong>7 business days</strong>.</li>
+        <li>You will receive a confirmation email once deletion is complete.</li>
+      </ol>
+
+      <h2>Data that is deleted</h2>
+      <ul>
+        <li>Account credentials (email, display name, profile photo) — via Firebase Authentication</li>
+        <li>Ratings and reviews you submitted</li>
+        <li>Comments you posted</li>
+        <li>Check-ins and activity history</li>
+        <li>Photos you uploaded of transit stops</li>
+        <li>Crowdsourced stop submissions</li>
+        <li>Leaderboard entries and points</li>
+      </ul>
+
+      <h2>Data that is kept</h2>
+      <ul>
+        <li><strong>Nothing personal.</strong> No personal data is retained after deletion.</li>
+        <li>If you submitted content anonymously (without an account), it cannot be linked to you and will remain visible but disassociated from any account.</li>
+      </ul>
+
+      <h2>Additional retention periods</h2>
+      <ul>
+        <li><strong>Crash logs</strong> (Firebase Crashlytics) — retained for approximately 90 days, then automatically purged. These are not linked to your account.</li>
+        <li><strong>Backup copies</strong> — Firebase may retain encrypted backup data for up to 30 days after deletion before purging.</li>
+      </ul>
+
+      <p style="margin-top:2rem;">
+        Questions? Email <a href="mailto:crowdtransit.app@gmail.com">crowdtransit.app@gmail.com</a>.
+      </p>
+
+      <div class="footer">
+        <a href="https://chartmann1590.github.io/crowdsource-transit/">crowdtransit.app</a> &middot;
+        <a href="https://github.com/chartmann1590/crowdsource-transit/blob/main/PRIVACY.md">Privacy Policy</a>
+      </div>
+    </div>
+  </body>
+</html>
