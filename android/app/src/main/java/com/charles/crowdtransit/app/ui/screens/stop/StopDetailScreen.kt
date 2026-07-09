@@ -1,5 +1,8 @@
 package com.charles.crowdtransit.app.ui.screens.stop
 
+import androidx.compose.runtime.LaunchedEffect
+import com.charles.crowdtransit.app.data.ads.interstitialAdManager
+
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Base64
@@ -115,6 +118,12 @@ fun StopDetailScreen(
     var fullscreenPhotoIndex by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffectClearBurst(uiState.pointsBurst, viewModel::clearPointsBurst)
+
+    LaunchedEffect(stopId) {
+        (context as? android.app.Activity)?.let { activity ->
+            context.interstitialAdManager().maybeShow(activity)
+        }
+    }
 
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         if (uri != null) {

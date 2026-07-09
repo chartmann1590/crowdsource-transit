@@ -53,6 +53,41 @@ android {
             "FEEDBACK_ASSETS_DIR",
             "\"feedback-assets\"",
         )
+
+        // Google's official AdMob test IDs (safe to use/hardcode; never serve real ads).
+        // Used as the default everywhere except the release build type, which pulls the
+        // real production IDs from local.properties (populated from GitHub secrets in CI).
+        manifestPlaceholders["admobAppId"] = "ca-app-pub-3940256099942544~3347511713"
+        buildConfigField("String", "ADMOB_BANNER_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
+        buildConfigField("String", "ADMOB_INTERSTITIAL_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/1033173712\"")
+    }
+
+    signingConfigs {
+        getByName("debug") {
+            // Default debug keystore; reused for release below so CI can produce an
+            // installable release build without provisioning a dedicated release key yet.
+        }
+    }
+
+    buildTypes {
+        debug {
+            // Test ad IDs from defaultConfig apply as-is.
+        }
+        release {
+            signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = false
+            manifestPlaceholders["admobAppId"] = localProperties.getProperty(
+                "admob.appId", "ca-app-pub-3940256099942544~3347511713",
+            )
+            buildConfigField(
+                "String", "ADMOB_BANNER_AD_UNIT_ID",
+                "\"${localProperties.getProperty("admob.bannerId", "ca-app-pub-3940256099942544/6300978111")}\"",
+            )
+            buildConfigField(
+                "String", "ADMOB_INTERSTITIAL_AD_UNIT_ID",
+                "\"${localProperties.getProperty("admob.interstitialId", "ca-app-pub-3940256099942544/1033173712")}\"",
+            )
+        }
     }
 
     buildFeatures {
@@ -98,6 +133,7 @@ dependencies {
     implementation("com.google.firebase:firebase-perf-ktx")
 
     implementation("com.google.android.gms:play-services-auth:21.3.0")
+    implementation("com.google.android.gms:play-services-ads:23.6.0")
 
     implementation("org.maplibre.gl:android-sdk:11.8.0")
 

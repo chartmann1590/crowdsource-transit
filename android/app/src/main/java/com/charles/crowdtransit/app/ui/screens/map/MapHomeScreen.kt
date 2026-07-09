@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.charles.crowdtransit.app.ui.components.BannerAdView
 import com.charles.crowdtransit.app.ui.components.MapLibreView
 import com.charles.crowdtransit.app.ui.components.SearchBar
 import com.charles.crowdtransit.app.ui.components.StopCard
@@ -94,6 +95,7 @@ fun MapHomeScreen(
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Spacer(Modifier.height(8.dp))
+                BannerAdView(modifier = Modifier.padding(bottom = 8.dp))
                 if (uiState.isLoading) {
                     CircularProgressIndicator(modifier = Modifier.padding(16.dp), color = Primary)
                 } else if (uiState.error != null) {
