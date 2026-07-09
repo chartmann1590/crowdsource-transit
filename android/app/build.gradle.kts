@@ -138,7 +138,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:21.3.0")
     implementation("com.google.android.gms:play-services-ads:23.6.0")
 
-    implementation("org.maplibre.gl:android-sdk:11.8.0")
+    implementation("org.maplibre.gl:android-sdk:13.3.1")
 
     implementation("com.google.android.gms:play-services-location:21.3.0")
 
