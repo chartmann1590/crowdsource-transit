@@ -29,6 +29,10 @@ jobs:
         run: |
           echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > android/app/google-services.json
 
+      - name: Decode release keystore
+        run: |
+          echo "${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.keystore.jks
+
       - name: Write local.properties
         run: |
           echo "sdk.dir=${ANDROID_HOME}" > android/local.properties
@@ -39,6 +43,10 @@ jobs:
           echo "admob.appId=${{ secrets.ADMOB_APP_ID }}" >> android/local.properties
           echo "admob.bannerId=${{ secrets.ADMOB_BANNER_ID }}" >> android/local.properties
           echo "admob.interstitialId=${{ secrets.ADMOB_INTERSTITIAL_ID }}" >> android/local.properties
+          echo "release.storeFile=release.keystore.jks" >> android/local.properties
+          echo "release.storePassword=${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" >> android/local.properties
+          echo "release.keyAlias=${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}" >> android/local.properties
+          echo "release.keyPassword=${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}" >> android/local.properties
 
       - name: Grant execute permission to gradlew
         run: chmod +x android/gradlew
@@ -61,17 +69,25 @@ jobs:
             -PappVersionCode=${{ github.run_number }} \
             -PappVersionName="1.0.${{ github.run_number }}"
 
+      - name: Rename release artifacts with app name and version
+        id: rename
+        run: |
+          base="CrowdTransit-1.0.${{ github.run_number }}-versionCode${{ github.run_number }}"
+          echo "base=${base}" >> "$GITHUB_OUTPUT"
+          mv android/app/build/outputs/apk/release/app-release.apk "android/app/build/outputs/apk/release/${base}.apk"
+          mv android/app/build/outputs/bundle/release/app-release.aab "android/app/build/outputs/bundle/release/${base}.aab"
+
       - name: Upload release APK artifact
         uses: actions/upload-artifact@v7
         with:
-          name: release-apk
-          path: android/app/build/outputs/apk/release/app-release.apk
+          name: ${{ steps.rename.outputs.base }}-apk
+          path: android/app/build/outputs/apk/release/${{ steps.rename.outputs.base }}.apk
 
       - name: Upload release App Bundle artifact
         uses: actions/upload-artifact@v7
         with:
-          name: release-aab
-          path: android/app/build/outputs/bundle/release/app-release.aab
+          name: ${{ steps.rename.outputs.base }}-aab
+          path: android/app/build/outputs/bundle/release/${{ steps.rename.outputs.base }}.aab
 
       - name: Create GitHub Release
         if: github.event_name == 'push'
@@ -81,5 +97,5 @@ jobs:
           name: v1.0.${{ github.run_number }} (versionCode ${{ github.run_number }})
           generate_release_notes: true
           files: |
-            android/app/build/outputs/apk/release/app-release.apk
-            android/app/build/outputs/bundle/release/app-release.aab
+            android/app/build/outputs/apk/release/${{ steps.rename.outputs.base }}.apk
+            android/app/build/outputs/bundle/release/${{ steps.rename.outputs.base }}.aab

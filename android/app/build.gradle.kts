@@ -66,9 +66,11 @@ android {
     }
 
     signingConfigs {
-        getByName("debug") {
-            // Default debug keystore; reused for release below so CI can produce an
-            // installable release build without provisioning a dedicated release key yet.
+        create("release") {
+            storeFile = file(localProperties.getProperty("release.storeFile", "release.keystore.jks"))
+            storePassword = localProperties.getProperty("release.storePassword", "")
+            keyAlias = localProperties.getProperty("release.keyAlias", "")
+            keyPassword = localProperties.getProperty("release.keyPassword", "")
         }
     }
 
@@ -77,7 +79,7 @@ android {
             // Test ad IDs from defaultConfig apply as-is.
         }
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             manifestPlaceholders["admobAppId"] = localProperties.getProperty(
                 "admob.appId", "ca-app-pub-3940256099942544~3347511713",
