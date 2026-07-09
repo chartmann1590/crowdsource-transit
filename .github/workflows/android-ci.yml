@@ -50,7 +50,7 @@ jobs:
         run: cd android && ./gradlew test
 
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
@@ -62,13 +62,13 @@ jobs:
             -PappVersionName="1.0.${{ github.run_number }}"
 
       - name: Upload release APK artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-apk
           path: android/app/build/outputs/apk/release/app-release.apk
 
       - name: Upload release App Bundle artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-aab
           path: android/app/build/outputs/bundle/release/app-release.aab
