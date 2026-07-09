@@ -96,7 +96,7 @@ jobs:
           fi
 
       - name: Process issues
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           FIREBASE_PROJECT_NUMBER: ${{ env.FIREBASE_PROJECT_NUMBER }}
           FIREBASE_APP_ID: ${{ env.FIREBASE_APP_ID }}
