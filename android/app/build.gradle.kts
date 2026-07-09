@@ -98,6 +98,14 @@ android {
         buildConfig = true
     }
 
+    lint {
+        // Works around a lint-tooling crash (not a real issue in our code): this AGP/Kotlin
+        // analysis API version combo throws "Found class ...KaCallableMemberCall, but
+        // interface was expected" inside NonNullableMutableLiveDataDetector, which otherwise
+        // fails lintVitalAnalyzeRelease and blocks every release build.
+        disable += "NullSafeMutableLiveData"
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

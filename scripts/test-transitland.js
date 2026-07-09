@@ -8,8 +8,9 @@ function test() {
     console.error('Missing TRANSITLAND_API_KEY in scripts/.env');
     process.exit(1);
   }
-  const url = `https://api.transit.land/api/v2/rest/stops/s-dred9eryky-albanyny?apikey=${apiKey}`;
-  console.log('Fetching:', url.replace(apiKey, '***'));
+  const endpoint = '/api/v2/rest/stops/s-dred9eryky-albanyny';
+  const url = `https://api.transit.land${endpoint}?apikey=${apiKey}`;
+  console.log('Fetching:', `https://api.transit.land${endpoint}?apikey=***`);
   
   https.get(url, (res) => {
     console.log('Status:', res.statusCode, res.statusMessage);
