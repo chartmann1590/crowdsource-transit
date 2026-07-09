@@ -171,7 +171,7 @@ dependencies {
 
     // Force 16 KB-aligned version; the Compose BOM pulls in an older build via
     // androidx.graphics:graphics-core that contains a misaligned libandroidx.graphics.path.so
-    implementation("androidx.graphics:graphics-path:1.0.1")
+    implementation("androidx.graphics:graphics-path:1.1.0")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 
