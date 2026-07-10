@@ -8,7 +8,8 @@
     "import:all": "node import-all.js",
     "import:agency": "node import-agency.js",
     "index:geofire": "node update-geofire.js",
-    "verify": "node verify-import.js"
+    "verify": "node verify-import.js",
+    "check:play-listing": "node check-play-listing.js"
   },
   "keywords": [],
   "author": "",
@@ -18,6 +19,7 @@
     "csv-parser": "^3.2.1",
     "dotenv": "^17.4.2",
     "firebase-admin": "^14.1.0",
+    "googleapis": "^160.0.0",
     "ngeohash": "^0.6.3",
     "node-fetch": "^3.3.2"
   },
