@@ -1,0 +1,119 @@
+name: Publish to Google Play
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_play_publish:
+        description: 'Type "publish" to confirm submission to Google Play production'
+        required: true
+        type: string
+      release_notes:
+        description: 'Release notes for this version (optional; defaults to commit log)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm publish intent
+        if: github.event.inputs.confirm_play_publish != 'publish'
+        run: |
+          echo "Release not confirmed. Set confirm_play_publish to 'publish' to proceed."
+          exit 1
+
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Compute version code and version name
+        id: version
+        run: |
+          version_code="$(date -u +'%y%j%H%M')"
+          version_name="1.0.$(date -u +'%Y%m%d.%H%M')"
+          echo "version_code=${version_code}" >> "$GITHUB_OUTPUT"
+          echo "version_name=${version_name}" >> "$GITHUB_OUTPUT"
+          echo "ANDROID_VERSION_CODE=${version_code}" >> "$GITHUB_ENV"
+          echo "ANDROID_VERSION_NAME=${version_name}" >> "$GITHUB_ENV"
+
+      - name: Decode google-services.json
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > android/app/google-services.json
+
+      - name: Decode release keystore
+        run: |
+          echo "${{ secrets.ANDROID_RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.keystore.jks
+
+      - name: Write local.properties
+        run: |
+          echo "sdk.dir=${ANDROID_HOME}" > android/local.properties
+          echo "transitland.apiKey=${{ secrets.TRANSITLAND_API_KEY }}" >> android/local.properties
+          echo "admob.appId=${{ secrets.ADMOB_APP_ID }}" >> android/local.properties
+          echo "admob.bannerId=${{ secrets.ADMOB_BANNER_ID }}" >> android/local.properties
+          echo "admob.interstitialId=${{ secrets.ADMOB_INTERSTITIAL_ID }}" >> android/local.properties
+          echo "release.storeFile=release.keystore.jks" >> android/local.properties
+          echo "release.storePassword=${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" >> android/local.properties
+          echo "release.keyAlias=${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}" >> android/local.properties
+          echo "release.keyPassword=${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}" >> android/local.properties
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x android/gradlew
+
+      - name: Run unit tests
+        run: cd android && ./gradlew test
+
+      - name: Run lint
+        run: cd android && ./gradlew lintRelease
+
+      - name: Build release App Bundle
+        run: |
+          cd android && ./gradlew bundleRelease
+
+      - name: Generate release notes
+        run: |
+          mkdir -p distribution/whatsnew
+          whatsnew_dir="distribution/whatsnew/whatsnew-en-US"
+          if [ -n "${{ github.event.inputs.release_notes }}" ]; then
+            echo "${{ github.event.inputs.release_notes }}" > "${whatsnew_dir}"
+          else
+            last_tag="$(git describe --tags --abbrev=0 2>/dev/null || echo '')"
+            if [ -n "${last_tag}" ]; then
+              git log "${last_tag}..HEAD" --pretty=format:'* %s' > "${whatsnew_dir}"
+            elif [ -f play-store/listing/release-notes.txt ]; then
+              cp play-store/listing/release-notes.txt "${whatsnew_dir}"
+            else
+              echo "Bug fixes and performance improvements." > "${whatsnew_dir}"
+            fi
+          fi
+
+      - name: Upload App Bundle artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: CrowdTransit-${{ steps.version.outputs.version_name }}-versionCode${{ steps.version.outputs.version_code }}-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+
+      - name: Verify service account key
+        run: |
+          if [ -z "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}" ]; then
+            echo "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON secret is empty or missing."
+            exit 1
+          fi
+          echo "Service account key present."
+
+      - name: Publish to Google Play production
+        uses: r0adkll/upload-google-play@v1.1.5
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.charles.crowdtransit.app
+          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
+          track: production
+          status: completed
+          whatsNewDirectory: distribution/whatsnew
