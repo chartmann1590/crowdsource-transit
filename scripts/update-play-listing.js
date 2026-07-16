@@ -47,7 +47,11 @@ async function main() {
     });
     console.log(`Updated ${LANGUAGE} listing (title/shortDescription/fullDescription)`);
 
-    await publisher.edits.commit({ packageName: PACKAGE_NAME, editId });
+    await publisher.edits.commit({
+      packageName: PACKAGE_NAME,
+      editId,
+      changesNotSentForReview: true,
+    });
     console.log(`Committed edit ${editId}`);
   } catch (err) {
     await publisher.edits.delete({ packageName: PACKAGE_NAME, editId }).catch(() => {});
