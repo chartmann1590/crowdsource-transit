@@ -34,8 +34,9 @@ export function AboutPage() {
         <section className={styles.section}>
           <h2>Get the App</h2>
           <p>
-            CrowdTransit is free, with no ads and no in-app purchases. Get live stops,
-            schedules, and agency info for your city, right from your phone.
+            CrowdTransit is free to download, with no subscriptions and no in-app purchases
+            (supported by ads). Get live stops, schedules, and agency info for your city,
+            right from your phone.
           </p>
           <video
             className={styles.promoVideo}

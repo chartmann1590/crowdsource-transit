@@ -21,10 +21,13 @@ play-store/
     tablet-7in/                  7" tablet screenshots (see note below)
     tablet-10in/                 10" tablet screenshots (see note below)
   video/
-    promo-video.mp4               ~38s promo video for the store listing
-    voiceover-script.txt          Narration script
-    voiceover.mp3 / voiceover.srt Generated narration audio + timed captions
-    card-intro.png / card-free.png / card-outro.png  Title/outro cards used in the video
+    promo-video.mp4               ~38s vertical (1080x1920) promo video, e.g. for TikTok/Shorts
+    voiceover-script.txt          Narration script for promo-video.mp4
+    voiceover.mp3 / voiceover.srt Generated narration audio + timed captions for promo-video.mp4
+    card-intro.png / card-free.png / card-outro.png  Title/outro cards used in promo-video.mp4
+    promo-video-youtube.mp4       ~40s landscape (1920x1080) promo video, sized for YouTube/Play Store
+    voiceover-youtube-script.txt  Narration script for promo-video-youtube.mp4 (no "no ads" claim — the app shows ads)
+    voiceover-youtube.mp3 / voiceover-youtube.srt  Generated narration audio + timed captions for promo-video-youtube.mp4
 ```
 
 ## How these were made
@@ -47,6 +50,12 @@ play-store/
   cards, narrated with Microsoft Edge's neural TTS (`en-US-AndrewNeural`, via the
   `edge-tts` package) for a natural-sounding voiceover, with burned-in captions
   synced to the narration (`voiceover.srt`, rendered via ffmpeg's `subtitles` filter).
+- **`promo-video-youtube.mp4`**: a landscape 1920x1080 companion video for YouTube/the
+  Play Store listing, built the same way (ffmpeg + `edge-tts` narration + burned-in
+  captions from `voiceover-youtube.srt`), composited from the real icon, feature
+  graphic (blurred as a backdrop), and real phone screenshots (`graphics/phone/`).
+  The narration was rewritten to drop the old "no ads" claim, since the app does
+  show AdMob banner/interstitial ads — see `metadata.txt`'s `Contains ads: Yes`.
 
 ## Before submitting
 

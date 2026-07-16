@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** July 9, 2026
+**Last updated:** July 16, 2026
 
 ## Overview
 
@@ -37,7 +37,7 @@ CrowdTransit is a community-powered public transit locator. This policy explains
 
 - **Firebase (Google)** – All user-generated data (ratings, comments, photos, activity) is stored in Firebase Realtime Database. Firebase Authentication manages account credentials. See [Google's Privacy Policy](https://policies.google.com/privacy).
 - **Transitland API** – We fetch GTFS transit data from the Transitland API. No personal data is sent to Transitland.
-- **AdMob** – This app currently uses test ad units and does not serve real ads. If real ads are enabled in the future, AdMob may collect advertising identifiers.
+- **AdMob** – This app displays banner and interstitial ads served by Google AdMob. AdMob may collect advertising identifiers and other device information to serve and measure ads. See [Google's Privacy Policy](https://policies.google.com/privacy) and [How Google uses information from sites or apps that use our services](https://policies.google.com/technologies/partner-sites).
 
 We do **not** sell, rent, or share your personal data with third parties for their own marketing purposes.
 

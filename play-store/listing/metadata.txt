@@ -1,7 +1,7 @@
 Category: Maps & Navigation
 Content rating: Everyone
 Price: Free
-Contains ads: No
+Contains ads: Yes
 In-app purchases: None
 Website: (add production URL here)
 Support email: (add support email here)
