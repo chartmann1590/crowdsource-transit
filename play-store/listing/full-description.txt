@@ -2,6 +2,8 @@ CrowdTransit — Find your ride. Share the knowledge.
 
 CrowdTransit is a free, community-powered transit companion that shows you every bus, train, and ferry stop near you — who runs it, when it's coming, and where it goes. No subscriptions, no ads, no catch.
 
+DISCLAIMER: CrowdTransit is an independent, community-built app. It is not affiliated with, endorsed by, or operated by any government entity or transit agency. Stop, route, and schedule information is sourced from the official public GTFS feeds that transit agencies publish via the Transitland open data platform (https://www.transit.land) — the same feeds each agency publishes for their own riders. For the authoritative, official version of any agency's schedules, visit that agency's own website.
+
 WHY CROWDTRANSIT
 
 Most transit apps only cover one city or one agency. CrowdTransit pulls live, continuously-updated stop and schedule data from thousands of transit agencies across the US and abroad — MTA, MBTA, CDTA, WMATA, CTA, and thousands more you've never heard of, all in one app. If your local agency publishes real transit data, there's a good chance CrowdTransit already knows about it.

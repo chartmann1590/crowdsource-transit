@@ -4,6 +4,12 @@
 
 Community-powered public transit locator — find nearby bus stops, train stations, and transit routes anywhere in the world. Rate stops, leave reviews, and add missing locations. Powered by GTFS open data and community contributions.
 
+> **Disclaimer:** CrowdTransit is an independent, community-built project. It is not affiliated
+> with, endorsed by, or operated by any government entity or transit agency. Stop, route, and
+> schedule information is sourced from the official public GTFS feeds that transit agencies
+> publish via the [Transitland](https://www.transit.land) open data platform. For the
+> authoritative, official version of any agency's schedules, visit that agency's own website.
+
 [![GitHub Pages Deploy](https://github.com/chartmann1590/crowdsource-transit/actions/workflows/deploy-web.yml/badge.svg)](https://chartmann1590.github.io/crowdsource-transit/)
 [![Android CI](https://github.com/chartmann1590/crowdsource-transit/actions/workflows/android-ci.yml/badge.svg)](https://github.com/chartmann1590/crowdsource-transit/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)

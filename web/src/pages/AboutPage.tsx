@@ -59,6 +59,21 @@ export function AboutPage() {
             Check out the project on GitHub to contribute or report issues.
           </p>
         </section>
+
+        <section className={styles.section}>
+          <h2>Data Sources &amp; Disclaimer</h2>
+          <p>
+            CrowdTransit is an independent, community-built project. It is not affiliated with,
+            endorsed by, or operated by any government entity or transit agency. Stop, route, and
+            schedule information is sourced from the official public GTFS feeds that transit
+            agencies publish via the{' '}
+            <a href="https://www.transit.land" target="_blank" rel="noopener noreferrer">
+              Transitland
+            </a>{' '}
+            open data platform. For the authoritative, official version of any agency's
+            schedules, visit that agency's own website.
+          </p>
+        </section>
       </div>
     </div>
   );

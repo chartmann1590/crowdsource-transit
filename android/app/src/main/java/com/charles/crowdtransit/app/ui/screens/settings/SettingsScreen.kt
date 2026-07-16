@@ -1,5 +1,7 @@
 package com.charles.crowdtransit.app.ui.screens.settings
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,7 +39,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -62,6 +66,7 @@ fun SettingsScreen(
     feedbackViewModel: FeedbackViewModel = hiltViewModel(),
 ) {
     val useImperial by settingsViewModel.useImperialUnits.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     val showReportDialog by feedbackViewModel.showReportDialog.collectAsState()
     val reportState by feedbackViewModel.reportState.collectAsState()
@@ -189,6 +194,38 @@ fun SettingsScreen(
                     Spacer(Modifier.height(8.dp))
                 }
             }
+
+            Spacer(Modifier.height(24.dp))
+            Divider(color = OnSurfaceSecondary.copy(alpha = 0.2f))
+            Spacer(Modifier.height(16.dp))
+
+            Text(
+                text = "About",
+                style = MaterialTheme.typography.titleMedium,
+                color = OnSurface,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "CrowdTransit is an independent, community-built app. It is not affiliated with, " +
+                    "endorsed by, or operated by any government entity or transit agency. Stop, route, and " +
+                    "schedule information is sourced from the official public GTFS feeds that transit agencies " +
+                    "publish via the Transitland open data platform. For the authoritative, official version of " +
+                    "any agency's schedules, visit that agency's own website.",
+                style = MaterialTheme.typography.bodySmall,
+                color = OnSurfaceSecondary,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "Data source: transit.land",
+                style = MaterialTheme.typography.bodySmall,
+                color = Primary,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.clickable {
+                    context.startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse("https://www.transit.land")),
+                    )
+                },
+            )
         }
     }
 

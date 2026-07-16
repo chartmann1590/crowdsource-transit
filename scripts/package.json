@@ -9,7 +9,8 @@
     "import:agency": "node import-agency.js",
     "index:geofire": "node update-geofire.js",
     "verify": "node verify-import.js",
-    "check:play-listing": "node check-play-listing.js"
+    "check:play-listing": "node check-play-listing.js",
+    "update:play-listing": "node update-play-listing.js"
   },
   "keywords": [],
   "author": "",
