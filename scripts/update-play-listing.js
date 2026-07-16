@@ -10,6 +10,11 @@ function readListingFile(name) {
   return fs.readFileSync(path.join(LISTING_DIR, name), 'utf8').trim();
 }
 
+function readOptionalListingFile(name) {
+  const filePath = path.join(LISTING_DIR, name);
+  return fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8').trim() : undefined;
+}
+
 async function main() {
   const rawKey = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON;
   if (!rawKey) {
@@ -28,6 +33,7 @@ async function main() {
   const title = readListingFile('app-title.txt');
   const shortDescription = readListingFile('short-description.txt');
   const fullDescription = readListingFile('full-description.txt');
+  const video = readOptionalListingFile('video-url.txt');
 
   const edit = await publisher.edits.insert({ packageName: PACKAGE_NAME });
   const editId = edit.data.id;
@@ -43,9 +49,10 @@ async function main() {
         title,
         shortDescription,
         fullDescription,
+        ...(video ? { video } : {}),
       },
     });
-    console.log(`Updated ${LANGUAGE} listing (title/shortDescription/fullDescription)`);
+    console.log(`Updated ${LANGUAGE} listing (title/shortDescription/fullDescription${video ? '/video' : ''})`);
 
     await publisher.edits.commit({
       packageName: PACKAGE_NAME,
