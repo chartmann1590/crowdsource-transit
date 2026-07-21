@@ -20,12 +20,12 @@ val localProperties = Properties().apply {
 
 android {
     namespace = "com.charles.crowdtransit.app"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.charles.crowdtransit.app"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         // Version precedence: ANDROID_VERSION_CODE/ANDROID_VERSION_NAME env vars first
         // (used by the Play publish workflow for monotonic UTC timestamps), then CI's
         // -PappVersionCode/-PappVersionName (GitHub Actions run number), then local default.
