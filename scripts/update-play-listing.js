@@ -57,7 +57,6 @@ async function main() {
     await publisher.edits.commit({
       packageName: PACKAGE_NAME,
       editId,
-      changesNotSentForReview: true,
     });
     console.log(`Committed edit ${editId}`);
   } catch (err) {
