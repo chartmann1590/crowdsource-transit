@@ -77,7 +77,7 @@ object NetworkModule {
 
     // Public Worker endpoint (workers/ors-proxy) that holds the OpenRouteService key as a
     // Cloudflare secret — the key itself must never appear in this app (the APK is public).
-    private const val ORS_PROXY_BASE_URL = "https://crowdtransit-ors-proxy.chartmann1590.workers.dev/"
+    private const val ORS_PROXY_BASE_URL = "https://crowdtransit-ors-proxy.charles-h-hartmann1.workers.dev/"
 
     @Provides
     @Singleton

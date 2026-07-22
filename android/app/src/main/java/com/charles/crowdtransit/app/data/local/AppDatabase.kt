@@ -29,7 +29,7 @@ import com.charles.crowdtransit.app.data.local.entities.GtfsTripEntity
         GtfsShapeEntity::class,
     ],
     version = 2,
-    exportSchema = false,
+    exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun offlineDao(): OfflineDao

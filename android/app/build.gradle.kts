@@ -26,6 +26,7 @@ android {
         applicationId = "com.charles.crowdtransit.app"
         minSdk = 24
         targetSdk = 36
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // Version precedence: ANDROID_VERSION_CODE/ANDROID_VERSION_NAME env vars first
         // (used by the Play publish workflow for monotonic UTC timestamps), then CI's
         // -PappVersionCode/-PappVersionName (GitHub Actions run number), then local default.
@@ -35,6 +36,11 @@ android {
         versionName = System.getenv("ANDROID_VERSION_NAME")
             ?: (project.findProperty("appVersionName") as String?)
             ?: "1.0.0"
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments["room.schemaLocation"] = "$projectDir/schemas"
+            }
+        }
         buildConfigField(
             "String",
             "TRANSITLAND_API_KEY",
@@ -127,10 +133,27 @@ android {
             // Golden itinerary fixtures shared with the web tests (docs/routing/itinerary-spec.md)
             resources.srcDir(rootProject.file("../docs/routing/fixtures"))
         }
+        getByName("androidTest") {
+            // Exported Room schema history, consumed by MigrationTestHelper.
+            assets.srcDir(file("schemas"))
+        }
     }
 
 }
 
+
+configurations.all {
+    resolutionStrategy {
+        // The Compose BOM (added to androidTest for ui-test-junit4) strictly pins
+        // kotlinx-serialization to 1.7.3, but androidx.room:room-testing's
+        // room-migration-jvm needs 1.8.1's GeneratedSerializer ABI (AbstractMethodError
+        // otherwise). Force the newer, ABI-compatible version everywhere.
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.8.1")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.8.1")
+    }
+}
 
 dependencies {
     implementation(platform("androidx.compose:compose-bom:2024.12.01"))
@@ -189,6 +212,7 @@ dependencies {
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.12.01"))
+    androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     androidTestImplementation("androidx.room:room-testing:2.8.4")

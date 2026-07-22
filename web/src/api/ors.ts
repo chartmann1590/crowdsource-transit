@@ -5,7 +5,7 @@ import { encodePolyline } from '../utils/polyline';
  * Walking directions via the CrowdTransit ORS proxy Worker (workers/ors-proxy).
  * The Worker holds the OpenRouteService key; this URL is public and safe to hard-code.
  */
-const ORS_PROXY_URL = 'https://crowdtransit-ors-proxy.chartmann1590.workers.dev/walk';
+const ORS_PROXY_URL = 'https://crowdtransit-ors-proxy.charles-h-hartmann1.workers.dev/walk';
 
 export interface WalkRoute {
   distanceM: number;
