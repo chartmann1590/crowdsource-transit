@@ -19,6 +19,7 @@ import com.charles.crowdtransit.app.ui.screens.crowdsource.AddStopScreen
 import com.charles.crowdtransit.app.ui.screens.downloads.DownloadsScreen
 import com.charles.crowdtransit.app.ui.screens.login.LoginScreen
 import com.charles.crowdtransit.app.ui.screens.map.MapHomeScreen
+import com.charles.crowdtransit.app.ui.screens.navigation.NavigationScreen
 import com.charles.crowdtransit.app.ui.screens.plan.ItineraryDetailScreen
 import com.charles.crowdtransit.app.ui.screens.plan.TripPlannerScreen
 import com.charles.crowdtransit.app.ui.screens.profile.LeaderboardScreen
@@ -106,6 +107,12 @@ fun CrowdTransitNavGraph(
         composable(Screen.ItineraryDetail.route) {
             ItineraryDetailScreen(
                 onBack = { navController.popBackStack() },
+                onStartNavigation = { navController.navigate(Screen.Navigation.route) },
+            )
+        }
+        composable(Screen.Navigation.route) {
+            NavigationScreen(
+                onExit = { navController.popBackStack() },
             )
         }
         composable(

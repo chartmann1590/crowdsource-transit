@@ -39,9 +39,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
+import com.charles.crowdtransit.app.data.navigation.NavigationSessionRepository
 import com.charles.crowdtransit.app.data.repository.SavedTripRepository
 import com.charles.crowdtransit.app.data.trip.ItineraryTextFormatter
 import com.charles.crowdtransit.app.data.trip.TripSessionHolder
+import com.charles.crowdtransit.app.service.NavigationService
 import com.charles.crowdtransit.app.ui.components.MapLibreView
 import com.charles.crowdtransit.app.ui.components.MapPolyline
 import com.charles.crowdtransit.app.ui.components.TransitBadge
@@ -60,8 +62,13 @@ class ItineraryDetailViewModel @Inject constructor(
     session: TripSessionHolder,
     private val savedTrips: SavedTripRepository,
     private val formatter: ItineraryTextFormatter,
+    private val navSession: NavigationSessionRepository,
 ) : ViewModel() {
     val plan = session.selectedPlan
+
+    fun startNavigationSession(plan: TripPlan) {
+        navSession.start(plan)
+    }
 
     private val _saveStatus = MutableStateFlow<String?>(null)
     val saveStatus: StateFlow<String?> = _saveStatus
@@ -114,6 +121,7 @@ internal fun planPolylines(plan: TripPlan): List<MapPolyline> = plan.legs.mapNot
 @Composable
 fun ItineraryDetailScreen(
     onBack: () -> Unit,
+    onStartNavigation: () -> Unit = {},
     viewModel: ItineraryDetailViewModel = hiltViewModel(),
 ) {
     val plan by viewModel.plan.collectAsStateWithLifecycle()
@@ -170,7 +178,55 @@ fun ItineraryDetailScreen(
             )
         },
     ) { padding ->
+        var showDisclosure by remember { mutableStateOf(false) }
+        val notificationPermission = androidx.activity.compose.rememberLauncherForActivityResult(
+            androidx.activity.result.contract.ActivityResultContracts.RequestPermission(),
+        ) { _ ->
+            // Navigation works without the notification; start either way.
+            viewModel.startNavigationSession(currentPlan)
+            NavigationService.start(context)
+            onStartNavigation()
+        }
+
+        if (showDisclosure) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showDisclosure = false },
+                title = { Text("Location during navigation") },
+                text = {
+                    Text(
+                        "CrowdTransit uses your precise location while navigating — including " +
+                            "with the app in the background via an ongoing notification — to " +
+                            "follow your trip, tell you when to get off, and warn you if you go " +
+                            "off route. Location tracking stops when navigation ends.",
+                    )
+                },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(onClick = {
+                        showDisclosure = false
+                        if (android.os.Build.VERSION.SDK_INT >= 33) {
+                            notificationPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                        } else {
+                            viewModel.startNavigationSession(currentPlan)
+                            NavigationService.start(context)
+                            onStartNavigation()
+                        }
+                    }) { Text("Start") }
+                },
+                dismissButton = {
+                    androidx.compose.material3.TextButton(onClick = { showDisclosure = false }) {
+                        Text("Cancel")
+                    }
+                },
+            )
+        }
+
         Column(Modifier.fillMaxSize().padding(padding)) {
+            androidx.compose.material3.Button(
+                onClick = { showDisclosure = true },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            ) {
+                Text("Start navigation")
+            }
             saveStatus?.let {
                 Text(
                     it,
