@@ -1,0 +1,67 @@
+{
+  "v": 1,
+  "planned_at": "2026-07-22T15:00:00Z",
+  "from": { "name": "Herald Square", "lat": 40.74844, "lng": -73.98565 },
+  "to": { "name": "Wall Street", "lat": 40.70612, "lng": -74.00873 },
+  "legs": [
+    {
+      "t": "w",
+      "from": { "name": "Herald Square", "lat": 40.74844, "lng": -73.98565 },
+      "to": { "name": "34 St - Herald Sq", "lat": 40.74954, "lng": -73.98785 },
+      "dep": "2026-07-22T15:02:00Z",
+      "arr": "2026-07-22T15:06:00Z",
+      "dist_m": 260,
+      "steps": [
+        { "text": "Head northwest on W 34th St", "dist_m": 180 },
+        { "text": "Turn right onto Broadway", "dist_m": 80 }
+      ]
+    },
+    {
+      "t": "r",
+      "mode": "subway",
+      "route": {
+        "onestop_id": "r-dr5r-r",
+        "short": "R",
+        "long": "Broadway Local",
+        "color": "#FCCC0A",
+        "agency": "MTA New York City Transit"
+      },
+      "trip": { "trip_id": "R-1015-SFY", "headsign": "Bay Ridge - 95 St" },
+      "board": {
+        "stop_id": "s-dr5ru6-34sthrldsq",
+        "name": "34 St - Herald Sq",
+        "lat": 40.74954,
+        "lng": -73.98785,
+        "dep_utc": "2026-07-22T15:10:00Z"
+      },
+      "alight": {
+        "stop_id": "s-dr5reb-whitehallst",
+        "name": "Whitehall St - South Ferry",
+        "lat": 40.70301,
+        "lng": -74.01297,
+        "arr_utc": "2026-07-22T15:28:00Z"
+      },
+      "stops": [
+        { "id": "s-dr5ru6-34sthrldsq", "name": "34 St - Herald Sq", "lat": 40.74954, "lng": -73.98785, "arr_utc": "2026-07-22T15:10:00Z" },
+        { "id": "s-dr5ru2-28st", "name": "28 St", "lat": 40.74544, "lng": -73.98866, "arr_utc": "2026-07-22T15:12:00Z" },
+        { "id": "s-dr5rsr-23st", "name": "23 St", "lat": 40.74130, "lng": -73.98928, "arr_utc": "2026-07-22T15:14:00Z" },
+        { "id": "s-dr5rsn-14stunionsq", "name": "14 St - Union Sq", "lat": 40.73563, "lng": -73.99067, "arr_utc": "2026-07-22T15:16:30Z" },
+        { "id": "s-dr5rsh-8stnyu", "name": "8 St - NYU", "lat": 40.73046, "lng": -73.99259, "arr_utc": "2026-07-22T15:18:00Z" },
+        { "id": "s-dr5rs4-princest", "name": "Prince St", "lat": 40.72434, "lng": -73.99787, "arr_utc": "2026-07-22T15:20:00Z" },
+        { "id": "s-dr5rs1-canalst", "name": "Canal St", "lat": 40.71946, "lng": -74.00119, "arr_utc": "2026-07-22T15:22:00Z" },
+        { "id": "s-dr5re9-cityhall", "name": "City Hall", "lat": 40.71341, "lng": -74.00693, "arr_utc": "2026-07-22T15:24:30Z" },
+        { "id": "s-dr5re8-cortlandtst", "name": "Cortlandt St", "lat": 40.71069, "lng": -74.01113, "arr_utc": "2026-07-22T15:26:00Z" },
+        { "id": "s-dr5reb-rectorst", "name": "Rector St", "lat": 40.70722, "lng": -74.01342, "arr_utc": "2026-07-22T15:27:00Z" },
+        { "id": "s-dr5reb-whitehallst", "name": "Whitehall St - South Ferry", "lat": 40.70301, "lng": -74.01297, "arr_utc": "2026-07-22T15:28:00Z" }
+      ]
+    },
+    {
+      "t": "w",
+      "from": { "name": "Whitehall St - South Ferry", "lat": 40.70301, "lng": -74.01297 },
+      "to": { "name": "Wall Street", "lat": 40.70612, "lng": -74.00873 },
+      "dep": "2026-07-22T15:28:00Z",
+      "arr": "2026-07-22T15:35:00Z",
+      "dist_m": 510
+    }
+  ]
+}

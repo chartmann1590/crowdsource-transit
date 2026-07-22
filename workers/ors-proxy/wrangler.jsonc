@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "crowdtransit-ors-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "vars": {
+    // Comma-separated browser origins allowed to call this proxy (CORS).
+    // Requests with no Origin header (the Android app) are always allowed.
+    "ALLOWED_ORIGINS": "https://chartmann1590.github.io"
+  }
+  // Secret (never in this file): ORS_API_KEY — set with `npx wrangler secret put ORS_API_KEY`
+}

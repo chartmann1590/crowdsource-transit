@@ -122,6 +122,13 @@ android {
         jvmToolchain(17)
     }
 
+    sourceSets {
+        getByName("test") {
+            // Golden itinerary fixtures shared with the web tests (docs/routing/itinerary-spec.md)
+            resources.srcDir(rootProject.file("../docs/routing/fixtures"))
+        }
+    }
+
 }
 
 
