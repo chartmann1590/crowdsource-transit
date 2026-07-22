@@ -7,9 +7,12 @@ import { TRIP_PLAN_VERSION, type TripPlan } from '../types/itinerary';
  */
 
 export class UnsupportedTripPlanVersionError extends Error {
-  constructor(readonly version: number | undefined) {
+  readonly version: number | undefined;
+
+  constructor(version: number | undefined) {
     super(`Unsupported trip plan version: ${version}`);
     this.name = 'UnsupportedTripPlanVersionError';
+    this.version = version;
   }
 }
 
@@ -24,7 +27,10 @@ export function tripPlanFromJson(json: string): TripPlan {
   return validate(JSON.parse(json) as TripPlan);
 }
 
-async function pipeThrough(bytes: Uint8Array, stream: TransformStream<Uint8Array, Uint8Array>): Promise<Uint8Array> {
+async function pipeThrough(
+  bytes: Uint8Array<ArrayBuffer>,
+  stream: { readable: ReadableStream<Uint8Array>; writable: WritableStream<BufferSource> },
+): Promise<Uint8Array> {
   const writer = stream.writable.getWriter();
   void writer.write(bytes);
   void writer.close();
@@ -52,7 +58,7 @@ function toBase64Url(bytes: Uint8Array): string {
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function fromBase64Url(blob: string): Uint8Array {
+function fromBase64Url(blob: string): Uint8Array<ArrayBuffer> {
   const b64 = blob.trim().replace(/-/g, '+').replace(/_/g, '/');
   const bin = atob(b64);
   const bytes = new Uint8Array(bin.length);
