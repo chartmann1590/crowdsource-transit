@@ -21,7 +21,7 @@ interface OrsGeoJsonResponse {
     properties?: {
       summary?: { distance?: number; duration?: number };
       segments?: {
-        steps?: { instruction?: string; distance?: number }[];
+        steps?: { instruction?: string; distance?: number; way_points?: number[] }[];
       }[];
     };
   }[];
@@ -46,7 +46,17 @@ export async function fetchWalkRoute(points: { lat: number; lng: number }[]): Pr
         (seg) =>
           seg.steps
             ?.filter((s) => s.instruction)
-            .map((s) => ({ text: s.instruction!, dist_m: Math.round(s.distance ?? 0) })) ?? [],
+            .map((s) => {
+              // way_points[0] is the maneuver point's index into the route geometry.
+              const pointIdx = s.way_points?.[0] ?? 0;
+              const point = coords[Math.min(pointIdx, coords.length - 1)] ?? coords[0];
+              return {
+                text: s.instruction!,
+                dist_m: Math.round(s.distance ?? 0),
+                lng: point[0],
+                lat: point[1],
+              };
+            }) ?? [],
       ) ?? [];
     return {
       distanceM: Math.round(summary.distance),

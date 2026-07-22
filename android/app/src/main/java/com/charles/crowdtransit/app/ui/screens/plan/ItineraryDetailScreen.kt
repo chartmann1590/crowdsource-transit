@@ -46,6 +46,7 @@ import com.charles.crowdtransit.app.data.trip.TripSessionHolder
 import com.charles.crowdtransit.app.service.NavigationService
 import com.charles.crowdtransit.app.ui.components.MapLibreView
 import com.charles.crowdtransit.app.ui.components.MapPolyline
+import com.charles.crowdtransit.app.ui.components.WalkStepMarker
 import com.charles.crowdtransit.app.ui.components.TransitBadge
 import com.charles.crowdtransit.app.util.PolylineCodec
 import com.charles.crowdtransit.model.Leg
@@ -116,6 +117,11 @@ internal fun planPolylines(plan: TripPlan): List<MapPolyline> = plan.legs.mapNot
         }
     }
 }
+
+/** Turn-by-turn maneuver markers for every walking leg in the plan. */
+internal fun planWalkStepMarkers(plan: TripPlan): List<WalkStepMarker> =
+    plan.legs.filter { it.isWalk }.flatMap { it.steps.orEmpty() }
+        .map { WalkStepMarker(lat = it.lat, lng = it.lng) }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -239,6 +245,7 @@ fun ItineraryDetailScreen(
                 modifier = Modifier.fillMaxWidth().height(260.dp),
                 polylines = polylines,
                 fitToPolylines = true,
+                walkStepMarkers = remember(currentPlan) { planWalkStepMarkers(currentPlan) },
             )
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),

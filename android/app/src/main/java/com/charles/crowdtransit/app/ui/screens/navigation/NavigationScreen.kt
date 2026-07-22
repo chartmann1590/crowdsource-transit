@@ -33,6 +33,7 @@ import com.charles.crowdtransit.app.domain.routing.PlanTripUseCase
 import com.charles.crowdtransit.app.service.NavigationService
 import com.charles.crowdtransit.app.ui.components.MapLibreView
 import com.charles.crowdtransit.app.ui.screens.plan.planPolylines
+import com.charles.crowdtransit.app.ui.screens.plan.planWalkStepMarkers
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -109,6 +110,7 @@ fun NavigationScreen(
                 modifier = Modifier.fillMaxSize(),
                 polylines = planPolylines(plan),
                 fitToPolylines = false,
+                walkStepMarkers = planWalkStepMarkers(plan),
                 userLat = fix?.first,
                 userLng = fix?.second,
             )

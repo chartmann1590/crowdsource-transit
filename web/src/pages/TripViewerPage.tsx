@@ -4,7 +4,7 @@ import { TripActions } from '../components/Itinerary/TripActions';
 import { MapView } from '../components/Map/MapView';
 import { Navbar } from '../components/UI/Navbar';
 import type { TripPlan } from '../types/itinerary';
-import { planPolylines } from '../utils/itineraryDisplay';
+import { planPolylines, planWalkStepMarkers } from '../utils/itineraryDisplay';
 import { decodeTripPlan, UnsupportedTripPlanVersionError } from '../utils/tripCodec';
 import styles from './TripViewerPage.module.css';
 
@@ -40,6 +40,7 @@ export function TripViewerPage() {
   }, []);
 
   const polylines = useMemo(() => (plan ? planPolylines(plan) : []), [plan]);
+  const walkStepMarkers = useMemo(() => (plan ? planWalkStepMarkers(plan) : []), [plan]);
 
   const openInApp = () => {
     if (!plan) return;
@@ -72,6 +73,7 @@ export function TripViewerPage() {
                 stops={[]}
                 polylines={polylines}
                 fitToPolylines
+                walkStepMarkers={walkStepMarkers}
                 initialLat={plan.from.lat}
                 initialLng={plan.from.lng}
               />

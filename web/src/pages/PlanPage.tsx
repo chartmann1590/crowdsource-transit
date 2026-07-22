@@ -8,7 +8,7 @@ import { Navbar } from '../components/UI/Navbar';
 import { searchStops } from '../firebase/stops';
 import { usePlanTrip } from '../hooks/usePlanTrip';
 import { isTransitLeg, type TripPlan } from '../types/itinerary';
-import { planPolylines, planTimes } from '../utils/itineraryDisplay';
+import { planPolylines, planTimes, planWalkStepMarkers } from '../utils/itineraryDisplay';
 import styles from './PlanPage.module.css';
 
 interface PlannerPlace {
@@ -206,6 +206,7 @@ export function PlanPage() {
             stops={[]}
             polylines={selectedPlan ? planPolylines(selectedPlan) : []}
             fitToPolylines={!!selectedPlan}
+            walkStepMarkers={selectedPlan ? planWalkStepMarkers(selectedPlan) : []}
             initialLat={origin?.lat ?? 37.7749}
             initialLng={origin?.lng ?? -122.4194}
           />

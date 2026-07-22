@@ -109,7 +109,15 @@ class PlanTripUseCase @Inject constructor(
                 steps = feature.properties.segments.flatMap { seg ->
                     seg.steps.mapNotNull { s ->
                         s.instruction?.takeIf { it.isNotBlank() }?.let {
-                            WalkStep(text = it, distM = (s.distance ?: 0.0).roundToInt())
+                            // way_points[0] is the maneuver point's index into the route geometry.
+                            val pointIdx = (s.wayPoints?.firstOrNull() ?: 0).coerceIn(0, coords.size - 1)
+                            val point = coords[pointIdx]
+                            WalkStep(
+                                text = it,
+                                distM = (s.distance ?: 0.0).roundToInt(),
+                                lat = point.getOrElse(1) { 0.0 },
+                                lng = point.getOrElse(0) { 0.0 },
+                            )
                         }
                     }
                 },

@@ -13,6 +13,12 @@ export interface MapPolyline {
   dashed: boolean;
 }
 
+/** A walking-directions turn-by-turn maneuver point to mark on the map. */
+export interface WalkStepMarker {
+  lat: number;
+  lng: number;
+}
+
 interface MapViewProps {
   stops: Stop[];
   selectedStopId?: string | null;
@@ -20,6 +26,7 @@ interface MapViewProps {
   polylines?: MapPolyline[];
   /** Fit the camera to the polylines whenever they change. */
   fitToPolylines?: boolean;
+  walkStepMarkers?: WalkStepMarker[];
   onStopClick?: (stopId: string) => void;
   onMapMove?: (lat: number, lng: number) => void;
   initialLat?: number;
@@ -33,6 +40,8 @@ const STOP_MARKERS_LAYER = 'stops-layer';
 const ITINERARY_SOURCE = 'itinerary-source';
 const ITINERARY_TRANSIT_LAYER = 'itinerary-transit-layer';
 const ITINERARY_WALK_LAYER = 'itinerary-walk-layer';
+const WALK_STEPS_SOURCE = 'walk-steps-source';
+const WALK_STEPS_LAYER = 'walk-steps-layer';
 const SELECTED_COLOR = '#00A862';
 
 export function MapView({
@@ -41,6 +50,7 @@ export function MapView({
   activeStopIds,
   polylines,
   fitToPolylines = false,
+  walkStepMarkers,
   onStopClick,
   onMapMove,
   initialLat = 37.7749,
@@ -86,6 +96,34 @@ export function MapView({
       );
     }
 
+    if (!map.getSource(WALK_STEPS_SOURCE)) {
+      map.addSource(WALK_STEPS_SOURCE, {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+      map.addLayer({
+        id: WALK_STEPS_LAYER,
+        type: 'circle',
+        source: WALK_STEPS_SOURCE,
+        paint: {
+          'circle-radius': 5,
+          'circle-color': '#3A3F47',
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+    }
+
+    const stepSource = map.getSource(WALK_STEPS_SOURCE) as maplibregl.GeoJSONSource;
+    stepSource.setData({
+      type: 'FeatureCollection',
+      features: (walkStepMarkers ?? []).map((s) => ({
+        type: 'Feature' as const,
+        geometry: { type: 'Point' as const, coordinates: [s.lng, s.lat] },
+        properties: {},
+      })),
+    });
+
     const lines = (polylines ?? []).filter((l) => l.points.length >= 2);
     const source = map.getSource(ITINERARY_SOURCE) as maplibregl.GeoJSONSource;
     source.setData({
@@ -102,7 +140,7 @@ export function MapView({
       for (const line of lines) for (const p of line.points) bounds.extend(p);
       map.fitBounds(bounds, { padding: 60, maxZoom: 16 });
     }
-  }, [polylines, fitToPolylines]);
+  }, [polylines, fitToPolylines, walkStepMarkers]);
 
   const updateStopsSource = useCallback(() => {
     const map = mapRef.current;

@@ -12,8 +12,8 @@
       "arr": "2026-07-22T15:06:00Z",
       "dist_m": 260,
       "steps": [
-        { "text": "Head northwest on W 34th St", "dist_m": 180 },
-        { "text": "Turn right onto Broadway", "dist_m": 80 }
+        { "text": "Head northwest on W 34th St", "dist_m": 180, "lat": 40.74844, "lng": -73.98565 },
+        { "text": "Turn right onto Broadway", "dist_m": 80, "lat": 40.74920, "lng": -73.98700 }
       ]
     },
     {

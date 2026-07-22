@@ -38,10 +38,14 @@ not significant).
   "dist_m": 420,                    // integer metres
   "poly": "optional encoded polyline (precision 5)",
   "steps": [                        // optional street-level instructions (from ORS)
-    { "text": "Head north on Main St", "dist_m": 120 }
+    { "text": "Head north on Main St", "dist_m": 120, "lat": 40.749, "lng": -73.988 }
   ]
 }
 ```
+
+Each step's `lat`/`lng` is the maneuver point (where that instruction applies), taken from
+the walking route geometry — this lets renderers plot turn-by-turn markers along the
+walking line on a map, not just list the steps as text.
 
 ### Transit leg (`t: "r"`)
 

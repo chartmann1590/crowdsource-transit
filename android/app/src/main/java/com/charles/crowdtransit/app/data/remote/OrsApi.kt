@@ -1,5 +1,6 @@
 package com.charles.crowdtransit.app.data.remote
 
+import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -58,4 +59,6 @@ data class OrsSegment(
 data class OrsStep(
     val instruction: String? = null,
     val distance: Double? = null,
+    /** Index of the maneuver point into the route geometry's coordinate list. */
+    @Json(name = "way_points") val wayPoints: List<Int>? = null,
 )

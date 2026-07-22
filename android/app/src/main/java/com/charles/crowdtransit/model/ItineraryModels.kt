@@ -68,6 +68,9 @@ data class Leg(
 data class WalkStep(
     val text: String,
     @Json(name = "dist_m") val distM: Int,
+    /** Maneuver point (where this instruction applies), for plotting on a map. */
+    val lat: Double,
+    val lng: Double,
 )
 
 @JsonClass(generateAdapter = true)

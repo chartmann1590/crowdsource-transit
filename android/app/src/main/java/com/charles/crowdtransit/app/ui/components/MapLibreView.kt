@@ -44,6 +44,8 @@ private const val ACTIVE_HALO_LAYER = "active-halo-layer"
 private const val ITINERARY_SOURCE = "itinerary-source"
 private const val ITINERARY_TRANSIT_LAYER = "itinerary-transit-layer"
 private const val ITINERARY_WALK_LAYER = "itinerary-walk-layer"
+private const val WALK_STEPS_SOURCE = "walk-steps-source"
+private const val WALK_STEPS_LAYER = "walk-steps-layer"
 
 /** A polyline to draw on the map (itinerary legs). Dashed = walking, solid = transit. */
 data class MapPolyline(
@@ -52,6 +54,9 @@ data class MapPolyline(
     val colorHex: String,
     val dashed: Boolean,
 )
+
+/** A walking-directions turn-by-turn maneuver point to mark on the map. */
+data class WalkStepMarker(val lat: Double, val lng: Double)
 
 private fun hexFromColor(color: androidx.compose.ui.graphics.Color): String {
     val r = (color.red * 255).toInt()
@@ -78,6 +83,7 @@ fun MapLibreView(
     activeStopIds: Set<String> = emptySet(),
     polylines: List<MapPolyline> = emptyList(),
     fitToPolylines: Boolean = false,
+    walkStepMarkers: List<WalkStepMarker> = emptyList(),
     onStopPinClick: (String) -> Unit = {},
     onLocationUpdate: (Double, Double) -> Unit = { _, _ -> },
 ) {
@@ -246,6 +252,29 @@ fun MapLibreView(
             polylines.forEach { line -> line.points.forEach { (lng, lat) -> builder.include(LatLng(lat, lng)) } }
             map.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 80))
         }
+    }
+
+    // Walking-directions turn-by-turn maneuver markers, above the walk line so they're visible.
+    LaunchedEffect(styleReady, walkStepMarkers) {
+        if (!styleReady) return@LaunchedEffect
+        val style = mapboxMap?.style ?: return@LaunchedEffect
+
+        if (style.getSource(WALK_STEPS_SOURCE) == null) {
+            style.addSource(GeoJsonSource(WALK_STEPS_SOURCE))
+            style.addLayer(
+                CircleLayer(WALK_STEPS_LAYER, WALK_STEPS_SOURCE).apply {
+                    setProperties(
+                        PropertyFactory.circleRadius(5f),
+                        PropertyFactory.circleColor("#3A3F47"),
+                        PropertyFactory.circleStrokeWidth(1.5f),
+                        PropertyFactory.circleStrokeColor("#FFFFFF"),
+                    )
+                },
+            )
+        }
+
+        val features = walkStepMarkers.map { Feature.fromGeometry(Point.fromLngLat(it.lng, it.lat)) }
+        style.getSourceAs<GeoJsonSource>(WALK_STEPS_SOURCE)?.setGeoJson(FeatureCollection.fromFeatures(features))
     }
 
     // Refresh which stops show a halo whenever the active set or stop list changes.

@@ -15,6 +15,9 @@ export interface Place {
 export interface WalkStep {
   text: string;
   dist_m: number;
+  /** Maneuver point (where this instruction applies), for plotting on a map. */
+  lat: number;
+  lng: number;
 }
 
 export interface WalkLeg {

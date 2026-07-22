@@ -1,5 +1,5 @@
-import type { MapPolyline } from '../components/Map/MapView';
-import { isTransitLeg, type TripPlan } from '../types/itinerary';
+import type { MapPolyline, WalkStepMarker } from '../components/Map/MapView';
+import { isTransitLeg, isWalkLeg, type TripPlan } from '../types/itinerary';
 import { decodePolyline } from './polyline';
 
 export const WALK_COLOR = '#5B6472';
@@ -44,4 +44,12 @@ export function planPolylines(plan: TripPlan): MapPolyline[] {
     }
   }
   return lines;
+}
+
+/** Turn-by-turn maneuver markers for every walking leg in the plan. */
+export function planWalkStepMarkers(plan: TripPlan): WalkStepMarker[] {
+  return plan.legs
+    .filter(isWalkLeg)
+    .flatMap((leg) => leg.steps ?? [])
+    .map((step) => ({ lat: step.lat, lng: step.lng }));
 }
