@@ -20,8 +20,17 @@ class TripSessionHolder @Inject constructor() {
     private val _selectedPlan = MutableStateFlow<TripPlan?>(null)
     val selectedPlan: StateFlow<TripPlan?> = _selectedPlan
 
+    /** Incremented each time a shared plan arrives via deep link; NavGraph navigates on change. */
+    val sharedPlanEvents = MutableStateFlow(0)
+
     fun selectPlan(plan: TripPlan?) {
         _selectedPlan.value = plan
+    }
+
+    /** Deep-linked shared trip: select it and signal navigation to the itinerary screen. */
+    fun openSharedPlan(plan: TripPlan) {
+        _selectedPlan.value = plan
+        sharedPlanEvents.value += 1
     }
 
     data class PendingPlace(val name: String, val lat: Double, val lng: Double)

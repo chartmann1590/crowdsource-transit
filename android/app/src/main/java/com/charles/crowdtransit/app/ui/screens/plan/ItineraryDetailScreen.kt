@@ -14,6 +14,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -36,6 +38,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import com.charles.crowdtransit.app.data.repository.SavedTripRepository
+import com.charles.crowdtransit.app.data.trip.ItineraryTextFormatter
 import com.charles.crowdtransit.app.data.trip.TripSessionHolder
 import com.charles.crowdtransit.app.ui.components.MapLibreView
 import com.charles.crowdtransit.app.ui.components.MapPolyline
@@ -44,13 +49,41 @@ import com.charles.crowdtransit.app.util.PolylineCodec
 import com.charles.crowdtransit.model.Leg
 import com.charles.crowdtransit.model.TripPlan
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ItineraryDetailViewModel @Inject constructor(
     session: TripSessionHolder,
+    private val savedTrips: SavedTripRepository,
+    private val formatter: ItineraryTextFormatter,
 ) : ViewModel() {
     val plan = session.selectedPlan
+
+    private val _saveStatus = MutableStateFlow<String?>(null)
+    val saveStatus: StateFlow<String?> = _saveStatus
+
+    val canSave: Boolean get() = savedTrips.isSignedIn
+
+    fun shareText(plan: TripPlan): String = formatter.toText(plan, formatter.shareUrl(plan))
+
+    fun shareUrl(plan: TripPlan): String = formatter.shareUrl(plan)
+
+    fun save(plan: TripPlan) {
+        viewModelScope.launch {
+            _saveStatus.value = try {
+                savedTrips.saveTrip(plan)
+                "Trip saved!"
+            } catch (e: Exception) {
+                e.message ?: "Couldn't save the trip."
+            }
+            delay(2500)
+            _saveStatus.value = null
+        }
+    }
 }
 
 private const val WALK_COLOR = "#5B6472"
@@ -104,6 +137,8 @@ fun ItineraryDetailScreen(
 
     val (dep, arr, duration) = planTimes(currentPlan)
     val polylines = remember(currentPlan) { planPolylines(currentPlan) }
+    val saveStatus by viewModel.saveStatus.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     Scaffold(
         topBar = {
@@ -114,10 +149,36 @@ fun ItineraryDetailScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
+                actions = {
+                    if (viewModel.canSave) {
+                        IconButton(onClick = { viewModel.save(currentPlan) }) {
+                            Icon(Icons.Default.StarBorder, contentDescription = "Save trip")
+                        }
+                    }
+                    IconButton(onClick = {
+                        val sendIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(android.content.Intent.EXTRA_TEXT, viewModel.shareText(currentPlan))
+                        }
+                        context.startActivity(
+                            android.content.Intent.createChooser(sendIntent, "Share trip"),
+                        )
+                    }) {
+                        Icon(Icons.Default.Share, contentDescription = "Share trip")
+                    }
+                },
             )
         },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
+            saveStatus?.let {
+                Text(
+                    it,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
             MapLibreView(
                 modifier = Modifier.fillMaxWidth().height(260.dp),
                 polylines = polylines,

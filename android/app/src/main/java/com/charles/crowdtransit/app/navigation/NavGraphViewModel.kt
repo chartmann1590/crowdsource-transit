@@ -24,4 +24,7 @@ class NavGraphViewModel @Inject constructor(
     fun setTripDestination(name: String, lat: Double, lng: Double) {
         tripSession.pendingDestination.value = TripSessionHolder.PendingPlace(name, lat, lng)
     }
+
+    /** Fires (with an incrementing counter) when a shared trip arrives via deep link. */
+    val sharedPlanEvents: StateFlow<Int> get() = tripSession.sharedPlanEvents
 }

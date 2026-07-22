@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ItineraryView } from '../components/Itinerary/ItineraryView';
+import { TripActions } from '../components/Itinerary/TripActions';
 import { MapView } from '../components/Map/MapView';
 import { LoadingSpinner } from '../components/UI/LoadingSpinner';
 import { Navbar } from '../components/UI/Navbar';
@@ -168,6 +169,7 @@ export function PlanPage() {
               <button type="button" className={styles.backToResults} onClick={() => setSelectedPlan(null)}>
                 ← All options
               </button>
+              <TripActions plan={selectedPlan} />
               <ItineraryView plan={selectedPlan} />
             </div>
           ) : (

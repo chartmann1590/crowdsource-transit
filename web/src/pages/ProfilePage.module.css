@@ -309,3 +309,30 @@
   width: 60px;
   text-align: right;
 }
+
+.savedTripOpen {
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: inherit;
+  padding: 4px 0;
+}
+
+.savedTripOpen:hover {
+  color: var(--color-primary, #00a862);
+}
+
+.savedTripDelete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary, #667085);
+  padding: 4px 8px;
+}
+
+.savedTripDelete:hover {
+  color: var(--color-error, #d92d20);
+}

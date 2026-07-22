@@ -61,6 +61,15 @@
         }
       }
     },
+    "savedTrips": {
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId",
+        "$tripId": {
+          ".validate": "newData.hasChildren(['plan', 'createdAt']) && newData.child('plan').isString() && newData.child('plan').val().length < 65536"
+        }
+      }
+    },
     "geofire": {
       ".read": true,
       ".write": false,

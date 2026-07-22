@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.SwapVert
@@ -81,6 +82,7 @@ fun TripPlannerScreen(
     viewModel: TripPlannerViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val savedTrips by viewModel.savedTrips.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -178,6 +180,41 @@ fun TripPlannerScreen(
                         PlanCard(plan) {
                             viewModel.openPlan(plan)
                             onOpenItinerary()
+                        }
+                    }
+                    if (uiState.plans.isEmpty() && savedTrips.isNotEmpty()) {
+                        item {
+                            Text(
+                                "Saved trips",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
+                            )
+                        }
+                        items(savedTrips) { trip ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        if (viewModel.openSavedTrip(trip)) onOpenItinerary()
+                                    }
+                                    .padding(vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        "${trip.fromName.ifBlank { "Origin" }} → ${trip.toName.ifBlank { "Destination" }}",
+                                        fontWeight = FontWeight.Medium,
+                                    )
+                                }
+                                IconButton(onClick = { viewModel.deleteSavedTrip(trip) }) {
+                                    Icon(
+                                        Icons.Default.Delete,
+                                        contentDescription = "Delete saved trip",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
                         }
                     }
                 }

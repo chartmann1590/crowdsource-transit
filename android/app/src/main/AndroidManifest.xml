@@ -25,10 +25,30 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.CrowdTransit">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Shared trip deep links. Custom scheme is the reliable path (used by the
+                 web viewer's intent:// button); the https filter is unverified (GitHub
+                 project pages can't host assetlinks.json at the domain root) so it shows
+                 the app chooser. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="crowdtransit" android:host="trip" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="chartmann1590.github.io"
+                    android:pathPrefix="/crowdsource-transit/trip" />
             </intent-filter>
         </activity>
     </application>

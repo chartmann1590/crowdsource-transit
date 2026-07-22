@@ -9,6 +9,7 @@ import { AboutPage } from './pages/AboutPage';
 import { SearchPage } from './pages/SearchPage';
 import { RoutePage } from './pages/RoutePage';
 import { PlanPage } from './pages/PlanPage';
+import { TripViewerPage } from './pages/TripViewerPage';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/route/:routeId" element={<RoutePage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/plan" element={<PlanPage />} />
+          <Route path="/trip" element={<TripViewerPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/add-stop" element={<AddStopPage />} />
           <Route path="/about" element={<AboutPage />} />

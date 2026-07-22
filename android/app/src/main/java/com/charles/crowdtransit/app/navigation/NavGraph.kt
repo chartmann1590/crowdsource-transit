@@ -42,6 +42,15 @@ fun CrowdTransitNavGraph(
     }
     val startDestination = if (onboardingStatus) Screen.MapHome.route else Screen.Onboarding.route
 
+    // Shared-trip deep links: MainActivity decodes the plan into the session holder and
+    // bumps this counter; navigate to the itinerary whenever it changes.
+    val sharedPlanEvent by navGraphViewModel.sharedPlanEvents.collectAsStateWithLifecycle()
+    androidx.compose.runtime.LaunchedEffect(sharedPlanEvent) {
+        if (sharedPlanEvent > 0) {
+            navController.navigate(Screen.ItineraryDetail.route)
+        }
+    }
+
     NavHost(navController = navController, startDestination = startDestination) {
         composable(Screen.Onboarding.route) {
             OnboardingScreen(

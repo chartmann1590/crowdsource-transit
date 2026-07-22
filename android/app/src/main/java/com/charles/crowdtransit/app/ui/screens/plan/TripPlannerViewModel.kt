@@ -2,6 +2,7 @@ package com.charles.crowdtransit.app.ui.screens.plan
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.charles.crowdtransit.app.data.repository.SavedTripRepository
 import com.charles.crowdtransit.app.data.repository.StopRepository
 import com.charles.crowdtransit.app.data.trip.TripSessionHolder
 import com.charles.crowdtransit.app.domain.routing.PlanRequest
@@ -12,8 +13,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -49,12 +52,27 @@ class TripPlannerViewModel @Inject constructor(
     private val planTrip: PlanTripUseCase,
     private val stopRepository: StopRepository,
     private val session: TripSessionHolder,
+    private val savedTripRepository: SavedTripRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TripPlannerUiState())
     val uiState: StateFlow<TripPlannerUiState> = _uiState.asStateFlow()
 
+    val savedTrips = savedTripRepository.observeSavedTrips()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     private var searchJob: Job? = null
+
+    /** Decode + open a saved trip; returns false if the blob can't be read. */
+    fun openSavedTrip(trip: SavedTripRepository.SavedTrip): Boolean {
+        val plan = savedTripRepository.decode(trip) ?: return false
+        session.selectPlan(plan)
+        return true
+    }
+
+    fun deleteSavedTrip(trip: SavedTripRepository.SavedTrip) {
+        viewModelScope.launch { runCatching { savedTripRepository.deleteTrip(trip.tripId) } }
+    }
 
     init {
         session.pendingDestination.value?.let { pending ->
