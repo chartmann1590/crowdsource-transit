@@ -71,7 +71,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.charles.crowdtransit.app.data.repository.DirectionsRepository
 import com.charles.crowdtransit.app.ui.components.PointsBurst
 import com.charles.crowdtransit.app.ui.components.ReviewCard
 import com.charles.crowdtransit.app.ui.components.StarRating
@@ -108,13 +107,13 @@ fun StopDetailScreen(
     onBack: () -> Unit,
     onRouteClick: (String) -> Unit,
     onRateClick: () -> Unit,
+    onDirectionsClick: (name: String, lat: Double, lng: Double) -> Unit = { _, _, _ -> },
     viewModel: StopDetailViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val stop = uiState.stop
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
-    val directionsRepo = remember { DirectionsRepository() }
     var fullscreenPhotoIndex by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffectClearBurst(uiState.pointsBurst, viewModel::clearPointsBurst)
@@ -241,7 +240,7 @@ fun StopDetailScreen(
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             Button(
                                 onClick = {
-                                    directionsRepo.openDirectionsToStop(context, stop.lat, stop.lng, stop.name)
+                                    onDirectionsClick(stop.name, stop.lat, stop.lng)
                                 },
                                 colors = ButtonDefaults.buttonColors(containerColor = Primary),
                             ) {

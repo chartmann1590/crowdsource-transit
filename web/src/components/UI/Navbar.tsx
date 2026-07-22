@@ -21,6 +21,7 @@ export function Navbar() {
         </Link>
         <div className={styles.links}>
           <Link to="/search" className={styles.link}>Search</Link>
+          <Link to="/plan" className={styles.link}>Plan a trip</Link>
           <Link to="/about" className={styles.link}>About</Link>
           {user ? (
             <div className={styles.userMenu}>

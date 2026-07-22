@@ -443,6 +443,14 @@ export function StopDetail({ stop }: StopDetailProps) {
         <div className={styles.checkinRow}>
           <button
             className={styles.checkinBtn}
+            onClick={() =>
+              navigate('/plan', { state: { to: { name: stop.name, lat: stop.lat, lng: stop.lng } } })
+            }
+          >
+            🧭 Directions
+          </button>
+          <button
+            className={styles.checkinBtn}
             onClick={() => handleActivity('checkin')}
             disabled={pending === 'checkin'}
           >

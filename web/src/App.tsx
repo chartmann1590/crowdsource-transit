@@ -8,6 +8,7 @@ import { AddStopPage } from './pages/AddStopPage';
 import { AboutPage } from './pages/AboutPage';
 import { SearchPage } from './pages/SearchPage';
 import { RoutePage } from './pages/RoutePage';
+import { PlanPage } from './pages/PlanPage';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/stop/:stopId" element={<StopPage />} />
           <Route path="/route/:routeId" element={<RoutePage />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/plan" element={<PlanPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/add-stop" element={<AddStopPage />} />
           <Route path="/about" element={<AboutPage />} />
