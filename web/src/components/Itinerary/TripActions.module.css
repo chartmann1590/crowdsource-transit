@@ -1,0 +1,26 @@
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actions button {
+  border: 1px solid var(--color-border, #e4e7ec);
+  background: var(--color-surface, #fff);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.actions button:hover {
+  border-color: var(--color-primary, #00a862);
+}
+
+.status {
+  font-size: 0.85rem;
+  color: var(--color-primary, #00a862);
+  font-weight: 600;
+}

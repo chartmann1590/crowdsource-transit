@@ -114,7 +114,7 @@ interface TransitlandTimeInfo {
   estimated_utc?: string;
 }
 
-interface TransitlandDepartureItem {
+export interface TransitlandDepartureItem {
   // Transitland nests route info under `trip.route`, not as a sibling of `trip`.
   trip: TransitlandTripDto;
   arrival?: TransitlandTimeInfo;
@@ -126,15 +126,19 @@ interface TransitlandDepartureItem {
   // Transitland returns this as a plain string (e.g. "STATIC"), not an array.
   schedule_relationship?: string;
   trip_short_name?: string;
+  /** Board position of this stop within the trip's stop sequence. */
+  stop_sequence?: number;
 }
 
-interface TransitlandTripDto {
+export interface TransitlandTripDto {
   trip_id?: string;
   trip_headsign?: string;
   onestop_id?: string;
   trip_short_name?: string;
   service?: TransitlandServiceDto;
   route?: TransitlandRouteInfoDto;
+  /** Transitland internal integer trip id — the /routes/{key}/trips/{id} path key. */
+  id?: number;
 }
 
 interface TransitlandServiceDto {
@@ -183,7 +187,7 @@ export interface ServedDeparture {
   isRealtime: boolean;
 }
 
-function gtfsRouteTypeToTransitType(routeType: number): TransitType | 'transit' {
+export function gtfsRouteTypeToTransitType(routeType: number): TransitType | 'transit' {
   switch (routeType) {
     case 0: return 'tram';
     case 1: return 'subway';
@@ -578,6 +582,67 @@ export async function getRouteWithStops(onestopId: string): Promise<RouteWithSto
     agencyName: r.agency?.agency_name ?? '',
     stops,
   };
+}
+
+// === Raw fetchers for the trip-planning router (web/src/routing/transitlandSource.ts) ===
+
+export interface TransitlandTripStopTimeItem {
+  arrival_time?: string;
+  departure_time?: string;
+  stop_sequence?: number;
+  stop?: {
+    id?: number;
+    stop_id?: string;
+    stop_name?: string;
+    geometry?: { type: string; coordinates: number[] };
+  };
+}
+
+export interface TransitlandTripDetailItem {
+  id?: number;
+  trip_id?: string;
+  trip_headsign?: string;
+  stop_times?: TransitlandTripStopTimeItem[];
+  shape?: {
+    // include_geometry=true: LineString whose points may carry a 3rd elevation element
+    geometry?: { type: string; coordinates: number[][] };
+  };
+}
+
+/** GET /stops/{stop_key}/departures — stop_key is a onestop_id or integer stop id. */
+export async function fetchStopDeparturesRaw(
+  stopKey: string,
+  nextSeconds: number,
+  limit: number = MAX_DEPARTURES_LIMIT,
+): Promise<TransitlandDepartureItem[]> {
+  const url = new URL(`${TRANSITLAND_BASE}/stops/${encodeURIComponent(stopKey)}/departures`);
+  url.searchParams.set('apikey', API_KEY);
+  url.searchParams.set('relative_date', 'TODAY');
+  url.searchParams.set('next', String(Math.min(FULL_DAY_SECONDS, Math.max(60, Math.round(nextSeconds)))));
+  url.searchParams.set('limit', String(limit));
+  url.searchParams.set('include_alerts', 'false');
+  const res = await fetch(url.toString());
+  if (res.status === 429 || res.status === 403) throw new TransitlandRateLimitError();
+  if (!res.ok) throw new Error(`Transitland departures API error: ${res.status} ${res.statusText}`);
+  const data: TransitlandDeparturesResponse = await res.json();
+  return data.stops?.flatMap((s) => s.departures ?? []) ?? [];
+}
+
+/** GET /routes/{route_key}/trips/{trip_int_id}?include_geometry=true — null if unavailable. */
+export async function fetchTripDetailRaw(
+  routeOnestopId: string,
+  tripIntId: number,
+): Promise<TransitlandTripDetailItem | null> {
+  const url = new URL(
+    `${TRANSITLAND_BASE}/routes/${encodeURIComponent(routeOnestopId)}/trips/${tripIntId}`,
+  );
+  url.searchParams.set('apikey', API_KEY);
+  url.searchParams.set('include_geometry', 'true');
+  const res = await fetch(url.toString());
+  if (res.status === 429 || res.status === 403) throw new TransitlandRateLimitError();
+  if (!res.ok) return null;
+  const data: { trips?: TransitlandTripDetailItem[] } = await res.json();
+  return data.trips?.[0] ?? null;
 }
 
 /**

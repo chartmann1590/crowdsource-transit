@@ -1,0 +1,72 @@
+{
+  "comment": "Synthetic network for router unit tests (both platforms). Times are offsets in minutes from the test's base instant; stale departures carry absolute ISO instants. Cluster 1 (~40.70,-74.00): direct ride A->B->C->D plus a wrong-direction trip D->C->B->A and a stale (2018) departure at A. Cluster 2 (~40.80,-74.10): transfer G->X (green) then X->E (blue), same-stop transfer at X.",
+  "stops": [
+    { "key": "A", "name": "Alpha", "lat": 40.7, "lng": -74.0 },
+    { "key": "B", "name": "Bravo", "lat": 40.705, "lng": -74.0 },
+    { "key": "C", "name": "Charlie", "lat": 40.71, "lng": -74.0 },
+    { "key": "D", "name": "Delta", "lat": 40.715, "lng": -74.0 },
+    { "key": "G", "name": "Golf", "lat": 40.8, "lng": -74.1 },
+    { "key": "X", "name": "Xray", "lat": 40.81, "lng": -74.1 },
+    { "key": "E", "name": "Echo", "lat": 40.82, "lng": -74.1 }
+  ],
+  "routes": [
+    { "onestopId": "r-test-red", "shortName": "RED", "longName": "Red Line", "color": "#CC0000", "agency": "TestTransit", "mode": "bus" },
+    { "onestopId": "r-test-wrong", "shortName": "WRG", "longName": "Wrong Way", "color": "#999999", "agency": "TestTransit", "mode": "bus" },
+    { "onestopId": "r-test-green", "shortName": "GRN", "longName": "Green Line", "color": "#00CC00", "agency": "TestTransit", "mode": "bus" },
+    { "onestopId": "r-test-blue", "shortName": "BLU", "longName": "Blue Line", "color": "#0000CC", "agency": "TestTransit", "mode": "bus" },
+    { "onestopId": "r-test-stale", "shortName": "OLD", "longName": "Expired Feed", "color": "#000000", "agency": "TestTransit", "mode": "bus" }
+  ],
+  "trips": [
+    {
+      "tripIntId": 1,
+      "route": "r-test-red",
+      "gtfsTripId": "RED-1",
+      "headsign": "Delta",
+      "startOffsetMin": 12,
+      "stops": [
+        { "key": "A", "min": 0 },
+        { "key": "B", "min": 5 },
+        { "key": "C", "min": 10 },
+        { "key": "D", "min": 15 }
+      ]
+    },
+    {
+      "tripIntId": 2,
+      "route": "r-test-wrong",
+      "gtfsTripId": "WRG-1",
+      "headsign": "Alpha",
+      "startOffsetMin": 8,
+      "stops": [
+        { "key": "D", "min": 0 },
+        { "key": "C", "min": 5 },
+        { "key": "B", "min": 10 },
+        { "key": "A", "min": 15 }
+      ]
+    },
+    {
+      "tripIntId": 3,
+      "route": "r-test-green",
+      "gtfsTripId": "GRN-1",
+      "headsign": "Xray",
+      "startOffsetMin": 10,
+      "stops": [
+        { "key": "G", "min": 0 },
+        { "key": "X", "min": 5 }
+      ]
+    },
+    {
+      "tripIntId": 4,
+      "route": "r-test-blue",
+      "gtfsTripId": "BLU-1",
+      "headsign": "Echo",
+      "startOffsetMin": 20,
+      "stops": [
+        { "key": "X", "min": 0 },
+        { "key": "E", "min": 5 }
+      ]
+    }
+  ],
+  "staleDepartures": [
+    { "stopKey": "A", "route": "r-test-stale", "tripIntId": 99, "depUtc": "2018-03-14T19:15:00Z" }
+  ]
+}

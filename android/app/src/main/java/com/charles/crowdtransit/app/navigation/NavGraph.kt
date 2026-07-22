@@ -19,6 +19,9 @@ import com.charles.crowdtransit.app.ui.screens.crowdsource.AddStopScreen
 import com.charles.crowdtransit.app.ui.screens.downloads.DownloadsScreen
 import com.charles.crowdtransit.app.ui.screens.login.LoginScreen
 import com.charles.crowdtransit.app.ui.screens.map.MapHomeScreen
+import com.charles.crowdtransit.app.ui.screens.navigation.NavigationScreen
+import com.charles.crowdtransit.app.ui.screens.plan.ItineraryDetailScreen
+import com.charles.crowdtransit.app.ui.screens.plan.TripPlannerScreen
 import com.charles.crowdtransit.app.ui.screens.profile.LeaderboardScreen
 import com.charles.crowdtransit.app.ui.screens.profile.ProfileScreen
 import com.charles.crowdtransit.app.ui.screens.route.RouteDetailScreen
@@ -39,6 +42,15 @@ fun CrowdTransitNavGraph(
         return
     }
     val startDestination = if (onboardingStatus) Screen.MapHome.route else Screen.Onboarding.route
+
+    // Shared-trip deep links: MainActivity decodes the plan into the session holder and
+    // bumps this counter; navigate to the itinerary whenever it changes.
+    val sharedPlanEvent by navGraphViewModel.sharedPlanEvents.collectAsStateWithLifecycle()
+    androidx.compose.runtime.LaunchedEffect(sharedPlanEvent) {
+        if (sharedPlanEvent > 0) {
+            navController.navigate(Screen.ItineraryDetail.route)
+        }
+    }
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable(Screen.Onboarding.route) {
@@ -67,6 +79,7 @@ fun CrowdTransitNavGraph(
                 onSearchClick = { navController.navigate(Screen.Search.route) },
                 onProfileClick = { navController.navigate(Screen.Profile.route) },
                 onAddStopClick = { navController.navigate(Screen.AddStop.route) },
+                onPlanTripClick = { navController.navigate(Screen.TripPlanner.route) },
             )
         }
         composable(
@@ -79,6 +92,27 @@ fun CrowdTransitNavGraph(
                 onBack = { navController.popBackStack() },
                 onRouteClick = { navController.navigate(Screen.RouteDetail.createRoute(it)) },
                 onRateClick = { navController.navigate(Screen.RateStop.createRoute(stopId)) },
+                onDirectionsClick = { name, lat, lng ->
+                    navGraphViewModel.setTripDestination(name, lat, lng)
+                    navController.navigate(Screen.TripPlanner.route)
+                },
+            )
+        }
+        composable(Screen.TripPlanner.route) {
+            TripPlannerScreen(
+                onBack = { navController.popBackStack() },
+                onOpenItinerary = { navController.navigate(Screen.ItineraryDetail.route) },
+            )
+        }
+        composable(Screen.ItineraryDetail.route) {
+            ItineraryDetailScreen(
+                onBack = { navController.popBackStack() },
+                onStartNavigation = { navController.navigate(Screen.Navigation.route) },
+            )
+        }
+        composable(Screen.Navigation.route) {
+            NavigationScreen(
+                onExit = { navController.popBackStack() },
             )
         }
         composable(

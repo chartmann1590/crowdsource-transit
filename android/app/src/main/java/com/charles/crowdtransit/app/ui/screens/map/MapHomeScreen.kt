@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Directions
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CircularProgressIndicator
@@ -60,6 +61,7 @@ fun MapHomeScreen(
     onSearchClick: () -> Unit,
     onProfileClick: () -> Unit,
     onAddStopClick: () -> Unit,
+    onPlanTripClick: () -> Unit = {},
     viewModel: MapHomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -183,6 +185,18 @@ fun MapHomeScreen(
                     .size(56.dp),
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Add Stop")
+            }
+
+            FloatingActionButton(
+                onClick = onPlanTripClick,
+                containerColor = SurfaceElevated,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+                    .padding(bottom = 192.dp)
+                    .size(56.dp),
+            ) {
+                Icon(Icons.Filled.Directions, contentDescription = "Plan a trip")
             }
         }
     }

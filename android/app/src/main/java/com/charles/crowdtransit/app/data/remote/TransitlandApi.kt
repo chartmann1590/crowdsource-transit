@@ -39,6 +39,12 @@ interface TransitlandApi {
         @Query("limit") limit: Int = 10,
     ): TransitlandOperatorsResponse
 
+    // Operator detail incl. its source feeds (for offline GTFS download resolution).
+    @GET("api/v2/rest/operators/{onestop_id}")
+    suspend fun getOperator(
+        @Path("onestop_id") onestopId: String,
+    ): TransitlandOperatorsResponse
+
     @GET("api/v2/rest/stops")
     suspend fun getStopsByAgency(
         @Query("served_by_onestop_ids") agencyOnestopId: String,
@@ -59,4 +65,13 @@ interface TransitlandApi {
         @Query("limit") limit: Int = 200,
         @Query("include_alerts") includeAlerts: String = "false",
     ): TransitlandDeparturesResponse
+
+    // Trip detail: full ordered stop_times + shape. The path key is Transitland's
+    // internal INTEGER trip id (trip.id from departures), not the GTFS trip_id.
+    @GET("api/v2/rest/routes/{route_key}/trips/{trip_id}")
+    suspend fun getTrip(
+        @Path("route_key") routeKey: String,
+        @Path("trip_id") tripIntId: Long,
+        @Query("include_geometry") includeGeometry: Boolean = true,
+    ): TransitlandTripDetailResponse
 }

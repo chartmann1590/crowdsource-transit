@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.charles.crowdtransit.app.data.gtfs.GtfsDownloadManager
 import com.charles.crowdtransit.app.ui.theme.Error
 import com.charles.crowdtransit.app.ui.theme.OnSurface
 import com.charles.crowdtransit.app.ui.theme.OnSurfaceSecondary
@@ -54,6 +55,8 @@ fun DownloadsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val downloaded by viewModel.downloadedAgencies.collectAsStateWithLifecycle()
+    val gtfsState by viewModel.gtfsState.collectAsStateWithLifecycle()
+    val agenciesWithSchedules by viewModel.agenciesWithSchedules.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -174,15 +177,52 @@ fun DownloadsScreen(
                                 modifier = Modifier.padding(12.dp).fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
+                                val hasSchedules = agency.onestopId in agenciesWithSchedules
+                                val schedulesDownloading =
+                                    (gtfsState as? GtfsDownloadManager.State.Running)?.agencyOnestopId == agency.onestopId
+                                val schedulesFailed =
+                                    (gtfsState as? GtfsDownloadManager.State.Failed)?.takeIf { it.agencyOnestopId == agency.onestopId }
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(agency.name, color = OnSurface, style = MaterialTheme.typography.bodyLarge)
                                     Text(
-                                        "${agency.stopCount} stops",
+                                        "${agency.stopCount} stops" + if (hasSchedules) " · schedules ✓ (offline trips)" else "",
                                         color = OnSurfaceSecondary,
                                         style = MaterialTheme.typography.bodySmall,
                                     )
+                                    when {
+                                        schedulesDownloading -> {
+                                            val running = gtfsState as GtfsDownloadManager.State.Running
+                                            Text(
+                                                "Downloading schedules… ${running.table}: ${running.rows} rows",
+                                                color = OnSurfaceSecondary,
+                                                style = MaterialTheme.typography.bodySmall,
+                                            )
+                                        }
+
+                                        schedulesFailed != null -> Text(
+                                            "Schedules failed: ${schedulesFailed.message}",
+                                            color = MaterialTheme.colorScheme.error,
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+
+                                        !hasSchedules -> Text(
+                                            "Tap ⇣ to add full schedules for offline trip planning (can be large)",
+                                            color = OnSurfaceSecondary,
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
                                 }
-                                IconButton(onClick = { viewModel.remove(agency.onestopId) }) {
+                                if (schedulesDownloading) {
+                                    CircularProgressIndicator(modifier = Modifier.height(24.dp), color = Primary)
+                                } else if (!hasSchedules) {
+                                    IconButton(onClick = { viewModel.downloadSchedules(agency.onestopId) }) {
+                                        Icon(Icons.Filled.Download, contentDescription = "Download schedules", tint = Primary)
+                                    }
+                                }
+                                IconButton(onClick = {
+                                    viewModel.removeSchedules(agency.onestopId)
+                                    viewModel.remove(agency.onestopId)
+                                }) {
                                     Icon(Icons.Filled.Delete, contentDescription = "Remove", tint = Error)
                                 }
                             }

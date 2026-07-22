@@ -1,0 +1,97 @@
+{
+  "v": 1,
+  "planned_at": "2026-07-22T18:30:00Z",
+  "from": { "name": "", "lat": 47.60357, "lng": -122.32945 },
+  "to": { "name": "Fremont Troll", "lat": 47.65103, "lng": -122.34742 },
+  "legs": [
+    {
+      "t": "w",
+      "from": { "name": "", "lat": 47.60357, "lng": -122.32945 },
+      "to": { "name": "3rd Ave & Pike St", "lat": 47.60932, "lng": -122.33800 },
+      "dep": "2026-07-22T18:32:00Z",
+      "arr": "2026-07-22T18:41:00Z",
+      "dist_m": 700,
+      "poly": "eik~Gt|qiVoBnDsC`E"
+    },
+    {
+      "t": "r",
+      "mode": "bus",
+      "route": {
+        "onestop_id": "r-c23nb-40",
+        "short": "40",
+        "long": "Northgate - Downtown Seattle",
+        "color": "#00A862",
+        "agency": "King County Metro"
+      },
+      "trip": { "trip_id": "KCM-40-1832", "headsign": "Northgate Station" },
+      "board": {
+        "stop_id": "s-c23nb6-3rdpike",
+        "name": "3rd Ave & Pike St",
+        "lat": 47.60932,
+        "lng": -122.33800,
+        "dep_utc": "2026-07-22T18:45:00Z"
+      },
+      "alight": {
+        "stop_id": "s-c23ncd-fremontn34",
+        "name": "Fremont Ave N & N 34th St",
+        "lat": 47.64912,
+        "lng": -122.35008,
+        "arr_utc": "2026-07-22T19:03:00Z"
+      },
+      "stops": [
+        { "id": "s-c23nb6-3rdpike", "name": "3rd Ave & Pike St", "lat": 47.60932, "lng": -122.33800, "arr_utc": "2026-07-22T18:45:00Z" },
+        { "id": "s-c23nb7-3rdvirginia", "name": "3rd Ave & Virginia St", "lat": 47.61247, "lng": -122.34204, "arr_utc": "2026-07-22T18:48:00Z" },
+        { "id": "s-c23nbe-westlaken9", "name": "Westlake Ave N & 9th Ave N", "lat": 47.61887, "lng": -122.33876, "arr_utc": "2026-07-22T18:52:00Z" },
+        { "id": "s-c23nc8-dexterngaler", "name": "Dexter Ave N & Galer St", "lat": 47.63201, "lng": -122.34294, "arr_utc": "2026-07-22T18:57:00Z" },
+        { "id": "s-c23ncd-fremontn34", "name": "Fremont Ave N & N 34th St", "lat": 47.64912, "lng": -122.35008, "arr_utc": "2026-07-22T19:03:00Z" }
+      ],
+      "shape_poly": "_hl~Gjmsiv@sSbXqf@qSk`@`NwmB|f@"
+    },
+    {
+      "t": "w",
+      "from": { "name": "Fremont Ave N & N 34th St", "lat": 47.64912, "lng": -122.35008 },
+      "to": { "name": "N 35th St & Troll Ave N", "lat": 47.65080, "lng": -122.34750 },
+      "dep": "2026-07-22T19:03:00Z",
+      "arr": "2026-07-22T19:07:00Z",
+      "dist_m": 300
+    },
+    {
+      "t": "r",
+      "mode": "bus",
+      "route": {
+        "onestop_id": "r-c23nc-31",
+        "short": "31",
+        "long": "Central Magnolia - University District",
+        "color": "#00A862",
+        "agency": "King County Metro"
+      },
+      "trip": { "trip_id": "KCM-31-1908", "headsign": "University District" },
+      "board": {
+        "stop_id": "s-c23ncf-n35troll",
+        "name": "N 35th St & Troll Ave N",
+        "lat": 47.65080,
+        "lng": -122.34750,
+        "dep_utc": "2026-07-22T19:10:00Z"
+      },
+      "alight": {
+        "stop_id": "s-c23ncg-n36fremont",
+        "name": "N 36th St & Fremont Pl N",
+        "lat": 47.65128,
+        "lng": -122.34745,
+        "arr_utc": "2026-07-22T19:12:00Z"
+      },
+      "stops": [
+        { "id": "s-c23ncf-n35troll", "name": "N 35th St & Troll Ave N", "lat": 47.65080, "lng": -122.34750, "arr_utc": "2026-07-22T19:10:00Z" },
+        { "id": "s-c23ncg-n36fremont", "name": "N 36th St & Fremont Pl N", "lat": 47.65128, "lng": -122.34745, "arr_utc": "2026-07-22T19:12:00Z" }
+      ]
+    },
+    {
+      "t": "w",
+      "from": { "name": "N 36th St & Fremont Pl N", "lat": 47.65128, "lng": -122.34745 },
+      "to": { "name": "Fremont Troll", "lat": 47.65103, "lng": -122.34742 },
+      "dep": "2026-07-22T19:12:00Z",
+      "arr": "2026-07-22T19:13:00Z",
+      "dist_m": 40
+    }
+  ]
+}

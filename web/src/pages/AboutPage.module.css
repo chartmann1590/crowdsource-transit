@@ -74,6 +74,16 @@
   line-height: 1.8;
 }
 
+.ctaLink {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ctaLink:hover {
+  text-decoration: underline;
+}
+
 .promoVideo {
   width: 100%;
   max-width: 360px;

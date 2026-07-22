@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Navbar } from '../components/UI/Navbar';
 import styles from './AboutPage.module.css';
 
@@ -24,11 +25,33 @@ export function AboutPage() {
           <h2>Features</h2>
           <ul>
             <li>Interactive map of transit stops with real-time navigation</li>
+            <li>
+              <Link to="/plan">Turn-by-turn trip planning</Link> — get a full walk + ride +
+              transfer + walk itinerary between any two points, with real departure and
+              arrival times for every stop along the way
+            </li>
+            <li>Save trips to your account and share them with a link or as plain-text directions</li>
+            <li>Live GPS-guided navigation with off-route alerts on the Android app</li>
             <li>Detailed stop information including features and transit types</li>
             <li>Community reviews and ratings for stops and routes</li>
             <li>Anonymous posting option for privacy-conscious users</li>
             <li>Crowdsourced stop additions and edits</li>
           </ul>
+        </section>
+
+        <section className={styles.section}>
+          <h2>Plan a Trip</h2>
+          <p>
+            Enter where you are (or search a starting point) and where you want to go, and
+            CrowdTransit builds a complete itinerary: walk to the first stop, ride transit
+            with every intermediate stop and real schedule times shown, transfer to another
+            route or a nearby stop if needed, then walk to your destination. On Android, you
+            can start live navigation and CrowdTransit will follow your trip by GPS, tell you
+            when to get off, and offer to reroute if you go off course.
+          </p>
+          <p>
+            <Link to="/plan" className={styles.ctaLink}>Try the trip planner →</Link>
+          </p>
         </section>
 
         <section className={styles.section}>

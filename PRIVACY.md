@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** July 16, 2026
+**Last updated:** July 22, 2026
 
 ## Overview
 
@@ -17,13 +17,15 @@ CrowdTransit is a community-powered public transit locator. This policy explains
 
 ### Information Collected Automatically
 - **Location** – With your permission, we access your device's coarse/fine location to show nearby stops. Location data is used only on-device and is not stored on our servers unless you explicitly submit it (e.g., adding a stop).
+- **Location during turn-by-turn navigation** – When you start live navigation for a planned trip, the app continues reading your precise location while the app is in the foreground and while a persistent "navigating" notification is shown, so it can advance you through walking and transit legs, warn you when to get off, and detect if you've gone off route. This location use is shown to you in an in-app disclosure before navigation starts, runs only for the duration of an active navigation session, is never stored on our servers, and stops immediately when you end navigation or the session completes. We do not collect or request background location access.
 - **Crash reports** – Firebase Crashlytics collects crash logs and device information (OS version, device model) to help us fix bugs.
 - **Performance data** – Firebase Performance Monitoring collects app responsiveness and latency metrics.
 - **Usage data** – Firebase Analytics collects anonymized interaction data to improve the app.
 
 ### Permissions
-- **Location** (`ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`) – Required to show nearby transit stops.
+- **Location** (`ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`) – Required to show nearby transit stops and, when you start it, to run live turn-by-turn navigation.
 - **Camera** – Optional, used only when uploading a photo of a stop.
+- **Foreground service / notifications** (`FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`, `POST_NOTIFICATIONS`) – Used only while you have an active turn-by-turn navigation session, to keep tracking your trip reliably and show the ongoing navigation notification. No background location access is requested.
 
 ## How We Use Data
 
@@ -35,8 +37,10 @@ CrowdTransit is a community-powered public transit locator. This policy explains
 
 ## Data Storage & Sharing
 
-- **Firebase (Google)** – All user-generated data (ratings, comments, photos, activity) is stored in Firebase Realtime Database. Firebase Authentication manages account credentials. See [Google's Privacy Policy](https://policies.google.com/privacy).
-- **Transitland API** – We fetch GTFS transit data from the Transitland API. No personal data is sent to Transitland.
+- **Firebase (Google)** – All user-generated data (ratings, comments, photos, activity) is stored in Firebase Realtime Database. Firebase Authentication manages account credentials. Trips you explicitly choose to save are stored the same way, scoped to your account. See [Google's Privacy Policy](https://policies.google.com/privacy).
+- **Transitland API** – We fetch GTFS transit data (stops, routes, schedules) from the Transitland API, including when planning a trip. No personal data is sent to Transitland.
+- **OpenRouteService (via our own Cloudflare Worker proxy)** – To draw walking directions for a planned trip, the app sends only the walking leg's coordinates (no account or device identifiers) through a CrowdTransit-operated proxy to OpenRouteService. See [openrouteservice.org](https://openrouteservice.org/) and [Cloudflare's Privacy Policy](https://www.cloudflare.com/privacypolicy/).
+- **Shared trip links** – When you copy a trip's share link or plain-text directions, the itinerary is encoded directly into that link/text — no separate copy is stored or transmitted to us unless you also choose to save the trip to your account.
 - **AdMob** – This app displays banner and interstitial ads served by Google AdMob. AdMob may collect advertising identifiers and other device information to serve and measure ads. See [Google's Privacy Policy](https://policies.google.com/privacy) and [How Google uses information from sites or apps that use our services](https://policies.google.com/technologies/partner-sites).
 
 We do **not** sell, rent, or share your personal data with third parties for their own marketing purposes.

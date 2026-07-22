@@ -5,10 +5,21 @@ import type { Stop } from '../../types/transit';
 import { TRANSIT_COLORS } from '../../utils/transit-colors';
 import '../../styles/maplibre-overrides.css';
 
+/** A polyline to draw on the map (itinerary legs). Dashed = walking, solid = transit. */
+export interface MapPolyline {
+  /** [lng, lat] pairs in travel order. */
+  points: [number, number][];
+  color: string;
+  dashed: boolean;
+}
+
 interface MapViewProps {
   stops: Stop[];
   selectedStopId?: string | null;
   activeStopIds?: Set<string>;
+  polylines?: MapPolyline[];
+  /** Fit the camera to the polylines whenever they change. */
+  fitToPolylines?: boolean;
   onStopClick?: (stopId: string) => void;
   onMapMove?: (lat: number, lng: number) => void;
   initialLat?: number;
@@ -19,12 +30,17 @@ interface MapViewProps {
 const STOP_MARKERS_SOURCE = 'stops-source';
 const STOP_HALO_LAYER = 'stops-halo-layer';
 const STOP_MARKERS_LAYER = 'stops-layer';
+const ITINERARY_SOURCE = 'itinerary-source';
+const ITINERARY_TRANSIT_LAYER = 'itinerary-transit-layer';
+const ITINERARY_WALK_LAYER = 'itinerary-walk-layer';
 const SELECTED_COLOR = '#00A862';
 
 export function MapView({
   stops,
   selectedStopId,
   activeStopIds,
+  polylines,
+  fitToPolylines = false,
   onStopClick,
   onMapMove,
   initialLat = 37.7749,
@@ -34,6 +50,59 @@ export function MapView({
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const hasUserInteracted = useRef(false);
+  const mapLoaded = useRef(false);
+
+  const updatePolylines = useCallback(() => {
+    const map = mapRef.current;
+    if (!map || !mapLoaded.current) return;
+
+    if (!map.getSource(ITINERARY_SOURCE)) {
+      map.addSource(ITINERARY_SOURCE, {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+      // Below the stops layer so markers stay tappable/visible.
+      map.addLayer(
+        {
+          id: ITINERARY_TRANSIT_LAYER,
+          type: 'line',
+          source: ITINERARY_SOURCE,
+          filter: ['==', ['get', 'dashed'], false],
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: { 'line-width': 5, 'line-color': ['get', 'color'] },
+        },
+        STOP_HALO_LAYER,
+      );
+      map.addLayer(
+        {
+          id: ITINERARY_WALK_LAYER,
+          type: 'line',
+          source: ITINERARY_SOURCE,
+          filter: ['==', ['get', 'dashed'], true],
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: { 'line-width': 4, 'line-color': ['get', 'color'], 'line-dasharray': [0.8, 1.6] },
+        },
+        STOP_HALO_LAYER,
+      );
+    }
+
+    const lines = (polylines ?? []).filter((l) => l.points.length >= 2);
+    const source = map.getSource(ITINERARY_SOURCE) as maplibregl.GeoJSONSource;
+    source.setData({
+      type: 'FeatureCollection',
+      features: lines.map((line) => ({
+        type: 'Feature' as const,
+        geometry: { type: 'LineString' as const, coordinates: line.points },
+        properties: { color: line.color, dashed: line.dashed },
+      })),
+    });
+
+    if (fitToPolylines && lines.length > 0) {
+      const bounds = new maplibregl.LngLatBounds();
+      for (const line of lines) for (const p of line.points) bounds.extend(p);
+      map.fitBounds(bounds, { padding: 60, maxZoom: 16 });
+    }
+  }, [polylines, fitToPolylines]);
 
   const updateStopsSource = useCallback(() => {
     const map = mapRef.current;
@@ -168,7 +237,9 @@ export function MapView({
         map.getCanvas().style.cursor = '';
       });
 
+      mapLoaded.current = true;
       updateStopsSource();
+      updatePolylines();
     });
 
     mapRef.current = map;
@@ -197,6 +268,10 @@ export function MapView({
   useEffect(() => {
     updateStopsSource();
   }, [updateStopsSource]);
+
+  useEffect(() => {
+    updatePolylines();
+  }, [updatePolylines]);
 
   return <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />;
 }

@@ -5,6 +5,8 @@ import { LoginModal } from '../components/Auth/LoginModal';
 import { useGamification } from '../hooks/useGamification';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 import { getLevel, getLevelProgress, BADGES } from '../firebase/gamification';
+import { useSavedTrips } from '../hooks/useSavedTrips';
+import { deleteTrip } from '../firebase/savedTrips';
 import styles from './ProfilePage.module.css';
 
 type Tab = 'profile' | 'leaderboard';
@@ -15,6 +17,7 @@ export function ProfilePage() {
   const [tab, setTab] = useState<Tab>('profile');
   const stats = useGamification();
   const { entries, loading: leaderboardLoading } = useLeaderboard();
+  const { trips: savedTrips } = useSavedTrips();
 
   if (!user) {
     return (
@@ -100,6 +103,35 @@ export function ProfilePage() {
                 <span className={styles.statValue}>{stats.streakCount}</span>
                 <span className={styles.statLabel}>Day Streak 🔥</span>
               </div>
+            </div>
+
+            <div className={styles.badgesSection}>
+              <h3>Saved trips</h3>
+              {savedTrips.length === 0 ? (
+                <p className={styles.leaderboardStatus}>No saved trips yet. Plan a trip and save it!</p>
+              ) : (
+                <ol className={styles.leaderboardList}>
+                  {savedTrips.map((trip) => (
+                    <li key={trip.tripId} className={styles.leaderboardRow}>
+                      <button
+                        className={styles.savedTripOpen}
+                        onClick={() => {
+                          window.location.href = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/trip#d=${trip.plan}`;
+                        }}
+                      >
+                        {trip.fromName || 'Origin'} → {trip.toName || 'Destination'}
+                      </button>
+                      <button
+                        className={styles.savedTripDelete}
+                        title="Delete saved trip"
+                        onClick={() => void deleteTrip(trip.tripId)}
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              )}
             </div>
 
             <div className={styles.badgesSection}>

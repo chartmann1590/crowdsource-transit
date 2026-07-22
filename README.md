@@ -25,12 +25,27 @@ Community-powered public transit locator — find nearby bus stops, train statio
   <img src="play-store/graphics/phone/05-live-activity.png" alt="Live activity and check-ins" width="200">
 </p>
 
+**Turn-by-turn trip planning:**
+
+<p>
+  <img src="play-store/graphics/web/plan-itinerary.png" alt="Web trip planner showing a walk + bus + transfer + bus itinerary with map polylines" width="440">
+  <img src="play-store/graphics/android/itinerary-detail.png" alt="Android itinerary detail screen with map, walking directions, and Start navigation" width="220">
+</p>
+
 Promo video, full-size screenshots, app icon, feature graphic, and the full Play
 Store listing text live in [`play-store/`](play-store/).
 
 ## Features
 
 - Interactive map with transit stops using OpenStreetMap (free, no API key required)
+- **Turn-by-turn trip planning** — enter an origin and destination (GPS or search) and get
+  a full door-to-door itinerary: walk to the first stop, ride transit with every
+  intermediate stop and real departure/arrival times, transfer to another route or walk
+  between stops, then walk to your destination
+- **Live navigation (Android)** — GPS-follows you through a planned trip, tells you when
+  to get off, and offers to reroute if you go off course
+- **Save & share trips** — save itineraries to your account (synced between the app and
+  website), or share a self-contained link and copy-as-text directions to any app
 - Community ratings and reviews for stops and routes
 - Add missing stops — crowdsourced with community verification
 - Real-time data via Transitland API (6,000+ agencies worldwide)
@@ -52,6 +67,8 @@ Store listing text live in [`play-store/`](play-store/).
 | **Backend** | Firebase Realtime Database (Spark/free tier) |
 | **Auth** | Firebase Authentication (Anonymous + Google + Email) |
 | **Data** | GTFS feeds via Transitland API |
+| **Routing** | In-house RAPTOR-style trip planner (see [`docs/routing/`](docs/routing/)) over live Transitland schedules, with an on-device offline router (Android) for downloaded agencies |
+| **Walking directions** | OpenRouteService, proxied through a Cloudflare Worker ([`workers/ors-proxy/`](workers/ors-proxy/)) so no API key ships in the app or website |
 | **Hosting** | GitHub Pages (web) + Firebase Hosting (optional) |
 | **Design** | Google Stitch MCP design system |
 | **CI/CD** | GitHub Actions |
@@ -90,6 +107,8 @@ node import-all.js
 crowdsource-transit/
 ├── android/          # Android app (Kotlin + Jetpack Compose)
 ├── web/              # Web app (React + TypeScript + Vite)
+├── workers/          # Cloudflare Workers (ORS walking-directions proxy)
+├── docs/routing/     # Shared trip-planning spec, fixtures, itinerary format
 ├── scripts/          # GTFS import & data pipeline
 ├── firebase/         # Security rules & config
 ├── .github/          # CI/CD workflows
