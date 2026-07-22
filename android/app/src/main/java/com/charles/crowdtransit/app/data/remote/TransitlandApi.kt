@@ -39,6 +39,12 @@ interface TransitlandApi {
         @Query("limit") limit: Int = 10,
     ): TransitlandOperatorsResponse
 
+    // Operator detail incl. its source feeds (for offline GTFS download resolution).
+    @GET("api/v2/rest/operators/{onestop_id}")
+    suspend fun getOperator(
+        @Path("onestop_id") onestopId: String,
+    ): TransitlandOperatorsResponse
+
     @GET("api/v2/rest/stops")
     suspend fun getStopsByAgency(
         @Query("served_by_onestop_ids") agencyOnestopId: String,

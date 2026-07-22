@@ -2,6 +2,7 @@ package com.charles.crowdtransit.app.domain.routing
 
 import com.charles.crowdtransit.app.data.remote.OrsApi
 import com.charles.crowdtransit.app.data.remote.OrsWalkRequest
+import com.charles.crowdtransit.app.data.routing.RoomGtfsDataSource
 import com.charles.crowdtransit.app.data.routing.TransitlandDataSource
 import com.charles.crowdtransit.app.util.PolylineCodec
 import com.charles.crowdtransit.model.Leg
@@ -22,12 +23,28 @@ import kotlin.math.roundToInt
 class PlanTripUseCase @Inject constructor(
     private val router: TransitRouter,
     private val transitlandSource: TransitlandDataSource,
+    private val roomSource: RoomGtfsDataSource,
     private val orsApi: OrsApi,
 ) {
 
     suspend operator fun invoke(req: PlanRequest): List<TripPlan> {
-        val plans = router.planTrips(transitlandSource, req)
+        // Offline-first: when both trip ends have downloaded GTFS stops nearby, route
+        // entirely on-device (zero Transitland calls). Sources are never mixed within
+        // one search.
+        val source = if (offlineCovers(req)) roomSource else transitlandSource
+        var plans = router.planTrips(source, req)
+        if (plans.isEmpty() && source === roomSource) {
+            // Downloaded data may be stale/sparse — fall back to live.
+            plans = router.planTrips(transitlandSource, req)
+        }
         return plans.map { refineWalkLegs(it) }
+    }
+
+    private suspend fun offlineCovers(req: PlanRequest): Boolean = try {
+        roomSource.stopsNear(req.fromLat, req.fromLng, TransitRouter.CANDIDATE_RADIUS_M, 5).isNotEmpty() &&
+            roomSource.stopsNear(req.toLat, req.toLng, TransitRouter.CANDIDATE_RADIUS_M, 5).isNotEmpty()
+    } catch (_: Exception) {
+        false
     }
 
     private suspend fun refineWalkLegs(plan: TripPlan): TripPlan {

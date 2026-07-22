@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charles.crowdtransit.app.data.local.entities.CachedAgencyEntity
 import com.charles.crowdtransit.app.data.remote.TransitlandOperator
+import com.charles.crowdtransit.app.data.gtfs.GtfsDownloadManager
 import com.charles.crowdtransit.app.data.repository.OfflineRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +28,7 @@ data class DownloadsUiState(
 @HiltViewModel
 class DownloadsViewModel @Inject constructor(
     private val offlineRepository: OfflineRepository,
+    private val gtfsDownloads: GtfsDownloadManager,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DownloadsUiState())
@@ -35,6 +37,18 @@ class DownloadsViewModel @Inject constructor(
     val downloadedAgencies: StateFlow<List<CachedAgencyEntity>> =
         offlineRepository.observeDownloadedAgencies()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** Full-GTFS (offline trip planning) download state + which agencies have schedules. */
+    val gtfsState: StateFlow<GtfsDownloadManager.State> = gtfsDownloads.state
+    val agenciesWithSchedules: StateFlow<Set<String>> = gtfsDownloads.agenciesWithSchedules
+
+    init {
+        gtfsDownloads.refreshDownloadedAgencies()
+    }
+
+    fun downloadSchedules(onestopId: String) = gtfsDownloads.downloadSchedules(onestopId)
+
+    fun removeSchedules(onestopId: String) = gtfsDownloads.removeSchedules(onestopId)
 
     fun onQueryChanged(query: String) {
         _uiState.update { it.copy(query = query) }

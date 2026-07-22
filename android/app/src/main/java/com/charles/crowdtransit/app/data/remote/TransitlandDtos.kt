@@ -94,6 +94,13 @@ data class TransitlandOperator(
     @Json(name = "onestop_id") val onestopId: String = "",
     val name: String? = null,
     @Json(name = "short_name") val shortName: String? = null,
+    val feeds: List<TransitlandOperatorFeed>? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class TransitlandOperatorFeed(
+    @Json(name = "onestop_id") val onestopId: String? = null,
+    val spec: String? = null,
 )
 
 // === Stop Departures ===
