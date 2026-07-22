@@ -20,13 +20,16 @@ import kotlinx.coroutines.delay
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
+import org.maplibre.geojson.LineString
 import org.maplibre.geojson.Point
 import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.expressions.Expression
 import org.maplibre.android.style.layers.CircleLayer
+import org.maplibre.android.style.layers.LineLayer
 import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.sources.GeoJsonSource
 import kotlin.math.sin
@@ -38,6 +41,17 @@ private const val USER_SOURCE = "user-source"
 private const val USER_LAYER = "user-layer"
 private const val ACTIVE_SOURCE = "active-halo-source"
 private const val ACTIVE_HALO_LAYER = "active-halo-layer"
+private const val ITINERARY_SOURCE = "itinerary-source"
+private const val ITINERARY_TRANSIT_LAYER = "itinerary-transit-layer"
+private const val ITINERARY_WALK_LAYER = "itinerary-walk-layer"
+
+/** A polyline to draw on the map (itinerary legs). Dashed = walking, solid = transit. */
+data class MapPolyline(
+    /** lng/lat pairs in travel order. */
+    val points: List<Pair<Double, Double>>,
+    val colorHex: String,
+    val dashed: Boolean,
+)
 
 private fun hexFromColor(color: androidx.compose.ui.graphics.Color): String {
     val r = (color.red * 255).toInt()
@@ -62,6 +76,8 @@ fun MapLibreView(
     userLat: Double? = null,
     userLng: Double? = null,
     activeStopIds: Set<String> = emptySet(),
+    polylines: List<MapPolyline> = emptyList(),
+    fitToPolylines: Boolean = false,
     onStopPinClick: (String) -> Unit = {},
     onLocationUpdate: (Double, Double) -> Unit = { _, _ -> },
 ) {
@@ -172,6 +188,63 @@ fun MapLibreView(
             map.animateCamera(
                 CameraUpdateFactory.newLatLngZoom(LatLng(avgLat, avgLng), 10.0),
             )
+        }
+    }
+
+    // Itinerary polylines: solid per-route-color transit lines + dashed walk lines,
+    // inserted below the stops layer so markers stay tappable/visible.
+    LaunchedEffect(styleReady, polylines, fitToPolylines) {
+        if (!styleReady) return@LaunchedEffect
+        val map = mapboxMap ?: return@LaunchedEffect
+        val style = map.style ?: return@LaunchedEffect
+
+        if (style.getSource(ITINERARY_SOURCE) == null) {
+            style.addSource(GeoJsonSource(ITINERARY_SOURCE))
+            style.addLayerBelow(
+                LineLayer(ITINERARY_TRANSIT_LAYER, ITINERARY_SOURCE).apply {
+                    setProperties(
+                        PropertyFactory.lineWidth(5f),
+                        PropertyFactory.lineColor(Expression.get("color")),
+                        PropertyFactory.lineCap("round"),
+                        PropertyFactory.lineJoin("round"),
+                    )
+                    setFilter(Expression.eq(Expression.get("dashed"), Expression.literal(false)))
+                },
+                STOPS_LAYER,
+            )
+            style.addLayerBelow(
+                LineLayer(ITINERARY_WALK_LAYER, ITINERARY_SOURCE).apply {
+                    setProperties(
+                        PropertyFactory.lineWidth(4f),
+                        PropertyFactory.lineColor(Expression.get("color")),
+                        PropertyFactory.lineDasharray(arrayOf(0.8f, 1.6f)),
+                        PropertyFactory.lineCap("round"),
+                        PropertyFactory.lineJoin("round"),
+                    )
+                    setFilter(Expression.eq(Expression.get("dashed"), Expression.literal(true)))
+                },
+                STOPS_LAYER,
+            )
+        }
+
+        val lineFeatures = polylines
+            .filter { it.points.size >= 2 }
+            .map { line ->
+                Feature.fromGeometry(
+                    LineString.fromLngLats(line.points.map { (lng, lat) -> Point.fromLngLat(lng, lat) }),
+                    com.google.gson.JsonObject().apply {
+                        addProperty("color", line.colorHex)
+                        addProperty("dashed", line.dashed)
+                    },
+                )
+            }
+        style.getSourceAs<GeoJsonSource>(ITINERARY_SOURCE)
+            ?.setGeoJson(FeatureCollection.fromFeatures(lineFeatures))
+
+        if (fitToPolylines && polylines.any { it.points.size >= 2 }) {
+            val builder = LatLngBounds.Builder()
+            polylines.forEach { line -> line.points.forEach { (lng, lat) -> builder.include(LatLng(lat, lng)) } }
+            map.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 80))
         }
     }
 

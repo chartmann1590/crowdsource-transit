@@ -75,6 +75,25 @@ object NetworkModule {
             .build()
             .create(TransitlandApi::class.java)
 
+    // Public Worker endpoint (workers/ors-proxy) that holds the OpenRouteService key as a
+    // Cloudflare secret — the key itself must never appear in this app (the APK is public).
+    private const val ORS_PROXY_BASE_URL = "https://crowdtransit-ors-proxy.chartmann1590.workers.dev/"
+
+    @Provides
+    @Singleton
+    fun provideOrsApi(moshi: Moshi): com.charles.crowdtransit.app.data.remote.OrsApi =
+        Retrofit.Builder()
+            .baseUrl(ORS_PROXY_BASE_URL.toHttpUrl())
+            .client(
+                OkHttpClient.Builder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(15, TimeUnit.SECONDS)
+                    .build(),
+            )
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+            .create(com.charles.crowdtransit.app.data.remote.OrsApi::class.java)
+
     @Qualifier
     @Retention(AnnotationRetention.BINARY)
     annotation class GithubOkHttp
