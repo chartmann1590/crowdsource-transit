@@ -36,6 +36,8 @@ export function PlanPage() {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<TripPlan | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
   const { plans, loading, planned, error, plan } = usePlanTrip();
   const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -71,9 +73,25 @@ export function PlanPage() {
   );
 
   const useMyLocation = useCallback(() => {
-    navigator.geolocation?.getCurrentPosition(
-      (pos) => applyPlace({ name: 'My location', lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => {},
+    setLocationError(null);
+    if (!navigator.geolocation) {
+      setLocationError("This browser doesn't support location — search for a stop instead.");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocating(false);
+        applyPlace({ name: 'My location', lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      (err) => {
+        setLocating(false);
+        setLocationError(
+          err.code === err.PERMISSION_DENIED
+            ? 'Location permission denied — allow location access for this site in your browser settings, or search for a stop instead.'
+            : "Couldn't get your location — search for a stop instead.",
+        );
+      },
       { enableHighAccuracy: true, timeout: 10_000 },
     );
   }, [applyPlace]);
@@ -129,14 +147,15 @@ export function PlanPage() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder={editing === 'from' ? 'Search starting stop or place…' : 'Search destination…'}
           />
-          {(suggestions.length > 0 || query.length >= 2) && (
-            <ul className={styles.suggestions}>
-              <li>
-                <button type="button" onClick={useMyLocation}>
-                  📍 Use my location
-                </button>
-              </li>
-              {suggestions.map((s, i) => (
+          {locationError && <p className={styles.error}>{locationError}</p>}
+          <ul className={styles.suggestions}>
+            <li>
+              <button type="button" onClick={useMyLocation} disabled={locating}>
+                📍 {locating ? 'Finding your location…' : 'Use my location'}
+              </button>
+            </li>
+            {(suggestions.length > 0 || query.length >= 2) &&
+              suggestions.map((s, i) => (
                 <li key={`${s.lat},${s.lng},${i}`}>
                   <button type="button" onClick={() => applyPlace(s)}>
                     {s.name}
@@ -144,8 +163,7 @@ export function PlanPage() {
                   </button>
                 </li>
               ))}
-            </ul>
-          )}
+          </ul>
 
           <button
             type="button"
