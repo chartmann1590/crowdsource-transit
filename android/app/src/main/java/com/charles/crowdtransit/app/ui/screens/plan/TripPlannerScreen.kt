@@ -196,7 +196,10 @@ fun TripPlannerScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        if (viewModel.openSavedTrip(trip)) onOpenItinerary()
+                                        // Saved trips store origin/destination only, never
+                                        // times, so opening one re-plans fresh — stay on this
+                                        // screen and show the current closest options.
+                                        viewModel.openSavedTrip(trip)
                                     }
                                     .padding(vertical = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically,

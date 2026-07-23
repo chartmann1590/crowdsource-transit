@@ -1,12 +1,13 @@
 import { get, onValue, push, ref, remove, set } from 'firebase/database';
 import type { TripPlan } from '../types/itinerary';
-import { decodeTripPlan, encodeTripPlan } from '../utils/tripCodec';
 import { auth, database } from './config';
 
 /**
- * Saved trips live at savedTrips/{uid}/{tripId} as { plan: <encoded blob>, createdAt,
- * fromName, toName } — the blob is the same wire format as share links, so app and web
- * read each other's saves. Client-side cap keeps RTDB usage Spark-safe.
+ * Saved trips live at savedTrips/{uid}/{tripId}: origin + destination only (no
+ * departure/arrival times or legs). A saved trip is a place-to-place shortcut, not a
+ * frozen schedule snapshot — schedules change day to day, so opening a saved trip
+ * always re-plans from the current time to show accurate, up-to-date options (Android
+ * twin: data/repository/SavedTripRepository.kt). Client-side cap keeps RTDB Spark-safe.
  */
 
 export const MAX_SAVED_TRIPS = 30;
@@ -14,12 +15,15 @@ export const MAX_SAVED_TRIPS = 30;
 export interface SavedTrip {
   tripId: string;
   fromName: string;
+  fromLat: number;
+  fromLng: number;
   toName: string;
+  toLat: number;
+  toLng: number;
   createdAt: number;
-  /** Encoded blob (decode lazily — lists don't need the full plan). */
-  plan: string;
 }
 
+/** Saves the trip's origin/destination only — never its computed times. */
 export async function saveTrip(plan: TripPlan): Promise<string> {
   const user = auth.currentUser;
   if (!user) throw new Error('Not authenticated');
@@ -30,13 +34,15 @@ export async function saveTrip(plan: TripPlan): Promise<string> {
     throw new Error(`Saved trip limit reached (${MAX_SAVED_TRIPS}). Delete one first.`);
   }
 
-  const blob = await encodeTripPlan(plan);
   const tripRef = push(listRef);
   await set(tripRef, {
-    plan: blob,
     createdAt: Date.now(),
     fromName: plan.from.name,
+    fromLat: plan.from.lat,
+    fromLng: plan.from.lng,
     toName: plan.to.name,
+    toLat: plan.to.lat,
+    toLng: plan.to.lng,
   });
   return tripRef.key!;
 }
@@ -56,8 +62,4 @@ export function observeSavedTrips(uid: string, callback: (trips: SavedTrip[]) =>
       .sort((a, b) => b.createdAt - a.createdAt);
     callback(trips);
   });
-}
-
-export async function decodeSavedTrip(trip: SavedTrip): Promise<TripPlan> {
-  return decodeTripPlan(trip.plan);
 }

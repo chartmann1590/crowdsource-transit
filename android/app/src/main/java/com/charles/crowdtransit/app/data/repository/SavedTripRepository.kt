@@ -1,7 +1,6 @@
 package com.charles.crowdtransit.app.data.repository
 
 import com.charles.crowdtransit.app.data.firebase.observeAsFlow
-import com.charles.crowdtransit.app.data.trip.TripPlanCodec
 import com.charles.crowdtransit.model.TripPlan
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -14,15 +13,16 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Saved trips at savedTrips/{uid}/{tripId}: { plan: <encoded blob>, createdAt, fromName,
- * toName }. Same wire format as share links, so web and app read each other's saves
- * (web twin: web/src/firebase/savedTrips.ts). Client-side cap keeps RTDB Spark-safe.
+ * Saved trips at savedTrips/{uid}/{tripId}: origin + destination only (no departure/
+ * arrival times or legs). A saved trip is a place-to-place shortcut, not a frozen
+ * schedule snapshot — schedules change day to day, so opening a saved trip always
+ * re-plans from the current time to show accurate, up-to-date options (web twin:
+ * web/src/firebase/savedTrips.ts). Client-side cap keeps RTDB Spark-safe.
  */
 @Singleton
 class SavedTripRepository @Inject constructor(
     private val db: FirebaseDatabase,
     private val auth: FirebaseAuth,
-    private val codec: TripPlanCodec,
 ) {
     companion object {
         const val MAX_SAVED_TRIPS = 30
@@ -31,10 +31,12 @@ class SavedTripRepository @Inject constructor(
     data class SavedTrip(
         val tripId: String,
         val fromName: String,
+        val fromLat: Double,
+        val fromLng: Double,
         val toName: String,
+        val toLat: Double,
+        val toLng: Double,
         val createdAt: Long,
-        /** Encoded blob (decode lazily — lists don't need the full plan). */
-        val plan: String,
     )
 
     val isSignedIn: Boolean get() = auth.currentUser != null
@@ -48,6 +50,7 @@ class SavedTripRepository @Inject constructor(
             }
     }
 
+    /** Saves the trip's origin/destination only — never its computed times. */
     suspend fun saveTrip(plan: TripPlan): String {
         val uid = auth.currentUser?.uid ?: throw IllegalStateException("Not authenticated")
         val listRef = db.reference.child("savedTrips/$uid")
@@ -58,10 +61,13 @@ class SavedTripRepository @Inject constructor(
         val tripRef = listRef.push()
         tripRef.setValue(
             mapOf(
-                "plan" to codec.encode(plan),
                 "createdAt" to System.currentTimeMillis(),
                 "fromName" to plan.from.name,
+                "fromLat" to plan.from.lat,
+                "fromLng" to plan.from.lng,
                 "toName" to plan.to.name,
+                "toLat" to plan.to.lat,
+                "toLng" to plan.to.lng,
             ),
         ).await()
         return tripRef.key!!
@@ -72,17 +78,21 @@ class SavedTripRepository @Inject constructor(
         db.reference.child("savedTrips/$uid/$tripId").removeValue().await()
     }
 
-    fun decode(trip: SavedTrip): TripPlan? = runCatching { codec.decode(trip.plan) }.getOrNull()
-
     private fun DataSnapshot.toSavedTrip(): SavedTrip? {
         val tripId = key ?: return null
-        val plan = child("plan").value as? String ?: return null
+        val fromLat = (child("fromLat").value as? Number)?.toDouble() ?: return null
+        val fromLng = (child("fromLng").value as? Number)?.toDouble() ?: return null
+        val toLat = (child("toLat").value as? Number)?.toDouble() ?: return null
+        val toLng = (child("toLng").value as? Number)?.toDouble() ?: return null
         return SavedTrip(
             tripId = tripId,
             fromName = child("fromName").value as? String ?: "",
+            fromLat = fromLat,
+            fromLng = fromLng,
             toName = child("toName").value as? String ?: "",
+            toLat = toLat,
+            toLng = toLng,
             createdAt = child("createdAt").value as? Long ?: 0L,
-            plan = plan,
         )
     }
 }

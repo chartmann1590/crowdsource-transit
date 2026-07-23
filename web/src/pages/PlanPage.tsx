@@ -21,17 +21,23 @@ interface Suggestion extends PlannerPlace {
   detail: string;
 }
 
-/** Optional prefill via location state: { to: { name, lat, lng } } from stop pages. */
+/**
+ * Optional prefill via location state: { to } from stop pages (destination only), or
+ * { from, to, autoPlan } when reopening a saved trip (both endpoints, and immediately
+ * search for the current closest options rather than a stale saved schedule).
+ */
 interface PlanLocationState {
+  from?: PlannerPlace;
   to?: PlannerPlace;
+  autoPlan?: boolean;
 }
 
 export function PlanPage() {
   const location = useLocation();
-  const prefill = (location.state as PlanLocationState | null)?.to;
+  const locationState = location.state as PlanLocationState | null;
 
-  const [origin, setOrigin] = useState<PlannerPlace | null>(null);
-  const [destination, setDestination] = useState<PlannerPlace | null>(prefill ?? null);
+  const [origin, setOrigin] = useState<PlannerPlace | null>(locationState?.from ?? null);
+  const [destination, setDestination] = useState<PlannerPlace | null>(locationState?.to ?? null);
   const [editing, setEditing] = useState<'from' | 'to'>('from');
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -129,6 +135,16 @@ export function PlanPage() {
       to: { name: destination.name, lat: destination.lat, lng: destination.lng },
     });
   }, [origin, destination, plan]);
+
+  // Reopening a saved trip: saved trips store origin/destination only, never times
+  // (schedules go stale), so jump straight into a fresh search for the current
+  // closest options instead of showing whatever was true when it was saved.
+  useEffect(() => {
+    if (locationState?.autoPlan && locationState.from && locationState.to) {
+      findRoutes();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className={styles.container}>

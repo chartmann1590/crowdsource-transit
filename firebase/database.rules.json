@@ -66,7 +66,7 @@
         ".read": "auth != null && auth.uid === $userId",
         ".write": "auth != null && auth.uid === $userId",
         "$tripId": {
-          ".validate": "newData.hasChildren(['plan', 'createdAt']) && newData.child('plan').isString() && newData.child('plan').val().length < 65536"
+          ".validate": "newData.hasChildren(['fromName', 'fromLat', 'fromLng', 'toName', 'toLat', 'toLng', 'createdAt']) && newData.child('fromLat').isNumber() && newData.child('fromLng').isNumber() && newData.child('toLat').isNumber() && newData.child('toLng').isNumber()"
         }
       }
     },

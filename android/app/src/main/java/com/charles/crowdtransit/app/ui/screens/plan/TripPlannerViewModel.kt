@@ -63,11 +63,22 @@ class TripPlannerViewModel @Inject constructor(
 
     private var searchJob: Job? = null
 
-    /** Decode + open a saved trip; returns false if the blob can't be read. */
-    fun openSavedTrip(trip: SavedTripRepository.SavedTrip): Boolean {
-        val plan = savedTripRepository.decode(trip) ?: return false
-        session.selectPlan(plan)
-        return true
+    /**
+     * Opens a saved trip by re-planning it from the current time — saved trips only
+     * store origin/destination, never times, since a schedule from whenever it was
+     * saved would quickly go stale. This loads the current closest travel options,
+     * same as a fresh search.
+     */
+    fun openSavedTrip(trip: SavedTripRepository.SavedTrip) {
+        _uiState.update {
+            it.copy(
+                origin = PlannerPlace(trip.fromName, trip.fromLat, trip.fromLng),
+                destination = PlannerPlace(trip.toName, trip.toLat, trip.toLng),
+                searchQuery = "",
+                suggestions = emptyList(),
+            )
+        }
+        plan()
     }
 
     fun deleteSavedTrip(trip: SavedTripRepository.SavedTrip) {

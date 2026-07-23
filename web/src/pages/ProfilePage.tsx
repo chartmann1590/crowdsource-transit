@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../components/Auth/AuthContext';
 import { Navbar } from '../components/UI/Navbar';
 import { LoginModal } from '../components/Auth/LoginModal';
@@ -12,6 +13,7 @@ import styles from './ProfilePage.module.css';
 type Tab = 'profile' | 'leaderboard';
 
 export function ProfilePage() {
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [tab, setTab] = useState<Tab>('profile');
@@ -116,7 +118,15 @@ export function ProfilePage() {
                       <button
                         className={styles.savedTripOpen}
                         onClick={() => {
-                          window.location.href = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/trip#d=${trip.plan}`;
+                          // Saved trips store origin/destination only, never times, so
+                          // reopening one re-plans fresh for accurate, current options.
+                          navigate('/plan', {
+                            state: {
+                              from: { name: trip.fromName, lat: trip.fromLat, lng: trip.fromLng },
+                              to: { name: trip.toName, lat: trip.toLat, lng: trip.toLng },
+                              autoPlan: true,
+                            },
+                          });
                         }}
                       >
                         {trip.fromName || 'Origin'} → {trip.toName || 'Destination'}
