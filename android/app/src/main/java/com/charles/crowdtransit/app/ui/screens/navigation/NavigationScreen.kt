@@ -41,6 +41,7 @@ import com.charles.crowdtransit.app.ui.screens.plan.planWalkStepMarkers
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -50,7 +51,11 @@ private const val REROUTE_DEBOUNCE_MS = 60_000L
 class NavigationViewModel @Inject constructor(
     val session: NavigationSessionRepository,
     private val planTrip: PlanTripUseCase,
+    preferences: com.charles.crowdtransit.app.data.preferences.UserPreferencesStore,
 ) : ViewModel() {
+
+    val useImperialUnits: StateFlow<Boolean> = preferences.useImperialUnits
+        .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000), true)
 
     private val _rerouting = MutableStateFlow(false)
     val rerouting: StateFlow<Boolean> = _rerouting
@@ -103,6 +108,7 @@ fun NavigationScreen(
 ) {
     val state by viewModel.session.state.collectAsStateWithLifecycle()
     val fix by viewModel.session.lastFix.collectAsStateWithLifecycle()
+    val useImperial by viewModel.useImperialUnits.collectAsStateWithLifecycle()
     val rerouting by viewModel.rerouting.collectAsStateWithLifecycle()
     val rerouteMessage by viewModel.rerouteMessage.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -135,7 +141,9 @@ fun NavigationScreen(
                 InstructionCard(
                     title = current.instruction,
                     subtitle = buildString {
-                        if (current.distanceToNextM > 0) append("${current.distanceToNextM} m")
+                        if (current.distanceToNextM > 0) {
+                            append(com.charles.crowdtransit.app.util.DistanceFormat.format(current.distanceToNextM, useImperial))
+                        }
                         current.nextInstruction?.let {
                             if (isNotEmpty()) append(" · ")
                             append("Then: $it")

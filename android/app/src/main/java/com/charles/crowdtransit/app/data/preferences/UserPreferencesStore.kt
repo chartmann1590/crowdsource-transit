@@ -19,8 +19,9 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 class UserPreferencesStore @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
+    /** Default to imperial (miles/feet) — most of the user base is US transit riders. */
     val useImperialUnits: Flow<Boolean> = context.dataStore.data.map { prefs ->
-        prefs[KEY_USE_IMPERIAL] ?: false
+        prefs[KEY_USE_IMPERIAL] ?: true
     }
 
     suspend fun setUseImperialUnits(use: Boolean) {

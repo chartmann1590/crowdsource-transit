@@ -41,7 +41,7 @@ class ItineraryTextFormatter @Inject constructor(
         return "$SHARE_BASE_URL/trip#d=$blob"
     }
 
-    fun toText(plan: TripPlan, shareUrl: String? = null): String {
+    fun toText(plan: TripPlan, shareUrl: String? = null, useImperial: Boolean = true): String {
         val lines = mutableListOf<String>()
         val dep = plan.legs.firstOrNull()?.let { it.dep ?: it.board?.depUtc }
         val arr = plan.legs.lastOrNull()?.let { it.arr ?: it.alight?.arrUtc }
@@ -71,8 +71,8 @@ class ItineraryTextFormatter @Inject constructor(
                 )
             } else {
                 lines.add(
-                    "$step. Walk ${leg.distM ?: 0} m to ${leg.to?.name?.ifBlank { "your destination" }} " +
-                        "(${time(leg.dep)}–${time(leg.arr)})",
+                    "$step. Walk ${com.charles.crowdtransit.app.util.DistanceFormat.format(leg.distM ?: 0, useImperial)} " +
+                        "to ${leg.to?.name?.ifBlank { "your destination" }} (${time(leg.dep)}–${time(leg.arr)})",
                 )
             }
         }

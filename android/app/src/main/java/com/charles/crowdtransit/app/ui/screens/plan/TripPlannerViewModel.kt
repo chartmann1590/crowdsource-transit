@@ -53,6 +53,7 @@ data class TripPlannerUiState(
     val timeAtMs: Long? = null,
     /** Max metres to walk to a boarding/alighting stop. */
     val maxWalkToStopM: Int = UserPreferencesStore.DEFAULT_MAX_WALK_TO_STOP_M,
+    val useImperialUnits: Boolean = true,
 )
 
 @HiltViewModel
@@ -106,6 +107,11 @@ class TripPlannerViewModel @Inject constructor(
         viewModelScope.launch {
             userPreferences.maxWalkToStopM.collect { meters ->
                 _uiState.update { it.copy(maxWalkToStopM = meters) }
+            }
+        }
+        viewModelScope.launch {
+            userPreferences.useImperialUnits.collect { imperial ->
+                _uiState.update { it.copy(useImperialUnits = imperial) }
             }
         }
     }

@@ -1,5 +1,6 @@
 import { isTransitLeg, type TripPlan } from '../types/itinerary';
 import { formatLocalTime, planTimes } from './itineraryDisplay';
+import { formatDistance, getDistanceUnit } from './units';
 
 /**
  * Human-readable itinerary export for pasting into any app. Numbered steps + the share
@@ -27,7 +28,7 @@ export function itineraryToText(plan: TripPlan, shareUrl?: string): string {
       );
     } else {
       lines.push(
-        `${step}. Walk ${leg.dist_m} m to ${leg.to.name || 'your destination'} ` +
+        `${step}. Walk ${formatDistance(leg.dist_m, getDistanceUnit())} to ${leg.to.name || 'your destination'} ` +
           `(${formatLocalTime(leg.dep)}–${formatLocalTime(leg.arr)})`,
       );
     }

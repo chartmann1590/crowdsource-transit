@@ -40,9 +40,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.charles.crowdtransit.app.data.navigation.NavigationSessionRepository
+import com.charles.crowdtransit.app.data.preferences.UserPreferencesStore
 import com.charles.crowdtransit.app.data.repository.SavedTripRepository
 import com.charles.crowdtransit.app.data.trip.ItineraryTextFormatter
 import com.charles.crowdtransit.app.data.trip.TripSessionHolder
+import com.charles.crowdtransit.app.util.DistanceFormat
 import com.charles.crowdtransit.app.service.NavigationService
 import com.charles.crowdtransit.app.ui.components.MapLibreView
 import com.charles.crowdtransit.app.ui.components.MapPolyline
@@ -55,6 +57,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -64,8 +67,12 @@ class ItineraryDetailViewModel @Inject constructor(
     private val savedTrips: SavedTripRepository,
     private val formatter: ItineraryTextFormatter,
     private val navSession: NavigationSessionRepository,
+    preferences: UserPreferencesStore,
 ) : ViewModel() {
     val plan = session.selectedPlan
+
+    val useImperialUnits: StateFlow<Boolean> = preferences.useImperialUnits
+        .stateIn(viewModelScope, kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5_000), true)
 
     fun startNavigationSession(plan: TripPlan) {
         navSession.start(plan)
@@ -76,7 +83,8 @@ class ItineraryDetailViewModel @Inject constructor(
 
     val canSave: Boolean get() = savedTrips.isSignedIn
 
-    fun shareText(plan: TripPlan): String = formatter.toText(plan, formatter.shareUrl(plan))
+    fun shareText(plan: TripPlan): String =
+        formatter.toText(plan, formatter.shareUrl(plan), useImperialUnits.value)
 
     fun shareUrl(plan: TripPlan): String = formatter.shareUrl(plan)
 
@@ -131,6 +139,7 @@ fun ItineraryDetailScreen(
     viewModel: ItineraryDetailViewModel = hiltViewModel(),
 ) {
     val plan by viewModel.plan.collectAsStateWithLifecycle()
+    val useImperial by viewModel.useImperialUnits.collectAsStateWithLifecycle()
     val currentPlan = plan
     if (currentPlan == null) {
         // Session lost (process death) — nothing to show.
@@ -253,7 +262,7 @@ fun ItineraryDetailScreen(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 12.dp),
             ) {
                 items(currentPlan.legs) { leg ->
-                    if (leg.isWalk) WalkLegCard(leg) else TransitLegCard(leg)
+                    if (leg.isWalk) WalkLegCard(leg, useImperial) else TransitLegCard(leg)
                 }
             }
         }
@@ -261,7 +270,7 @@ fun ItineraryDetailScreen(
 }
 
 @Composable
-private fun WalkLegCard(leg: Leg) {
+private fun WalkLegCard(leg: Leg, useImperial: Boolean) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -283,12 +292,12 @@ private fun WalkLegCard(leg: Leg) {
                 )
             }
             Text(
-                "${leg.distM ?: 0} m",
+                DistanceFormat.format(leg.distM ?: 0, useImperial),
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             leg.steps?.forEach { step ->
-                Text("• ${step.text} (${step.distM} m)", fontSize = 13.sp)
+                Text("• ${step.text} (${DistanceFormat.format(step.distM, useImperial)})", fontSize = 13.sp)
             }
         }
     }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { isTransitLeg, type TransitLeg, type TripPlan, type WalkLeg } from '../../types/itinerary';
 import { formatLocalTime, planTimes } from '../../utils/itineraryDisplay';
+import { formatDistance, getDistanceUnit } from '../../utils/units';
 import styles from './ItineraryView.module.css';
 
 /**
@@ -38,6 +39,7 @@ export function ItineraryView({ plan }: { plan: TripPlan }) {
 }
 
 function WalkLegView({ leg }: { leg: WalkLeg }) {
+  const unit = getDistanceUnit();
   return (
     <div className={styles.walkLeg}>
       <div className={styles.legHeader}>
@@ -49,12 +51,12 @@ function WalkLegView({ leg }: { leg: WalkLeg }) {
           {formatLocalTime(leg.dep)}–{formatLocalTime(leg.arr)}
         </span>
       </div>
-      <div className={styles.legMeta}>{leg.dist_m} m</div>
+      <div className={styles.legMeta}>{formatDistance(leg.dist_m, unit)}</div>
       {leg.steps && leg.steps.length > 0 && (
         <ul className={styles.walkSteps}>
           {leg.steps.map((step, i) => (
             <li key={i}>
-              {step.text} ({step.dist_m} m)
+              {step.text} ({formatDistance(step.dist_m, unit)})
             </li>
           ))}
         </ul>

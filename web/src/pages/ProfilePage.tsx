@@ -8,9 +8,40 @@ import { useLeaderboard } from '../hooks/useLeaderboard';
 import { getLevel, getLevelProgress, BADGES } from '../firebase/gamification';
 import { useSavedTrips } from '../hooks/useSavedTrips';
 import { deleteTrip } from '../firebase/savedTrips';
+import { getDistanceUnit, setDistanceUnit, type DistanceUnit } from '../utils/units';
 import styles from './ProfilePage.module.css';
 
 type Tab = 'profile' | 'leaderboard';
+
+/** Distance-units setting; localStorage-backed so it works logged-out too. */
+function UnitsSetting() {
+  const [unit, setUnit] = useState<DistanceUnit>(() => getDistanceUnit());
+  const choose = (u: DistanceUnit) => {
+    setUnit(u);
+    setDistanceUnit(u);
+  };
+  return (
+    <div className={styles.settingRow}>
+      <span>Distance units</span>
+      <div className={styles.unitToggle}>
+        <button
+          type="button"
+          className={unit === 'imperial' ? styles.unitActive : styles.unitBtn}
+          onClick={() => choose('imperial')}
+        >
+          Miles
+        </button>
+        <button
+          type="button"
+          className={unit === 'metric' ? styles.unitActive : styles.unitBtn}
+          onClick={() => choose('metric')}
+        >
+          Kilometers
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export function ProfilePage() {
   const navigate = useNavigate();
@@ -32,6 +63,7 @@ export function ProfilePage() {
             <button className={styles.signInBtn} onClick={() => setShowLogin(true)}>
               Sign In
             </button>
+            <UnitsSetting />
           </div>
           {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
         </div>
@@ -161,6 +193,11 @@ export function ProfilePage() {
                   );
                 })}
               </div>
+            </div>
+
+            <div className={styles.badgesSection}>
+              <h3>Settings</h3>
+              <UnitsSetting />
             </div>
 
             <button className={styles.signOutBtn} onClick={signOut}>

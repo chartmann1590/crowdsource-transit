@@ -9,6 +9,7 @@ import { searchStops } from '../firebase/stops';
 import { usePlanTrip } from '../hooks/usePlanTrip';
 import { isTransitLeg, type TripPlan } from '../types/itinerary';
 import { planPolylines, planTimes, planWalkStepMarkers } from '../utils/itineraryDisplay';
+import { getDistanceUnit } from '../utils/units';
 import styles from './PlanPage.module.css';
 
 interface PlannerPlace {
@@ -52,6 +53,7 @@ export function PlanPage() {
     const saved = Number(localStorage.getItem('maxWalkToStopM'));
     return Number.isFinite(saved) && saved > 0 ? saved : 1600;
   });
+  const distanceUnit = getDistanceUnit();
   const { plans, loading, planned, error, plan } = usePlanTrip();
   const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -263,10 +265,21 @@ export function PlanPage() {
                 localStorage.setItem('maxWalkToStopM', String(v));
               }}
             >
-              <option value={800}>800 m (~10 min)</option>
-              <option value={1600}>1.6 km (~20 min)</option>
-              <option value={3000}>3 km (~35 min)</option>
-              <option value={5000}>5 km (~60 min)</option>
+              {distanceUnit === 'imperial' ? (
+                <>
+                  <option value={800}>0.5 mi (~10 min)</option>
+                  <option value={1600}>1 mi (~20 min)</option>
+                  <option value={3000}>2 mi (~35 min)</option>
+                  <option value={5000}>3 mi (~60 min)</option>
+                </>
+              ) : (
+                <>
+                  <option value={800}>800 m (~10 min)</option>
+                  <option value={1600}>1.6 km (~20 min)</option>
+                  <option value={3000}>3 km (~35 min)</option>
+                  <option value={5000}>5 km (~60 min)</option>
+                </>
+              )}
             </select>
           </label>
 

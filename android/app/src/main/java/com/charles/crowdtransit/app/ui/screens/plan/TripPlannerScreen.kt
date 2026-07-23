@@ -203,8 +203,13 @@ fun TripPlannerScreen(
                 fontSize = 13.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            val walkOptions = if (uiState.useImperialUnits) {
+                listOf(800 to "0.5 mi", 1600 to "1 mi", 3000 to "2 mi", 5000 to "3 mi")
+            } else {
+                listOf(800 to "800 m", 1600 to "1.6 km", 3000 to "3 km", 5000 to "5 km")
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                listOf(800 to "800 m", 1600 to "1.6 km", 3000 to "3 km", 5000 to "5 km").forEach { (meters, label) ->
+                walkOptions.forEach { (meters, label) ->
                     FilterChip(
                         selected = uiState.maxWalkToStopM == meters,
                         onClick = { viewModel.setMaxWalkToStopM(meters) },

@@ -198,6 +198,37 @@
   background: rgba(222, 55, 48, 0.08);
 }
 
+.settingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.unitToggle {
+  display: inline-flex;
+  border: 1px solid var(--color-outline);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.unitBtn,
+.unitActive {
+  padding: 6px 14px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary, #667085);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.unitActive {
+  background: var(--color-primary, #00a862);
+  color: #fff;
+}
+
 .promptCard {
   background: var(--color-surface);
   border: 1px solid var(--color-outline);

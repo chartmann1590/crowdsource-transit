@@ -39,21 +39,8 @@ private fun accentColorFor(transitTypes: List<String>) = when (transitTypes.firs
     else -> Primary
 }
 
-private fun formatDistance(meters: Float, useImperial: Boolean): String {
-    if (useImperial) {
-        val feet = meters * 3.28084f
-        return if (feet < 5280f) {
-            "${feet.toInt()} ft"
-        } else {
-            String.format("%.1f mi", feet / 5280f)
-        }
-    }
-    return if (meters < 1000f) {
-        "${meters.toInt()} m"
-    } else {
-        String.format("%.1f km", meters / 1000f)
-    }
-}
+private fun formatDistance(meters: Float, useImperial: Boolean): String =
+    com.charles.crowdtransit.app.util.DistanceFormat.format(meters.toDouble(), useImperial)
 
 @Composable
 fun StopCard(

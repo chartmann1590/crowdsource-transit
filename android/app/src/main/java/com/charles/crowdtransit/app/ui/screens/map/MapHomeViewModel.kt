@@ -28,7 +28,7 @@ data class MapHomeUiState(
     val userLat: Double? = null,
     val userLng: Double? = null,
     val distances: Map<String, Float> = emptyMap(),
-    val useImperialUnits: Boolean = false,
+    val useImperialUnits: Boolean = true,
     val activeStopIds: Set<String> = emptySet(),
 )
 
