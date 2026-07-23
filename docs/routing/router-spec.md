@@ -64,7 +64,23 @@ route.
 
 Constants: CANDIDATE_RADIUS_M=800, MAX_CANDIDATES=5, DEDUPE_M=25, WINDOW_SEC=7200,
 DEPS_PER_ROUND=10, DEST_WALK_M=600, TRANSFER_MIN_SEC=120, TRANSFER_WALK_M=300,
-FRONTIER=6, MAX_TRANSFERS=2, WALK_SPEED_MPS=1.33, WALK_DETOUR=1.3, MAX_RESULTS=3.
+FRONTIER=6, FRONTIER_DEDUPE_M=150, NEARBY_TRANSFER_FRONTIER=FRONTIER, MAX_TRANSFERS=2,
+WALK_SPEED_MPS=1.33, WALK_DETOUR=1.3, MAX_RESULTS=3.
+
+### Frontier selection (transfer rounds) — dedup by distance, not just by stop
+
+A single initial boarding often reaches dozens of stops along the same corridor (both
+directions of travel, several nearby-but-distinct stop objects per intersection). Naively
+taking the top FRONTIER=6 reached stops by arrival-time-plus-heuristic can fill the whole
+shortlist with near-duplicate locations along that one corridor, starving out the one
+stop that actually connects to a different route toward the destination — the search then
+reports no route even though a real one exists. Fixed by: (1) when ranking reached stops
+for a transfer round, skip any candidate within FRONTIER_DEDUPE_M of an already-kept
+frontier entry, so the 6 slots span meaningfully different locations; (2) every frontier
+stop (not just the top few) gets the nearby-stop walk-transfer check — a route's inbound
+and outbound directions are frequently separate physical stop objects a few meters apart,
+so the correct-direction boarding is often only reachable by that walk-transfer step, not
+by re-boarding at the exact stop already reached.
 
 1. Origin/destination candidates: `stopsNear` ≤5 each within 800 m, deduped at 25 m.
 2. Round 0: for each origin candidate, `departures(notBefore = departAt + straight-line

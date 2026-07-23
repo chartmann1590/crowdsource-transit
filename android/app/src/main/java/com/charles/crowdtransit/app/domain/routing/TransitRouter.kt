@@ -41,7 +41,12 @@ class TransitRouter @Inject constructor() {
         private const val TRANSFER_MIN_SEC = 120
         private const val TRANSFER_WALK_M = 300.0
         private const val FRONTIER = 6
-        private const val NEARBY_TRANSFER_FRONTIER = 2
+        private const val FRONTIER_DEDUPE_M = 150.0
+        // Every frontier stop gets the nearby-stop walk-transfer check, not just a subset —
+        // a bus's outbound and inbound directions are frequently different physical stop
+        // objects a few meters apart, so skipping this for lower-ranked frontier stops
+        // silently misses the correct-direction boarding right next to a stop we reached.
+        private const val NEARBY_TRANSFER_FRONTIER = FRONTIER
         private const val MAX_TRANSFERS = 2
         const val WALK_SPEED_MPS = 1.33
         const val WALK_DETOUR = 1.3
@@ -389,12 +394,20 @@ class TransitRouter @Inject constructor() {
 
         // Transfer rounds.
         for (round in 0 until MAX_TRANSFERS) {
-            val frontier = reached
-                .sortedBy {
-                    it.arrUtcMs +
-                        walkSeconds(metersBetween(it.stop.lat, it.stop.lng, req.toLat, req.toLng)) * 1000L
-                }
-                .take(FRONTIER)
+            val ranked = reached.sortedBy {
+                it.arrUtcMs +
+                    walkSeconds(metersBetween(it.stop.lat, it.stop.lng, req.toLat, req.toLng)) * 1000L
+            }
+            // A single boarding corridor reaches many stops a block apart, which used to
+            // fill the whole frontier with near-duplicate locations and crowd out the one
+            // stop that actually connects to a different route. Keep only the best-ranked
+            // reach within each FRONTIER_DEDUPE_M cluster before taking the top FRONTIER.
+            val frontier = mutableListOf<Reached>()
+            for (r in ranked) {
+                if (frontier.size >= FRONTIER) break
+                if (frontier.any { metersBetween(it.stop.lat, it.stop.lng, r.stop.lat, r.stop.lng) < FRONTIER_DEDUPE_M }) continue
+                frontier.add(r)
+            }
             reached = mutableListOf()
             for ((fi, r) in frontier.withIndex()) {
                 data class BoardStop(val stop: StopCandidate, val walkMeters: Double)

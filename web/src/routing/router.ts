@@ -21,7 +21,12 @@ const DEST_WALK_M = 600;
 const TRANSFER_MIN_SEC = 120;
 const TRANSFER_WALK_M = 300;
 const FRONTIER = 6;
-const NEARBY_TRANSFER_FRONTIER = 2;
+const FRONTIER_DEDUPE_M = 150;
+// Every frontier stop gets the nearby-stop walk-transfer check, not just a subset — a
+// bus's outbound and inbound directions are frequently different physical stop objects
+// a few meters apart, so skipping this for lower-ranked frontier stops silently misses
+// the correct-direction boarding right next to a stop we did reach.
+const NEARBY_TRANSFER_FRONTIER = FRONTIER;
 const MAX_TRANSFERS = 2;
 export const WALK_SPEED_MPS = 1.33;
 export const WALK_DETOUR = 1.3;
@@ -324,13 +329,21 @@ async function planTripsDepartAt(source: GtfsDataSource, req: PlanRequest): Prom
 
   // Transfer rounds.
   for (let round = 0; round < MAX_TRANSFERS; round++) {
-    const frontier = reached
-      .sort(
-        (a, b) =>
-          a.arrUtcMs + walkSeconds(metersBetween(a.stop.lat, a.stop.lng, req.to.lat, req.to.lng)) * 1000 -
-          (b.arrUtcMs + walkSeconds(metersBetween(b.stop.lat, b.stop.lng, req.to.lat, req.to.lng)) * 1000),
-      )
-      .slice(0, FRONTIER);
+    const ranked = reached.sort(
+      (a, b) =>
+        a.arrUtcMs + walkSeconds(metersBetween(a.stop.lat, a.stop.lng, req.to.lat, req.to.lng)) * 1000 -
+        (b.arrUtcMs + walkSeconds(metersBetween(b.stop.lat, b.stop.lng, req.to.lat, req.to.lng)) * 1000),
+    );
+    // A single boarding corridor reaches many stops a block apart, which used to fill
+    // the whole frontier with near-duplicate locations and crowd out the one stop that
+    // actually connects to a different route. Keep only the best-ranked reach within
+    // each FRONTIER_DEDUPE_M cluster before taking the top FRONTIER.
+    const frontier: Reached[] = [];
+    for (const r of ranked) {
+      if (frontier.length >= FRONTIER) break;
+      if (frontier.some((f) => metersBetween(f.stop.lat, f.stop.lng, r.stop.lat, r.stop.lng) < FRONTIER_DEDUPE_M)) continue;
+      frontier.push(r);
+    }
     reached = [];
     for (const [fi, r] of frontier.entries()) {
       const boardStops: { stop: StopCandidate; walkMeters: number }[] = [
