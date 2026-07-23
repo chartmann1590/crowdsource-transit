@@ -29,6 +29,10 @@ data class PlanRequest(
     /** Epoch ms; if set (and departAtMs unset), search backward for the itinerary
      * arriving as close as possible to, but not after, this time. */
     val arriveByMs: Long? = null,
+    /** Max metres to walk from an endpoint to a boarding/alighting stop when searching for
+     * candidate stops. Null = DEFAULT_CANDIDATE_RADIUS_M. User-overridable so remote origins
+     * whose nearest served stop is far away can still be routed. */
+    val maxWalkToStopM: Int? = null,
 )
 
 data class StopCandidate(

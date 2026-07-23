@@ -112,12 +112,15 @@ const origin1 = { name: 'Origin', lat: 40.6996, lng: -74.0 };
 const dest1 = { name: 'Destination', lat: 40.7154, lng: -74.0 };
 const origin2 = { name: 'Origin2', lat: 40.7996, lng: -74.1 };
 const dest2 = { name: 'Destination2', lat: 40.8204, lng: -74.1 };
+// Pin the candidate radius so the synthetic geometry is deterministic and independent of the
+// production DEFAULT_CANDIDATE_RADIUS_M (which is validated live, not against this fixture).
+const RADIUS = 800;
 
 describe('planTrips', () => {
   it('finds the direct ride with the full stop sequence', async () => {
     const base = Math.floor(Date.now() / 1000) * 1000;
     const source = new FixtureDataSource(base);
-    const plans = await planTrips(source, { from: origin1, to: dest1, departAtMs: base });
+    const plans = await planTrips(source, { from: origin1, to: dest1, departAtMs: base, maxWalkToStopM: RADIUS });
 
     expect(plans.length).toBeGreaterThan(0);
     const plan = plans[0];
@@ -139,7 +142,7 @@ describe('planTrips', () => {
   it('rejects the wrong-direction trip and the stale departure', async () => {
     const base = Math.floor(Date.now() / 1000) * 1000;
     const source = new FixtureDataSource(base);
-    const plans = await planTrips(source, { from: origin1, to: dest1, departAtMs: base });
+    const plans = await planTrips(source, { from: origin1, to: dest1, departAtMs: base, maxWalkToStopM: RADIUS });
 
     for (const plan of plans) {
       for (const leg of plan.legs.filter(isTransitLeg)) {
@@ -149,10 +152,24 @@ describe('planTrips', () => {
     }
   });
 
+  it('skips dead (zero-departure) stops so they cannot crowd out the served boarding stop', async () => {
+    const base = Math.floor(Date.now() / 1000) * 1000;
+    const source = new FixtureDataSource(base);
+    // DEAD1..DEAD5 are the five nearest stops to origin1 and have no departures. Naive
+    // nearest-5 selection would fill every candidate slot with them and find no route; the
+    // service-aware selection must skip them and board the served stop A.
+    const plans = await planTrips(source, { from: origin1, to: dest1, departAtMs: base, maxWalkToStopM: RADIUS });
+
+    expect(plans.length).toBeGreaterThan(0);
+    const leg = plans[0].legs.filter(isTransitLeg)[0] as TransitLeg;
+    expect(leg.board.stop_id).toBe('A');
+    expect(leg.route.onestop_id).toBe('r-test-red');
+  });
+
   it('finds the one-transfer itinerary via the shared stop', async () => {
     const base = Math.floor(Date.now() / 1000) * 1000;
     const source = new FixtureDataSource(base);
-    const plans = await planTrips(source, { from: origin2, to: dest2, departAtMs: base });
+    const plans = await planTrips(source, { from: origin2, to: dest2, departAtMs: base, maxWalkToStopM: RADIUS });
 
     expect(plans.length).toBeGreaterThan(0);
     const transit = plans[0].legs.filter(isTransitLeg);
@@ -168,7 +185,7 @@ describe('planTrips', () => {
     const source = new FixtureDataSource(base);
     // Direct ride boards at +12 min, alights at +27 min (see the earlier direct-ride test).
     const arriveByMs = base + 30 * 60_000;
-    const plans = await planTrips(source, { from: origin1, to: dest1, arriveByMs });
+    const plans = await planTrips(source, { from: origin1, to: dest1, arriveByMs, maxWalkToStopM: RADIUS });
 
     expect(plans.length).toBeGreaterThan(0);
     for (const plan of plans) {
@@ -182,7 +199,7 @@ describe('planTrips', () => {
     const source = new FixtureDataSource(base);
     // The direct ride can't alight before +27 min, so a target before boarding is unreachable
     // within the bounded lookback attempts.
-    const plans = await planTrips(source, { from: origin1, to: dest1, arriveByMs: base + 5 * 60_000 });
+    const plans = await planTrips(source, { from: origin1, to: dest1, arriveByMs: base + 5 * 60_000, maxWalkToStopM: RADIUS });
     expect(plans).toEqual([]);
   });
 
@@ -193,6 +210,7 @@ describe('planTrips', () => {
       from: { name: 'Nowhere', lat: 10, lng: 10 },
       to: dest1,
       departAtMs: base,
+      maxWalkToStopM: RADIUS,
     });
     expect(plans).toEqual([]);
   });

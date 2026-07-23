@@ -198,6 +198,21 @@ fun TripPlannerScreen(
                 }
             }
 
+            Text(
+                "Max walk to a stop",
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                listOf(800 to "800 m", 1600 to "1.6 km", 3000 to "3 km", 5000 to "5 km").forEach { (meters, label) ->
+                    FilterChip(
+                        selected = uiState.maxWalkToStopM == meters,
+                        onClick = { viewModel.setMaxWalkToStopM(meters) },
+                        label = { Text(label) },
+                    )
+                }
+            }
+
             androidx.compose.material3.Button(
                 onClick = viewModel::plan,
                 enabled = uiState.origin != null && uiState.destination != null && !uiState.planning &&

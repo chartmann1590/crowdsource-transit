@@ -2,6 +2,7 @@ package com.charles.crowdtransit.app.ui.screens.plan
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.charles.crowdtransit.app.data.preferences.UserPreferencesStore
 import com.charles.crowdtransit.app.data.repository.SavedTripRepository
 import com.charles.crowdtransit.app.data.repository.StopRepository
 import com.charles.crowdtransit.app.data.trip.TripSessionHolder
@@ -50,6 +51,8 @@ data class TripPlannerUiState(
     val timeMode: TripTimeMode = TripTimeMode.NOW,
     /** Epoch ms for DEPART_AT/ARRIVE_BY; null while NOW or before the user has picked one. */
     val timeAtMs: Long? = null,
+    /** Max metres to walk to a boarding/alighting stop. */
+    val maxWalkToStopM: Int = UserPreferencesStore.DEFAULT_MAX_WALK_TO_STOP_M,
 )
 
 @HiltViewModel
@@ -58,6 +61,7 @@ class TripPlannerViewModel @Inject constructor(
     private val stopRepository: StopRepository,
     private val session: TripSessionHolder,
     private val savedTripRepository: SavedTripRepository,
+    private val userPreferences: UserPreferencesStore,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TripPlannerUiState())
@@ -99,6 +103,15 @@ class TripPlannerViewModel @Inject constructor(
             }
             session.pendingDestination.value = null
         }
+        viewModelScope.launch {
+            userPreferences.maxWalkToStopM.collect { meters ->
+                _uiState.update { it.copy(maxWalkToStopM = meters) }
+            }
+        }
+    }
+
+    fun setMaxWalkToStopM(meters: Int) {
+        viewModelScope.launch { userPreferences.setMaxWalkToStopM(meters) }
     }
 
     fun onLocationUpdate(lat: Double, lng: Double) {
@@ -200,6 +213,7 @@ class TripPlannerViewModel @Inject constructor(
                         toLng = destination.lng,
                         departAtMs = timeMs?.takeIf { state.timeMode == TripTimeMode.DEPART_AT },
                         arriveByMs = timeMs?.takeIf { state.timeMode == TripTimeMode.ARRIVE_BY },
+                        maxWalkToStopM = state.maxWalkToStopM,
                     ),
                 )
                 _uiState.update { it.copy(planning = false, planned = true, plans = plans) }

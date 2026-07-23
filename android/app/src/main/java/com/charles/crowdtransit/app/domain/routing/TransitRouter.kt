@@ -32,8 +32,16 @@ import kotlin.math.sqrt
 class TransitRouter @Inject constructor() {
 
     companion object {
-        const val CANDIDATE_RADIUS_M = 800
+        // Default max walk from the trip endpoints to a boarding/alighting stop. In
+        // low-density areas the nearest stop that actually has service can be well over the
+        // old 800 m, so this is deliberately generous (~20 min walk). Overridable per plan
+        // via PlanRequest.maxWalkToStopM.
+        const val DEFAULT_CANDIDATE_RADIUS_M = 1600
         const val MAX_CANDIDATES = 5
+        // Cap on how many nearby stops we probe for departures when building origin
+        // candidates, so a cluster of dead (zero-service) stops or a large user-set radius
+        // can't blow the API budget.
+        private const val CANDIDATE_PROBE_LIMIT = 15
         private const val DEDUPE_M = 25.0
         private const val WINDOW_SEC = 7200
         private const val DEPS_PER_ROUND = 10
@@ -102,15 +110,25 @@ class TransitRouter @Inject constructor() {
         return seg.boardDepUtcMs + (st.arrivalSec - board.departureSec) * 1000L
     }
 
-    private suspend fun candidateStops(source: GtfsDataSource, lat: Double, lng: Double): List<StopCandidate> {
-        val stops = source.stopsNear(lat, lng, CANDIDATE_RADIUS_M, 20)
+    /**
+     * Nearby stops within [radiusM], distance-sorted (nearest first) and deduped at DEDUPE_M.
+     * Proximity only — NOT truncated to MAX_CANDIDATES and NOT service-filtered. The origin
+     * round picks served stops from this list (skipping dead ones); the destination side uses
+     * it only as a non-empty reachability guard.
+     */
+    private suspend fun nearbyStopsSorted(
+        source: GtfsDataSource,
+        lat: Double,
+        lng: Double,
+        radiusM: Int,
+    ): List<StopCandidate> {
+        val stops = source.stopsNear(lat, lng, radiusM, 30)
         val sorted = stops
             .map { it to metersBetween(lat, lng, it.lat, it.lng) }
-            .filter { it.second <= CANDIDATE_RADIUS_M }
+            .filter { it.second <= radiusM }
             .sortedBy { it.second }
         val kept = mutableListOf<StopCandidate>()
         for ((s, _) in sorted) {
-            if (kept.size >= MAX_CANDIDATES) break
             if (kept.any { metersBetween(it.lat, it.lng, s.lat, s.lng) < DEDUPE_M }) continue
             kept.add(s)
         }
@@ -310,10 +328,14 @@ class TransitRouter @Inject constructor() {
     private suspend fun planTripsDepartAt(source: GtfsDataSource, req: PlanRequest): List<TripPlan> {
         val nowMs = System.currentTimeMillis()
         val departAtMs = req.departAtMs ?: nowMs
+        val radiusM = req.maxWalkToStopM ?: DEFAULT_CANDIDATE_RADIUS_M
 
-        val originCands = candidateStops(source, req.fromLat, req.fromLng)
-        val destCands = candidateStops(source, req.toLat, req.toLng)
-        if (originCands.isEmpty() || destCands.isEmpty()) return emptyList()
+        val originStops = nearbyStopsSorted(source, req.fromLat, req.fromLng, radiusM)
+        // destCands is only a reachability guard: tryEmit matches the destination point
+        // directly, so an alighting stop within DEST_WALK_M of it emits regardless of which
+        // stops are here.
+        val destCands = nearbyStopsSorted(source, req.toLat, req.toLng, radiusM)
+        if (originStops.isEmpty() || destCands.isEmpty()) return emptyList()
 
         val results = mutableListOf<Emitted>()
         val bestArrival = HashMap<String, Long>()
@@ -375,13 +397,23 @@ class TransitRouter @Inject constructor() {
             }
         }
 
-        // Round 0: board near the origin.
+        // Round 0: board near the origin. Walk the nearby stops nearest-first and keep the
+        // closest MAX_CANDIDATES that actually have upcoming departures — a cluster of dead
+        // (zero-service) stops must not crowd out a slightly-farther served stop, which is
+        // what made suburban origins return no route. Bounded by CANDIDATE_PROBE_LIMIT so this
+        // stays API-cheap.
         var reached = mutableListOf<Reached>()
         data class Round0(val dep: DepartureOption, val cand: StopCandidate, val walkMeters: Double)
         val round0 = mutableListOf<Round0>()
-        for (cand in originCands) {
+        var served = 0
+        var probes = 0
+        for (cand in originStops) {
+            if (served >= MAX_CANDIDATES || probes >= CANDIDATE_PROBE_LIMIT) break
+            probes++
             val walkMeters = metersBetween(req.fromLat, req.fromLng, cand.lat, cand.lng)
             val deps = departuresFor(source, cand, departAtMs + walkSeconds(walkMeters) * 1000L, nowMs)
+            if (deps.isEmpty()) continue // dead stop — don't spend a candidate slot on it
+            served++
             for (dep in deps) round0.add(Round0(dep, cand, walkMeters))
         }
         round0.sortBy { it.dep.depUtcMs }

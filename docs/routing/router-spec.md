@@ -62,10 +62,15 @@ search matches stop names anywhere — e.g. "Schenectady" can match Brooklyn NYC
 can silently hand the router a wrong, distant destination that then correctly reports no
 route.
 
-Constants: CANDIDATE_RADIUS_M=800, MAX_CANDIDATES=5, DEDUPE_M=25, WINDOW_SEC=7200,
+Constants: DEFAULT_CANDIDATE_RADIUS_M=1600 (user-overridable via maxWalkToStopM),
+CANDIDATE_PROBE_LIMIT=15, MAX_CANDIDATES=5, DEDUPE_M=25, WINDOW_SEC=7200,
 DEPS_PER_ROUND=10, DEST_WALK_M=600, TRANSFER_MIN_SEC=120, TRANSFER_WALK_M=300,
 FRONTIER=6, FRONTIER_DEDUPE_M=150, NEARBY_TRANSFER_FRONTIER=FRONTIER, MAX_TRANSFERS=2,
 WALK_SPEED_MPS=1.33, WALK_DETOUR=1.3, MAX_RESULTS=3.
+
+Origin candidates are **service-aware** (dead/zero-departure stops are skipped so they can't
+crowd out a slightly-farther served stop) — see step 2. The radius defaults to 1600 m and is
+user-settable (web planner selector / Android `UserPreferencesStore.maxWalkToStopM`).
 
 ### Frontier selection (transfer rounds) — dedup by distance, not just by stop
 
@@ -82,10 +87,19 @@ and outbound directions are frequently separate physical stop objects a few mete
 so the correct-direction boarding is often only reachable by that walk-transfer step, not
 by re-boarding at the exact stop already reached.
 
-1. Origin/destination candidates: `stopsNear` ≤5 each within 800 m, deduped at 25 m.
-2. Round 0: for each origin candidate, `departures(notBefore = departAt + straight-line
-   walk time × detour)`. Keep earliest departure per (route onestop_id, headsign);
-   merge all candidates' departures, sort by depUtcMs, cap at 10.
+1. Candidate radius = `req.maxWalkToStopM ?? DEFAULT_CANDIDATE_RADIUS_M` (default 1600 m;
+   user-overridable). `nearbyStopsSorted` returns all stops within the radius, distance-sorted
+   nearest-first and deduped at 25 m (NOT truncated, NOT service-filtered). The destination
+   list is used only as a non-empty reachability guard — `tryEmit` matches the destination
+   point directly (step 4), so destination candidate *quality* never matters.
+2. Round 0 — **service-aware origin candidates**: walk the sorted origin stops nearest-first;
+   for each, `departures(notBefore = departAt + straight-line walk × detour)`; **skip stops
+   with zero upcoming departures** (a cluster of dead/discontinued stops must not consume the
+   candidate budget — this is what made suburban origins whose nearest *served* stop sits just
+   past the radius return no route). Stop after `MAX_CANDIDATES` (5) served stops **or**
+   `CANDIDATE_PROBE_LIMIT` (15) probes, whichever first — the cap bounds API cost even at a
+   large user-set radius; cached departures make the round-0 probe free. Keep earliest
+   departure per (route onestop_id, headsign); merge, sort by depUtcMs, cap at 10.
 3. For each kept departure: `tripDetails`; on null/failure skip (frequency-based trips
    may 404 — never crash). Board index = stopTime with seq == boardStopSequence
    (fallback: nearest stopTime within 100 m of the candidate stop; else skip).

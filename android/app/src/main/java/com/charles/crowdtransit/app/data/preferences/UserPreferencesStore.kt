@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -38,8 +39,21 @@ class UserPreferencesStore @Inject constructor(
         }
     }
 
+    /** Max metres the trip planner will walk to reach a boarding/alighting stop. */
+    val maxWalkToStopM: Flow<Int> = context.dataStore.data.map { prefs ->
+        prefs[KEY_MAX_WALK_TO_STOP_M] ?: DEFAULT_MAX_WALK_TO_STOP_M
+    }
+
+    suspend fun setMaxWalkToStopM(meters: Int) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_MAX_WALK_TO_STOP_M] = meters
+        }
+    }
+
     companion object {
+        const val DEFAULT_MAX_WALK_TO_STOP_M = 1600
         private val KEY_USE_IMPERIAL = booleanPreferencesKey("use_imperial_units")
         private val KEY_HAS_ONBOARDED = booleanPreferencesKey("has_completed_onboarding")
+        private val KEY_MAX_WALK_TO_STOP_M = intPreferencesKey("max_walk_to_stop_m")
     }
 }

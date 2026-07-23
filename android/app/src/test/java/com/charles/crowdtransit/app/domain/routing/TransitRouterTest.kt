@@ -138,6 +138,10 @@ class TransitRouterTest {
     private val origin1 = Triple("Origin", 40.6996, -74.0)
     private val dest1 = Triple("Destination", 40.7154, -74.0)
 
+    // Pin the candidate radius so the synthetic geometry is deterministic and independent of
+    // the production DEFAULT_CANDIDATE_RADIUS_M (validated live, not against this fixture).
+    private val radius = 800
+
     private fun request(
         from: Triple<String, Double, Double>,
         to: Triple<String, Double, Double>,
@@ -146,6 +150,7 @@ class TransitRouterTest {
         fromName = from.first, fromLat = from.second, fromLng = from.third,
         toName = to.first, toLat = to.second, toLng = to.third,
         departAtMs = departAtMs,
+        maxWalkToStopM = radius,
     )
 
     @Test
@@ -183,6 +188,20 @@ class TransitRouterTest {
     }
 
     @Test
+    fun `skips dead zero-departure stops so they cannot crowd out the served boarding stop`() = runBlocking {
+        val base = base()
+        // DEAD1..DEAD5 are the five nearest stops to origin1 and have no departures. Naive
+        // nearest-5 selection would fill every candidate slot with them and find no route; the
+        // service-aware selection must skip them and board the served stop A.
+        val plans = router.planTrips(FixtureDataSource(base), request(origin1, dest1, base))
+
+        assertTrue(plans.isNotEmpty())
+        val leg = plans.first().legs.first { it.isTransit }
+        assertEquals("A", leg.board?.stopId)
+        assertEquals("r-test-red", leg.route?.onestopId)
+    }
+
+    @Test
     fun `finds the one-transfer itinerary via the shared stop`() = runBlocking {
         val base = base()
         val origin2 = Triple("Origin2", 40.7996, -74.1)
@@ -211,6 +230,7 @@ class TransitRouterTest {
                 fromName = origin1.first, fromLat = origin1.second, fromLng = origin1.third,
                 toName = dest1.first, toLat = dest1.second, toLng = dest1.third,
                 arriveByMs = arriveByMs,
+                maxWalkToStopM = radius,
             ),
         )
 
@@ -231,6 +251,7 @@ class TransitRouterTest {
                 fromName = origin1.first, fromLat = origin1.second, fromLng = origin1.third,
                 toName = dest1.first, toLat = dest1.second, toLng = dest1.third,
                 arriveByMs = base + 5 * 60_000,
+                maxWalkToStopM = radius,
             ),
         )
         assertEquals(emptyList<Leg>(), plans)

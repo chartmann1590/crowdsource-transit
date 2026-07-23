@@ -1,10 +1,15 @@
 {
-  "comment": "Synthetic network for router unit tests (both platforms). Times are offsets in minutes from the test's base instant; stale departures carry absolute ISO instants. Cluster 1 (~40.70,-74.00): direct ride A->B->C->D plus a wrong-direction trip D->C->B->A and a stale (2018) departure at A. Cluster 2 (~40.80,-74.10): transfer G->X (green) then X->E (blue), same-stop transfer at X.",
+  "comment": "Synthetic network for router unit tests (both platforms). Times are offsets in minutes from the test's base instant; stale departures carry absolute ISO instants. Cluster 1 (~40.70,-74.00): direct ride A->B->C->D plus a wrong-direction trip D->C->B->A and a stale (2018) departure at A; DEAD1..DEAD5 are unserved stops (no trips) sitting NEARER to origin1 than A, to test that dead stops don't crowd out the served boarding stop. Cluster 2 (~40.80,-74.10): transfer G->X (green) then X->E (blue), same-stop transfer at X. Router tests pin maxWalkToStopM=800 to match this geometry.",
   "stops": [
-    { "key": "A", "name": "Alpha", "lat": 40.7, "lng": -74.0 },
+    { "key": "A", "name": "Alpha", "lat": 40.702, "lng": -74.0 },
     { "key": "B", "name": "Bravo", "lat": 40.705, "lng": -74.0 },
     { "key": "C", "name": "Charlie", "lat": 40.71, "lng": -74.0 },
     { "key": "D", "name": "Delta", "lat": 40.715, "lng": -74.0 },
+    { "key": "DEAD1", "name": "Dead One", "lat": 40.6994, "lng": -74.0 },
+    { "key": "DEAD2", "name": "Dead Two", "lat": 40.6991, "lng": -74.0 },
+    { "key": "DEAD3", "name": "Dead Three", "lat": 40.6988, "lng": -74.0 },
+    { "key": "DEAD4", "name": "Dead Four", "lat": 40.6999, "lng": -74.0 },
+    { "key": "DEAD5", "name": "Dead Five", "lat": 40.7002, "lng": -74.0 },
     { "key": "G", "name": "Golf", "lat": 40.8, "lng": -74.1 },
     { "key": "X", "name": "Xray", "lat": 40.81, "lng": -74.1 },
     { "key": "E", "name": "Echo", "lat": 40.82, "lng": -74.1 }

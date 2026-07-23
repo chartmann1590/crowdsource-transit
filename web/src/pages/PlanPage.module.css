@@ -132,6 +132,24 @@
   min-width: 0;
 }
 
+.walkRadius {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #667085);
+}
+
+.walkRadiusSelect {
+  border: 1px solid var(--color-border, #e4e7ec);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  background: var(--color-surface, #fff);
+  color: inherit;
+}
+
 .planButton {
   background: var(--color-primary, #00a862);
   color: #fff;

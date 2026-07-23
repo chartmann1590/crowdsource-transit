@@ -13,6 +13,10 @@ export interface PlanRequest {
   /** Epoch ms; if set (and departAtMs unset), search backward for the itinerary
    * arriving as close as possible to, but not after, this time. */
   arriveByMs?: number;
+  /** Max metres to walk from an endpoint to a boarding/alighting stop when searching for
+   * candidate stops. Defaults to DEFAULT_CANDIDATE_RADIUS_M. User-overridable so remote
+   * origins whose nearest served stop is far away can still be routed. */
+  maxWalkToStopM?: number;
 }
 
 export interface StopCandidate {

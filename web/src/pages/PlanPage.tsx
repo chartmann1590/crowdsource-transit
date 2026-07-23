@@ -46,6 +46,12 @@ export function PlanPage() {
   const [locating, setLocating] = useState(false);
   const [timeMode, setTimeMode] = useState<'now' | 'depart' | 'arrive'>('now');
   const [timeValue, setTimeValue] = useState('');
+  // How far the planner will look for a boarding/alighting stop. Persisted so users in
+  // low-density areas (whose nearest served stop can be > default) set it once.
+  const [maxWalkM, setMaxWalkM] = useState<number>(() => {
+    const saved = Number(localStorage.getItem('maxWalkToStopM'));
+    return Number.isFinite(saved) && saved > 0 ? saved : 1600;
+  });
   const { plans, loading, planned, error, plan } = usePlanTrip();
   const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -150,10 +156,11 @@ export function PlanPage() {
     void plan({
       from: { name: origin.name, lat: origin.lat, lng: origin.lng },
       to: { name: destination.name, lat: destination.lat, lng: destination.lng },
+      maxWalkToStopM: maxWalkM,
       ...(timeMode === 'depart' && timeMs !== undefined ? { departAtMs: timeMs } : {}),
       ...(timeMode === 'arrive' && timeMs !== undefined ? { arriveByMs: timeMs } : {}),
     });
-  }, [origin, destination, timeMode, timeValue, plan]);
+  }, [origin, destination, timeMode, timeValue, maxWalkM, plan]);
 
   // Reopening a saved trip: saved trips store origin/destination only, never times
   // (schedules go stale), so jump straight into a fresh search for the current
@@ -244,6 +251,24 @@ export function PlanPage() {
               />
             )}
           </div>
+
+          <label className={styles.walkRadius}>
+            <span>Max walk to a stop</span>
+            <select
+              className={styles.walkRadiusSelect}
+              value={maxWalkM}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                setMaxWalkM(v);
+                localStorage.setItem('maxWalkToStopM', String(v));
+              }}
+            >
+              <option value={800}>800 m (~10 min)</option>
+              <option value={1600}>1.6 km (~20 min)</option>
+              <option value={3000}>3 km (~35 min)</option>
+              <option value={5000}>5 km (~60 min)</option>
+            </select>
+          </label>
 
           <button
             type="button"

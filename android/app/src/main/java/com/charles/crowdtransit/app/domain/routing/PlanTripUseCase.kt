@@ -41,8 +41,9 @@ class PlanTripUseCase @Inject constructor(
     }
 
     private suspend fun offlineCovers(req: PlanRequest): Boolean = try {
-        roomSource.stopsNear(req.fromLat, req.fromLng, TransitRouter.CANDIDATE_RADIUS_M, 5).isNotEmpty() &&
-            roomSource.stopsNear(req.toLat, req.toLng, TransitRouter.CANDIDATE_RADIUS_M, 5).isNotEmpty()
+        val radiusM = req.maxWalkToStopM ?: TransitRouter.DEFAULT_CANDIDATE_RADIUS_M
+        roomSource.stopsNear(req.fromLat, req.fromLng, radiusM, 5).isNotEmpty() &&
+            roomSource.stopsNear(req.toLat, req.toLng, radiusM, 5).isNotEmpty()
     } catch (_: Exception) {
         false
     }

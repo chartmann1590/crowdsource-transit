@@ -12,8 +12,15 @@ import type { DepartureOption, PlanRequest, StopCandidate, TripDetails, TripStop
  * straight-line estimates; planTrip refines the winners through the ORS proxy.
  */
 
-export const CANDIDATE_RADIUS_M = 800;
+// Default max walk from the trip endpoints to a boarding/alighting stop. In low-density
+// areas the nearest stop that actually has service can be well over the old 800 m, so this
+// is deliberately generous (~20 min walk). The user can override it per plan via
+// PlanRequest.maxWalkToStopM.
+export const DEFAULT_CANDIDATE_RADIUS_M = 1600;
 export const MAX_CANDIDATES = 5;
+// Cap on how many nearby stops we probe for departures when building origin candidates, so a
+// cluster of dead (zero-service) stops or a large user-set radius can't blow the API budget.
+const CANDIDATE_PROBE_LIMIT = 15;
 const DEDUPE_M = 25;
 const WINDOW_SEC = 7200;
 const DEPS_PER_ROUND = 10;
@@ -65,15 +72,25 @@ function stopTimeUtcMs(seg: { boardDepUtcMs: number; trip: TripDetails; boardInd
   return seg.boardDepUtcMs + (st.arrivalSec - board.departureSec) * 1000;
 }
 
-async function candidateStops(source: GtfsDataSource, lat: number, lng: number): Promise<StopCandidate[]> {
-  const stops = await source.stopsNear(lat, lng, CANDIDATE_RADIUS_M, 20);
+/**
+ * Nearby stops within `radiusM`, distance-sorted (nearest first) and deduped at DEDUPE_M.
+ * Proximity only — NOT truncated to MAX_CANDIDATES and NOT service-filtered. The origin
+ * round picks served stops from this list (skipping dead ones); the destination side uses
+ * it only as a non-empty reachability guard.
+ */
+async function nearbyStopsSorted(
+  source: GtfsDataSource,
+  lat: number,
+  lng: number,
+  radiusM: number,
+): Promise<StopCandidate[]> {
+  const stops = await source.stopsNear(lat, lng, radiusM, 30);
   const sorted = stops
     .map((s) => ({ s, d: metersBetween(lat, lng, s.lat, s.lng) }))
-    .filter(({ d }) => d <= CANDIDATE_RADIUS_M)
+    .filter(({ d }) => d <= radiusM)
     .sort((a, b) => a.d - b.d);
   const kept: StopCandidate[] = [];
   for (const { s } of sorted) {
-    if (kept.length >= MAX_CANDIDATES) break;
     if (kept.some((k) => metersBetween(k.lat, k.lng, s.lat, s.lng) < DEDUPE_M)) continue;
     kept.push(s);
   }
@@ -261,12 +278,15 @@ export async function planTrips(source: GtfsDataSource, req: PlanRequest): Promi
 async function planTripsDepartAt(source: GtfsDataSource, req: PlanRequest): Promise<TripPlan[]> {
   const nowMs = Date.now();
   const departAtMs = req.departAtMs ?? nowMs;
+  const radiusM = req.maxWalkToStopM ?? DEFAULT_CANDIDATE_RADIUS_M;
 
-  const [originCands, destCands] = await Promise.all([
-    candidateStops(source, req.from.lat, req.from.lng),
-    candidateStops(source, req.to.lat, req.to.lng),
+  const [originStops, destCands] = await Promise.all([
+    nearbyStopsSorted(source, req.from.lat, req.from.lng, radiusM),
+    nearbyStopsSorted(source, req.to.lat, req.to.lng, radiusM),
   ]);
-  if (originCands.length === 0 || destCands.length === 0) return [];
+  // destCands is only a reachability guard: tryEmit matches the destination point directly,
+  // so an alighting stop within DEST_WALK_M of it emits regardless of which stops are here.
+  if (originStops.length === 0 || destCands.length === 0) return [];
 
   const results: { plan: TripPlan; arrMs: number; transfers: number; routeKey: string }[] = [];
   const bestArrival = new Map<string, number>(); // stopKey -> best known arrival
@@ -314,12 +334,21 @@ async function planTripsDepartAt(source: GtfsDataSource, req: PlanRequest): Prom
     }
   };
 
-  // Round 0: board near the origin.
+  // Round 0: board near the origin. Walk the nearby stops nearest-first and keep the closest
+  // MAX_CANDIDATES that actually have upcoming departures — a cluster of dead (zero-service)
+  // stops must not crowd out a slightly-farther served stop, which is what made suburban
+  // origins return no route. Bounded by CANDIDATE_PROBE_LIMIT so this stays API-cheap.
   let reached: Reached[] = [];
   const round0: { dep: DepartureOption; cand: StopCandidate; walkMeters: number }[] = [];
-  for (const cand of originCands) {
+  let served = 0;
+  let probes = 0;
+  for (const cand of originStops) {
+    if (served >= MAX_CANDIDATES || probes >= CANDIDATE_PROBE_LIMIT) break;
+    probes++;
     const walkMeters = metersBetween(req.from.lat, req.from.lng, cand.lat, cand.lng);
     const deps = await departuresFor(source, cand, departAtMs + walkSeconds(walkMeters) * 1000, nowMs);
+    if (deps.length === 0) continue; // dead stop — don't spend a candidate slot on it
+    served++;
     for (const dep of deps) round0.push({ dep, cand, walkMeters });
   }
   round0.sort((a, b) => a.dep.depUtcMs - b.dep.depUtcMs);
