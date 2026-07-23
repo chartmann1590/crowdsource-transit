@@ -100,7 +100,7 @@ export function PlanPage() {
       setLocating(false);
       applyPlace({ name: 'My location', lat: pos.coords.latitude, lng: pos.coords.longitude });
     };
-    const onError = (err: GeolocationPositionError) => {
+    const finalError = (err: GeolocationPositionError) => {
       if (settled) return;
       settled = true;
       setLocating(false);
@@ -111,19 +111,28 @@ export function PlanPage() {
       );
     };
 
-    // enableHighAccuracy requests a GPS-grade fix, which desktop browsers (and phones
-    // with a weak/no GPS signal) can stall on for a long time or never resolve, even
-    // after the permission prompt is granted. A low-accuracy (network/WiFi) fix is
-    // plenty precise for picking a planning origin and returns quickly and reliably.
-    navigator.geolocation.getCurrentPosition(onSuccess, onError, {
-      enableHighAccuracy: false,
-      timeout: 8_000,
-      maximumAge: 5 * 60_000,
-    });
+    // Network/WiFi-based positioning (enableHighAccuracy: false) can resolve to
+    // wherever the ISP's geolocation database places its network exchange — often a
+    // major hub city hundreds of miles away, not the user's actual location. Try a
+    // real GPS-grade fix first; only fall back to the network-based one (which returns
+    // fast but can be wildly wrong) if the GPS attempt genuinely fails or times out.
+    navigator.geolocation.getCurrentPosition(
+      onSuccess,
+      () => {
+        if (settled) return;
+        navigator.geolocation.getCurrentPosition(onSuccess, finalError, {
+          enableHighAccuracy: false,
+          timeout: 6_000,
+          maximumAge: 5 * 60_000,
+        });
+      },
+      { enableHighAccuracy: true, timeout: 8_000, maximumAge: 5 * 60_000 },
+    );
     // Belt-and-suspenders: some browser/OS combinations swallow the error callback
     // entirely (e.g. Chromium on Windows with OS-level location services disabled) and
     // just hang forever instead of calling back. Force a visible failure so the button
-    // never gets stuck silently on "Finding your location…".
+    // never gets stuck silently on "Finding your location…". Sized to outlast both the
+    // GPS attempt and its network-based fallback.
     setTimeout(() => {
       if (settled) return;
       settled = true;
@@ -131,7 +140,7 @@ export function PlanPage() {
       setLocationError(
         "Couldn't get your location — check that location is turned on for your browser and device, or search for a stop instead.",
       );
-    }, 9_000);
+    }, 16_000);
   }, [applyPlace]);
 
   const findRoutes = useCallback(() => {

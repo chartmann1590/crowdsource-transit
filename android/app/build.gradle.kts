@@ -193,7 +193,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
 
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("com.squareup.retrofit2:converter-moshi:2.11.0")
+    implementation("com.squareup.retrofit2:converter-moshi:3.0.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.2")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     kapt("com.squareup.moshi:moshi-kotlin-codegen:1.15.2")
@@ -206,7 +206,7 @@ dependencies {
 
     // Force 16 KB-aligned version; the Compose BOM pulls in an older build via
     // androidx.graphics:graphics-core that contains a misaligned libandroidx.graphics.path.so
-    implementation("androidx.graphics:graphics-path:1.0.1")
+    implementation("androidx.graphics:graphics-path:1.1.0")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 
