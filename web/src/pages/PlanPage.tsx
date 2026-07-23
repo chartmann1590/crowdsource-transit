@@ -79,21 +79,46 @@ export function PlanPage() {
       return;
     }
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLocating(false);
-        applyPlace({ name: 'My location', lat: pos.coords.latitude, lng: pos.coords.longitude });
-      },
-      (err) => {
-        setLocating(false);
-        setLocationError(
-          err.code === err.PERMISSION_DENIED
-            ? 'Location permission denied — allow location access for this site in your browser settings, or search for a stop instead.'
-            : "Couldn't get your location — search for a stop instead.",
-        );
-      },
-      { enableHighAccuracy: true, timeout: 10_000 },
-    );
+
+    let settled = false;
+    const onSuccess = (pos: GeolocationPosition) => {
+      if (settled) return;
+      settled = true;
+      setLocating(false);
+      applyPlace({ name: 'My location', lat: pos.coords.latitude, lng: pos.coords.longitude });
+    };
+    const onError = (err: GeolocationPositionError) => {
+      if (settled) return;
+      settled = true;
+      setLocating(false);
+      setLocationError(
+        err.code === err.PERMISSION_DENIED
+          ? 'Location permission denied — allow location access for this site in your browser settings, or search for a stop instead.'
+          : "Couldn't get your location — search for a stop instead.",
+      );
+    };
+
+    // enableHighAccuracy requests a GPS-grade fix, which desktop browsers (and phones
+    // with a weak/no GPS signal) can stall on for a long time or never resolve, even
+    // after the permission prompt is granted. A low-accuracy (network/WiFi) fix is
+    // plenty precise for picking a planning origin and returns quickly and reliably.
+    navigator.geolocation.getCurrentPosition(onSuccess, onError, {
+      enableHighAccuracy: false,
+      timeout: 8_000,
+      maximumAge: 5 * 60_000,
+    });
+    // Belt-and-suspenders: some browser/OS combinations swallow the error callback
+    // entirely (e.g. Chromium on Windows with OS-level location services disabled) and
+    // just hang forever instead of calling back. Force a visible failure so the button
+    // never gets stuck silently on "Finding your location…".
+    setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      setLocating(false);
+      setLocationError(
+        "Couldn't get your location — check that location is turned on for your browser and device, or search for a stop instead.",
+      );
+    }, 9_000);
   }, [applyPlace]);
 
   const findRoutes = useCallback(() => {
