@@ -1,4 +1,4 @@
-﻿import java.util.Properties
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -148,10 +148,10 @@ configurations.all {
         // kotlinx-serialization to 1.7.3, but androidx.room:room-testing's
         // room-migration-jvm needs 1.8.1's GeneratedSerializer ABI (AbstractMethodError
         // otherwise). Force the newer, ABI-compatible version everywhere.
-        force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.8.1")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.8.1")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.11.0")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.11.0")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.11.0")
     }
 }
 
