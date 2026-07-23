@@ -1,5 +1,7 @@
 package com.charles.crowdtransit.app.ui.screens.plan
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,9 +27,11 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -54,8 +58,35 @@ import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
 
 private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
+private val timeAtFormatter = DateTimeFormatter.ofPattern("EEE MMM d, HH:mm").withZone(ZoneId.systemDefault())
+
+/** Opens the framework date picker, then the time picker, then reports the combined epoch ms. */
+private fun pickDateTime(context: android.content.Context, initialMs: Long?, onPicked: (Long) -> Unit) {
+    val cal = Calendar.getInstance()
+    initialMs?.let { cal.timeInMillis = it }
+    DatePickerDialog(
+        context,
+        { _, year, month, day ->
+            TimePickerDialog(
+                context,
+                { _, hour, minute ->
+                    cal.set(year, month, day, hour, minute, 0)
+                    cal.set(Calendar.MILLISECOND, 0)
+                    onPicked(cal.timeInMillis)
+                },
+                cal.get(Calendar.HOUR_OF_DAY),
+                cal.get(Calendar.MINUTE),
+                false,
+            ).show()
+        },
+        cal.get(Calendar.YEAR),
+        cal.get(Calendar.MONTH),
+        cal.get(Calendar.DAY_OF_MONTH),
+    ).show()
+}
 
 internal fun formatLocalTime(iso: String?): String =
     iso?.let { runCatching { timeFormatter.format(Instant.parse(it)) }.getOrNull() } ?: "--:--"
@@ -139,9 +170,38 @@ fun TripPlannerScreen(
                 singleLine = true,
             )
 
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                FilterChip(
+                    selected = uiState.timeMode == TripTimeMode.NOW,
+                    onClick = { viewModel.setTimeMode(TripTimeMode.NOW) },
+                    label = { Text("Leave now") },
+                )
+                FilterChip(
+                    selected = uiState.timeMode == TripTimeMode.DEPART_AT,
+                    onClick = { viewModel.setTimeMode(TripTimeMode.DEPART_AT) },
+                    label = { Text("Depart at") },
+                )
+                FilterChip(
+                    selected = uiState.timeMode == TripTimeMode.ARRIVE_BY,
+                    onClick = { viewModel.setTimeMode(TripTimeMode.ARRIVE_BY) },
+                    label = { Text("Arrive by") },
+                )
+            }
+            if (uiState.timeMode != TripTimeMode.NOW) {
+                OutlinedButton(
+                    onClick = {
+                        pickDateTime(context, uiState.timeAtMs) { ms -> viewModel.setTimeAtMs(ms) }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(uiState.timeAtMs?.let { timeAtFormatter.format(Instant.ofEpochMilli(it)) } ?: "Choose a time")
+                }
+            }
+
             androidx.compose.material3.Button(
                 onClick = viewModel::plan,
-                enabled = uiState.origin != null && uiState.destination != null && !uiState.planning,
+                enabled = uiState.origin != null && uiState.destination != null && !uiState.planning &&
+                    (uiState.timeMode == TripTimeMode.NOW || uiState.timeAtMs != null),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(if (uiState.planning) "Planning…" else "Find routes")

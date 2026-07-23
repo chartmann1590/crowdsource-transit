@@ -201,6 +201,42 @@ class TransitRouterTest {
     }
 
     @Test
+    fun `arrive-by search finds an itinerary landing at or before the target`() = runBlocking {
+        val base = base()
+        // Direct ride boards at +12 min, alights at +27 min (see the direct-ride test above).
+        val arriveByMs = base + 30 * 60_000
+        val plans = router.planTrips(
+            FixtureDataSource(base),
+            PlanRequest(
+                fromName = origin1.first, fromLat = origin1.second, fromLng = origin1.third,
+                toName = dest1.first, toLat = dest1.second, toLng = dest1.third,
+                arriveByMs = arriveByMs,
+            ),
+        )
+
+        assertTrue(plans.isNotEmpty())
+        for (plan in plans) {
+            assertTrue(Instant.parse(plan.legs.last().arr).toEpochMilli() <= arriveByMs)
+        }
+    }
+
+    @Test
+    fun `arrive-by search finds nothing when even the earliest ride misses the target`() = runBlocking {
+        val base = base()
+        // The direct ride can't alight before +27 min, so a target before boarding is
+        // unreachable within the bounded lookback attempts.
+        val plans = router.planTrips(
+            FixtureDataSource(base),
+            PlanRequest(
+                fromName = origin1.first, fromLat = origin1.second, fromLng = origin1.third,
+                toName = dest1.first, toLat = dest1.second, toLng = dest1.third,
+                arriveByMs = base + 5 * 60_000,
+            ),
+        )
+        assertEquals(emptyList<Leg>(), plans)
+    }
+
+    @Test
     fun `returns no plans when no stops are near the origin`() = runBlocking {
         val base = base()
         val plans = router.planTrips(

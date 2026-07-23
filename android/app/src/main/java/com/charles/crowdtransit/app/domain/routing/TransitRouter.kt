@@ -48,6 +48,8 @@ class TransitRouter @Inject constructor() {
         private const val MAX_RESULTS = 3
         private const val BOARD_MATCH_M = 100.0
         private const val STALE_DEPARTURE_MS = 36L * 3600 * 1000
+        private const val ARRIVE_BY_WINDOW_MS = WINDOW_SEC * 1000L
+        private const val ARRIVE_BY_MAX_ATTEMPTS = 3
 
         fun walkSeconds(meters: Double): Int = ((meters * WALK_DETOUR) / WALK_SPEED_MPS).roundToInt()
 
@@ -279,7 +281,28 @@ class TransitRouter @Inject constructor() {
         return earliest.values.toList()
     }
 
+    /** Dispatches to a depart-at search, or an arrive-by search that walks the depart
+     * time backward from the target until it finds itineraries landing at or before it
+     * (bounded to ARRIVE_BY_MAX_ATTEMPTS windows to cap API usage). */
     suspend fun planTrips(source: GtfsDataSource, req: PlanRequest): List<TripPlan> {
+        val arriveByMs = req.arriveByMs
+        if (arriveByMs != null) {
+            for (attempt in 0 until ARRIVE_BY_MAX_ATTEMPTS) {
+                val departAtMs = arriveByMs - ARRIVE_BY_WINDOW_MS * (attempt + 1)
+                val plans = planTripsDepartAt(source, req.copy(departAtMs = departAtMs))
+                val onTime = plans.filter { Instant.parse(it.legs.last().arr).toEpochMilli() <= arriveByMs }
+                if (onTime.isNotEmpty()) {
+                    return onTime
+                        .sortedByDescending { Instant.parse(it.legs.last().arr).toEpochMilli() }
+                        .take(MAX_RESULTS)
+                }
+            }
+            return emptyList()
+        }
+        return planTripsDepartAt(source, req)
+    }
+
+    private suspend fun planTripsDepartAt(source: GtfsDataSource, req: PlanRequest): List<TripPlan> {
         val nowMs = System.currentTimeMillis()
         val departAtMs = req.departAtMs ?: nowMs
 

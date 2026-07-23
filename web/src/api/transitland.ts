@@ -310,7 +310,26 @@ export async function getRoutesNear(
   }
 }
 
-export async function searchStops(query: string): Promise<Stop[]> {
+const SEARCH_BIAS_RADIUS_M = 50_000;
+
+/**
+ * Text search, optionally biased toward a location. Transitland's `search` matches
+ * stop names anywhere (e.g. "Schenectady" can hit Brooklyn's "Schenectady Ave" ahead of
+ * the actual city of Schenectady, NY), so when a bias point is known we first try a
+ * radius-scoped search and only fall back to the unscoped one if that finds nothing —
+ * preserving the ability to search for a stop far from the bias point.
+ */
+export async function searchStops(query: string, near?: { lat: number; lng: number }): Promise<Stop[]> {
+  if (near) {
+    const biased = await fetchTransitland('/stops', {
+      search: query,
+      lat: String(near.lat),
+      lon: String(near.lng),
+      radius: String(SEARCH_BIAS_RADIUS_M),
+      limit: '20',
+    });
+    if (biased.length > 0) return biased;
+  }
   return fetchTransitland('/stops', { search: query, limit: '20' });
 }
 

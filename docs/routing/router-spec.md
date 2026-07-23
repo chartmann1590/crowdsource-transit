@@ -38,7 +38,30 @@ tripDetails(routeOnestopId, tripIntId) -> TripDetails | null
 
 ## Search (bounded, RAPTOR-flavored)
 
-Inputs: from{lat,lng,name}, to{lat,lng,name}, departAtMs (default now).
+Inputs: from{lat,lng,name}, to{lat,lng,name}, departAtMs (default now) OR arriveByMs
+(mutually exclusive).
+
+### Arrive-by search
+
+`planTrips` is a dispatcher: given `arriveByMs`, it repeatedly runs the depart-at search
+with `departAtMs = arriveByMs − WINDOW_SEC·1000·(attempt+1)` for up to
+ARRIVE_BY_MAX_ATTEMPTS=3 attempts, filtering each attempt's results to itineraries whose
+final arrival is ≤ `arriveByMs`. The first attempt with any on-time results wins; among
+those, the latest arrival ≤ target (least wait) is preferred. Bounded to cap Transitland
+calls — a trip whose only itineraries take longer than 3·WINDOW_SEC (6 h) to reach the
+target won't be found.
+
+### Stop text search — location bias
+
+Both platforms' free-text stop search (e.g. the trip planner's destination box) is biased
+toward a known location when one is available (already-chosen origin/destination, or on
+Android the last GPS fix): first try Transitland's `/stops?search=…&lat=…&lon=…&radius=50000`,
+and only fall back to the unscoped `search`-only query if that returns nothing. Plain text
+search matches stop names anywhere — e.g. "Schenectady" can match Brooklyn NYC's
+"Schenectady Ave" stops ahead of the actual city of Schenectady, NY — so an unbiased search
+can silently hand the router a wrong, distant destination that then correctly reports no
+route.
+
 Constants: CANDIDATE_RADIUS_M=800, MAX_CANDIDATES=5, DEDUPE_M=25, WINDOW_SEC=7200,
 DEPS_PER_ROUND=10, DEST_WALK_M=600, TRANSFER_MIN_SEC=120, TRANSFER_WALK_M=300,
 FRONTIER=6, MAX_TRANSFERS=2, WALK_SPEED_MPS=1.33, WALK_DETOUR=1.3, MAX_RESULTS=3.

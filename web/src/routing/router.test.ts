@@ -163,6 +163,29 @@ describe('planTrips', () => {
     expect(plans[0].legs).toHaveLength(5);
   });
 
+  it('arrive-by search finds an itinerary landing at or before the target', async () => {
+    const base = Math.floor(Date.now() / 1000) * 1000;
+    const source = new FixtureDataSource(base);
+    // Direct ride boards at +12 min, alights at +27 min (see the earlier direct-ride test).
+    const arriveByMs = base + 30 * 60_000;
+    const plans = await planTrips(source, { from: origin1, to: dest1, arriveByMs });
+
+    expect(plans.length).toBeGreaterThan(0);
+    for (const plan of plans) {
+      const lastLeg = plan.legs[plan.legs.length - 1];
+      expect(Date.parse((lastLeg as { arr: string }).arr)).toBeLessThanOrEqual(arriveByMs);
+    }
+  });
+
+  it('arrive-by search finds nothing when even the earliest ride misses the target', async () => {
+    const base = Math.floor(Date.now() / 1000) * 1000;
+    const source = new FixtureDataSource(base);
+    // The direct ride can't alight before +27 min, so a target before boarding is unreachable
+    // within the bounded lookback attempts.
+    const plans = await planTrips(source, { from: origin1, to: dest1, arriveByMs: base + 5 * 60_000 });
+    expect(plans).toEqual([]);
+  });
+
   it('returns no plans when no stops are near the origin', async () => {
     const base = Math.floor(Date.now() / 1000) * 1000;
     const source = new FixtureDataSource(base);

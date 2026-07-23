@@ -31,6 +31,8 @@ data class PlannerPlace(
 
 data class PlaceSuggestion(val name: String, val detail: String, val lat: Double, val lng: Double)
 
+enum class TripTimeMode { NOW, DEPART_AT, ARRIVE_BY }
+
 data class TripPlannerUiState(
     val origin: PlannerPlace? = null,
     val destination: PlannerPlace? = null,
@@ -45,6 +47,9 @@ data class TripPlannerUiState(
     val plans: List<TripPlan> = emptyList(),
     val planned: Boolean = false,
     val error: String? = null,
+    val timeMode: TripTimeMode = TripTimeMode.NOW,
+    /** Epoch ms for DEPART_AT/ARRIVE_BY; null while NOW or before the user has picked one. */
+    val timeAtMs: Long? = null,
 )
 
 @HiltViewModel
@@ -76,6 +81,8 @@ class TripPlannerViewModel @Inject constructor(
                 destination = PlannerPlace(trip.toName, trip.toLat, trip.toLng),
                 searchQuery = "",
                 suggestions = emptyList(),
+                timeMode = TripTimeMode.NOW,
+                timeAtMs = null,
             )
         }
         plan()
@@ -124,7 +131,11 @@ class TripPlannerViewModel @Inject constructor(
         searchJob = viewModelScope.launch {
             delay(300) // debounce
             _uiState.update { it.copy(searching = true) }
-            val stops = runCatching { stopRepository.searchStops(query) }.getOrDefault(emptyList())
+            // Bias toward whichever endpoint is already chosen, so e.g. searching
+            // "Schenectady" from a trip that starts in Schenectady doesn't surface a
+            // same-named street clear across the country.
+            val bias = (_uiState.value.origin ?: _uiState.value.destination)?.let { it.lat to it.lng }
+            val stops = runCatching { stopRepository.searchStops(query, bias) }.getOrDefault(emptyList())
             _uiState.update { state ->
                 state.copy(
                     searching = false,
@@ -163,10 +174,19 @@ class TripPlannerViewModel @Inject constructor(
         _uiState.update { it.copy(origin = it.destination, destination = it.origin) }
     }
 
+    fun setTimeMode(mode: TripTimeMode) {
+        _uiState.update { it.copy(timeMode = mode) }
+    }
+
+    fun setTimeAtMs(ms: Long?) {
+        _uiState.update { it.copy(timeAtMs = ms) }
+    }
+
     fun plan() {
         val state = _uiState.value
         val origin = state.origin ?: return
         val destination = state.destination ?: return
+        val timeMs = state.timeAtMs.takeIf { state.timeMode != TripTimeMode.NOW }
         _uiState.update { it.copy(planning = true, planned = false, plans = emptyList(), error = null) }
         viewModelScope.launch {
             try {
@@ -178,6 +198,8 @@ class TripPlannerViewModel @Inject constructor(
                         toName = destination.name,
                         toLat = destination.lat,
                         toLng = destination.lng,
+                        departAtMs = timeMs?.takeIf { state.timeMode == TripTimeMode.DEPART_AT },
+                        arriveByMs = timeMs?.takeIf { state.timeMode == TripTimeMode.ARRIVE_BY },
                     ),
                 )
                 _uiState.update { it.copy(planning = false, planned = true, plans = plans) }

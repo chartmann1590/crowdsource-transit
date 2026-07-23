@@ -227,7 +227,33 @@ async function departuresFor(
   return Array.from(earliest.values());
 }
 
+const ARRIVE_BY_WINDOW_MS = WINDOW_SEC * 1000;
+const ARRIVE_BY_MAX_ATTEMPTS = 3;
+
+/** Public entry point: dispatches to a depart-at search, or an arrive-by search that
+ * walks the depart time backward from the target until it finds itineraries landing
+ * at or before it (bounded to ARRIVE_BY_MAX_ATTEMPTS windows to cap API usage). */
 export async function planTrips(source: GtfsDataSource, req: PlanRequest): Promise<TripPlan[]> {
+  if (req.arriveByMs !== undefined) {
+    for (let attempt = 0; attempt < ARRIVE_BY_MAX_ATTEMPTS; attempt++) {
+      const departAtMs = req.arriveByMs - ARRIVE_BY_WINDOW_MS * (attempt + 1);
+      const plans = await planTripsDepartAt(source, { ...req, departAtMs });
+      const onTime = plans.filter((p) => Date.parse((p.legs[p.legs.length - 1] as WalkLeg).arr) <= req.arriveByMs!);
+      if (onTime.length > 0) {
+        onTime.sort(
+          (a, b) =>
+            Date.parse((b.legs[b.legs.length - 1] as WalkLeg).arr) -
+            Date.parse((a.legs[a.legs.length - 1] as WalkLeg).arr),
+        );
+        return onTime.slice(0, MAX_RESULTS);
+      }
+    }
+    return [];
+  }
+  return planTripsDepartAt(source, req);
+}
+
+async function planTripsDepartAt(source: GtfsDataSource, req: PlanRequest): Promise<TripPlan[]> {
   const nowMs = Date.now();
   const departAtMs = req.departAtMs ?? nowMs;
 

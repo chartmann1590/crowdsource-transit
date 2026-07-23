@@ -18,6 +18,9 @@ interface TransitlandApi {
     suspend fun searchStops(
         @Query("search") search: String,
         @Query("limit") limit: Int = 20,
+        @Query("lat") lat: Double? = null,
+        @Query("lon") lon: Double? = null,
+        @Query("radius") radiusMeters: Int? = null,
     ): TransitlandStopsResponse
 
     @GET("api/v2/rest/stops")

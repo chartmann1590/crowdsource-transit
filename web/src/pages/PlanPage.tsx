@@ -44,8 +44,15 @@ export function PlanPage() {
   const [selectedPlan, setSelectedPlan] = useState<TripPlan | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [locating, setLocating] = useState(false);
+  const [timeMode, setTimeMode] = useState<'now' | 'depart' | 'arrive'>('now');
+  const [timeValue, setTimeValue] = useState('');
   const { plans, loading, planned, error, plan } = usePlanTrip();
   const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Bias stop search toward whichever endpoint is already chosen, so e.g. searching
+  // "Schenectady" from a trip that starts in Schenectady doesn't surface a same-named
+  // street clear across the country.
+  const searchBias = origin ?? destination;
 
   useEffect(() => {
     clearTimeout(searchTimer.current);
@@ -54,7 +61,7 @@ export function PlanPage() {
       return;
     }
     searchTimer.current = setTimeout(() => {
-      void searchStops(query).then((stops) => {
+      void searchStops(query, searchBias ?? undefined).then((stops) => {
         setSuggestions(
           stops.map((s) => ({
             name: s.name,
@@ -66,7 +73,7 @@ export function PlanPage() {
       });
     }, 300);
     return () => clearTimeout(searchTimer.current);
-  }, [query]);
+  }, [query, searchBias]);
 
   const applyPlace = useCallback(
     (place: PlannerPlace) => {
@@ -130,11 +137,14 @@ export function PlanPage() {
   const findRoutes = useCallback(() => {
     if (!origin || !destination) return;
     setSelectedPlan(null);
+    const timeMs = timeMode !== 'now' && timeValue ? new Date(timeValue).getTime() : undefined;
     void plan({
       from: { name: origin.name, lat: origin.lat, lng: origin.lng },
       to: { name: destination.name, lat: destination.lat, lng: destination.lng },
+      ...(timeMode === 'depart' && timeMs !== undefined ? { departAtMs: timeMs } : {}),
+      ...(timeMode === 'arrive' && timeMs !== undefined ? { arriveByMs: timeMs } : {}),
     });
-  }, [origin, destination, plan]);
+  }, [origin, destination, timeMode, timeValue, plan]);
 
   // Reopening a saved trip: saved trips store origin/destination only, never times
   // (schedules go stale), so jump straight into a fresh search for the current
@@ -206,10 +216,30 @@ export function PlanPage() {
               ))}
           </ul>
 
+          <div className={styles.timeMode}>
+            <select
+              className={styles.timeModeSelect}
+              value={timeMode}
+              onChange={(e) => setTimeMode(e.target.value as 'now' | 'depart' | 'arrive')}
+            >
+              <option value="now">Leave now</option>
+              <option value="depart">Depart at…</option>
+              <option value="arrive">Arrive by…</option>
+            </select>
+            {timeMode !== 'now' && (
+              <input
+                type="datetime-local"
+                className={styles.timeModeInput}
+                value={timeValue}
+                onChange={(e) => setTimeValue(e.target.value)}
+              />
+            )}
+          </div>
+
           <button
             type="button"
             className={styles.planButton}
-            disabled={!origin || !destination || loading}
+            disabled={!origin || !destination || loading || (timeMode !== 'now' && !timeValue)}
             onClick={findRoutes}
           >
             {loading ? 'Planning…' : 'Find routes'}

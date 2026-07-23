@@ -30,6 +30,7 @@ import kotlin.math.sqrt
 
 private const val MAX_RADIUS_METERS = 10_000
 private const val MAX_TRANSIT_TYPE_LOOKUPS = 15
+private const val SEARCH_BIAS_RADIUS_METERS = 50_000
 
 @Singleton
 class StopRepository @Inject constructor(
@@ -137,10 +138,19 @@ class StopRepository @Inject constructor(
     // Transitland's /stops endpoint can return the same onestop_id more than once (e.g.
     // across duplicate feed entries); dedupe since stopId is used as a LazyColumn key
     // downstream and duplicates crash with "Key ... was already used".
-    suspend fun searchStops(query: String): List<Stop> {
+    //
+    // `near` biases results toward a location: Transitland's text search matches stop
+    // names anywhere (e.g. "Schenectady" can hit Brooklyn's "Schenectady Ave" ahead of
+    // the actual city of Schenectady, NY), so when a bias point is known we first try a
+    // radius-scoped search and only fall back to the unscoped one if that finds nothing —
+    // preserving the ability to search for a stop far from the bias point.
+    suspend fun searchStops(query: String, near: Pair<Double, Double>? = null): List<Stop> {
         return try {
             coroutineScope {
-                val remoteStops = transitlandApi.searchStops(query).stops
+                val biased = near?.let { (lat, lng) ->
+                    transitlandApi.searchStops(query, lat = lat, lon = lng, radiusMeters = SEARCH_BIAS_RADIUS_METERS).stops
+                }
+                val remoteStops = if (!biased.isNullOrEmpty()) biased else transitlandApi.searchStops(query).stops
                 remoteStops.map { remote ->
                     async { enrichedStop(remote) }
                 }.map { it.await() }.distinctBy { it.stopId }

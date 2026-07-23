@@ -24,8 +24,11 @@ data class PlanRequest(
     val toName: String,
     val toLat: Double,
     val toLng: Double,
-    /** Epoch ms; null = now. */
+    /** Epoch ms; null = now. Mutually exclusive with arriveByMs. */
     val departAtMs: Long? = null,
+    /** Epoch ms; if set (and departAtMs unset), search backward for the itinerary
+     * arriving as close as possible to, but not after, this time. */
+    val arriveByMs: Long? = null,
 )
 
 data class StopCandidate(

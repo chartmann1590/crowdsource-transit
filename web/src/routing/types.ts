@@ -8,8 +8,11 @@ export interface LatLng {
 export interface PlanRequest {
   from: LatLng & { name: string };
   to: LatLng & { name: string };
-  /** Epoch ms; defaults to "now". */
+  /** Epoch ms; defaults to "now". Mutually exclusive with arriveByMs. */
   departAtMs?: number;
+  /** Epoch ms; if set (and departAtMs unset), search backward for the itinerary
+   * arriving as close as possible to, but not after, this time. */
+  arriveByMs?: number;
 }
 
 export interface StopCandidate {

@@ -139,8 +139,8 @@ export async function getNearbyStops(
   }
 }
 
-export async function searchStops(query_: string): Promise<Stop[]> {
-  const tlStops = await tlSearchStops(query_);
+export async function searchStops(query_: string, near?: { lat: number; lng: number }): Promise<Stop[]> {
+  const tlStops = await tlSearchStops(query_, near);
   const enriched = await Promise.all(
     tlStops.map((stop) => enrichedStop(stop).catch(() => stop)),
   );
