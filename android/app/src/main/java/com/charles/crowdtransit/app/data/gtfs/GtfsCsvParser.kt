@@ -15,7 +15,8 @@ object GtfsCsvParser {
         for (fields in rawRecords(reader)) {
             val h = header
             if (h == null) {
-                header = fields.map { it.trim().removePrefix("﻿") }
+                // Strip a UTF-8 BOM from the first CSV field (GTFS files often start with one).
+                header = fields.map { it.trim().removePrefix("\uFEFF") }
             } else {
                 if (fields.size == 1 && fields[0].isBlank()) continue
                 val record = HashMap<String, String>(h.size)

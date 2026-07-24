@@ -24,7 +24,10 @@ android {
 
     defaultConfig {
         applicationId = "com.charles.crowdtransit.app"
-        minSdk = 24
+        // API 26: the navigation foreground service requires startForegroundService +
+        // notification channels (mandatory since Android 8). Below 26 those calls crash, so
+        // 24–25 were never actually functional for navigation.
+        minSdk = 26
         targetSdk = 36
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // Version precedence: ANDROID_VERSION_CODE/ANDROID_VERSION_NAME env vars first
