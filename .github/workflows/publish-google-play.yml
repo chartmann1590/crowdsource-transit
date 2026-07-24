@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       confirm_play_publish:
-        description: 'Type "publish" to confirm submission to Google Play production'
+        description: 'Type "publish" to upload a DRAFT release to the Google Play production track (does not go live)'
         required: true
         type: string
       release_notes:
@@ -120,12 +120,16 @@ jobs:
           fi
           echo "Service account key present."
 
-      - name: Publish to Google Play production
+      # Uploads as a DRAFT release on the production track: the AAB + listing + release
+      # notes land in the Play Console, but nothing goes live until you review and roll it
+      # out manually. This also lets Play surface any data-safety/permission prompts before
+      # publication (e.g. the foreground-location declaration used during navigation).
+      - name: Upload draft release to Google Play (production track)
         uses: r0adkll/upload-google-play@v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.charles.crowdtransit.app
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
           track: production
-          status: completed
+          status: draft
           whatsNewDirectory: distribution/whatsnew
