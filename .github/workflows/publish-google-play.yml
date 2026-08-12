@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       confirm_play_publish:
-        description: 'Type "publish" to upload a DRAFT release to the Google Play production track (does not go live)'
+        description: 'Type "publish" to confirm a full production release (100% rollout, no draft)'
         required: true
         type: string
       release_notes:
@@ -31,7 +31,7 @@ jobs:
 
       - uses: actions/setup-java@v5
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
 
       - uses: actions/setup-node@v7
@@ -120,16 +120,14 @@ jobs:
           fi
           echo "Service account key present."
 
-      # Uploads as a DRAFT release on the production track: the AAB + listing + release
-      # notes land in the Play Console, but nothing goes live until you review and roll it
-      # out manually. This also lets Play surface any data-safety/permission prompts before
-      # publication (e.g. the foreground-location declaration used during navigation).
-      - name: Upload draft release to Google Play (production track)
+      # Uploads directly to 100% rollout on the production track once CI's own tests/lint
+      # gates above have passed. No draft step — ships straight to real users.
+      - name: Upload release to Google Play (production track)
         uses: r0adkll/upload-google-play@v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.charles.crowdtransit.app
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
           track: production
-          status: draft
+          status: completed
           whatsNewDirectory: distribution/whatsnew

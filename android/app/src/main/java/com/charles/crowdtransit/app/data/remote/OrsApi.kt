@@ -13,6 +13,10 @@ import retrofit2.http.POST
 interface OrsApi {
     @POST("walk")
     suspend fun walk(@Body body: OrsWalkRequest): OrsGeoJsonResponse
+
+    /** Resolves free-typed text (e.g. a street address) to coordinates via ORS/Pelias. */
+    @POST("geocode")
+    suspend fun geocode(@Body body: OrsGeocodeRequest): OrsGeocodeResponse
 }
 
 @JsonClass(generateAdapter = true)
@@ -20,6 +24,28 @@ data class OrsWalkRequest(
     /** [lng, lat] pairs in travel order (2–5 waypoints). */
     val coordinates: List<List<Double>>,
 )
+
+@JsonClass(generateAdapter = true)
+data class OrsGeocodeRequest(val text: String)
+
+/** Pelias geocode-search response — a GeoJSON FeatureCollection of place candidates. */
+@JsonClass(generateAdapter = true)
+data class OrsGeocodeResponse(val features: List<OrsGeocodeFeature> = emptyList())
+
+@JsonClass(generateAdapter = true)
+data class OrsGeocodeFeature(
+    val geometry: OrsPointGeometry? = null,
+    val properties: OrsGeocodeProperties? = null,
+)
+
+@JsonClass(generateAdapter = true)
+data class OrsPointGeometry(
+    /** [lng, lat]. */
+    val coordinates: List<Double> = emptyList(),
+)
+
+@JsonClass(generateAdapter = true)
+data class OrsGeocodeProperties(val label: String? = null)
 
 @JsonClass(generateAdapter = true)
 data class OrsGeoJsonResponse(

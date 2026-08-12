@@ -44,6 +44,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.charles.crowdtransit.app.ai.device.DeviceCapability
+import com.charles.crowdtransit.app.ai.device.DeviceProbe
+import com.charles.crowdtransit.app.ui.assistant.HopperMascot
+import com.charles.crowdtransit.app.ui.assistant.MascotState
 import com.charles.crowdtransit.app.ui.components.BannerAdView
 import com.charles.crowdtransit.app.ui.components.MapLibreView
 import com.charles.crowdtransit.app.ui.components.SearchBar
@@ -62,11 +66,15 @@ fun MapHomeScreen(
     onProfileClick: () -> Unit,
     onAddStopClick: () -> Unit,
     onPlanTripClick: () -> Unit = {},
+    onAssistantClick: () -> Unit = {},
     viewModel: MapHomeViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sheetState = rememberBottomSheetScaffoldState()
     val context = LocalContext.current
+    // Hopper never appears at all below the capability floor — no FAB, no onboarding
+    // page, no download option (see DeviceCapability).
+    val assistantSupported = remember { DeviceProbe(context).tier() != DeviceCapability.Tier.Unsupported }
     val isExpanded by remember {
         derivedStateOf { sheetState.bottomSheetState.currentValue == SheetValue.Expanded }
     }
@@ -197,6 +205,20 @@ fun MapHomeScreen(
                     .size(56.dp),
             ) {
                 Icon(Icons.Filled.Directions, contentDescription = "Plan a trip")
+            }
+
+            if (assistantSupported) {
+                FloatingActionButton(
+                    onClick = onAssistantClick,
+                    containerColor = SurfaceElevated,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                        .padding(bottom = 264.dp)
+                        .size(56.dp),
+                ) {
+                    HopperMascot(state = MascotState.Idle, size = 40.dp)
+                }
             }
         }
     }

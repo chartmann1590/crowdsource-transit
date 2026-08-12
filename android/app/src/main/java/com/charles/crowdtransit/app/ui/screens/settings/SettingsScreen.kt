@@ -16,7 +16,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.Button
@@ -46,6 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.charles.crowdtransit.app.data.billing.billingRepository
 import com.charles.crowdtransit.app.data.feedback.BugReport
 import com.charles.crowdtransit.app.ui.theme.Error
 import com.charles.crowdtransit.app.ui.theme.OnSurface
@@ -62,6 +65,8 @@ import com.charles.crowdtransit.app.ui.theme.SurfaceDark
 fun SettingsScreen(
     onBack: () -> Unit,
     onDownloadsClick: () -> Unit = {},
+    onAssistantClick: () -> Unit = {},
+    onSubscriptionClick: () -> Unit = {},
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     feedbackViewModel: FeedbackViewModel = hiltViewModel(),
 ) {
@@ -137,6 +142,30 @@ fun SettingsScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clickable(onClick = onAssistantClick)
+                    .padding(vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, tint = Primary)
+                Spacer(Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("AI Assistant", style = MaterialTheme.typography.bodyLarge, color = OnSurface)
+                    Text(
+                        "Chat with Hopper about your routes — entirely on-device",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = OnSurfaceSecondary,
+                    )
+                }
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = OnSurfaceSecondary)
+            }
+
+            Spacer(Modifier.height(8.dp))
+            Divider(color = OnSurfaceSecondary.copy(alpha = 0.2f))
+            Spacer(Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
                     .clickable(onClick = onDownloadsClick)
                     .padding(vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -147,6 +176,31 @@ fun SettingsScreen(
                     Text("Offline Downloads", style = MaterialTheme.typography.bodyLarge, color = OnSurface)
                     Text(
                         "Download agencies for offline use",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = OnSurfaceSecondary,
+                    )
+                }
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = OnSurfaceSecondary)
+            }
+
+            Spacer(Modifier.height(8.dp))
+            Divider(color = OnSurfaceSecondary.copy(alpha = 0.2f))
+            Spacer(Modifier.height(8.dp))
+
+            val isSubscribed by context.billingRepository().isSubscribed.collectAsState()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onSubscriptionClick)
+                    .padding(vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Filled.Block, contentDescription = null, tint = Primary)
+                Spacer(Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Remove Ads", style = MaterialTheme.typography.bodyLarge, color = OnSurface)
+                    Text(
+                        if (isSubscribed) "Active — thanks for your support" else "Go ad-free with a subscription",
                         style = MaterialTheme.typography.bodySmall,
                         color = OnSurfaceSecondary,
                     )

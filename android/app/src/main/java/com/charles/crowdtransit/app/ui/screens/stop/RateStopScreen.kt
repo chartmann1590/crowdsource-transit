@@ -1,5 +1,6 @@
 ﻿package com.charles.crowdtransit.app.ui.screens.stop
 
+import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -89,6 +90,7 @@ fun RateStopScreen(
 
     LaunchedEffect(uiState.submitted) {
         if (uiState.submitted) {
+            (context as? Activity)?.let { viewModel.maybeRequestReview(it) }
             onSubmit(overallRating, emptyMap(), commentText, selectedTransitType, postAnonymously)
         }
     }

@@ -11,8 +11,17 @@
          background-location permission is requested. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <!-- Hopper AI assistant: downloading the ~2 GB Gemma 4 model runs as a dataSync
+         foreground service so it survives backgrounding (see AssistantDownloadService). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+
+    <!-- The LiteRT-LM runtime (Hopper AI assistant) declares minSdk 31; this app's minSdk
+         is 26 by design (see app/build.gradle.kts). Every class from this library is loaded
+         only behind an explicit SDK_INT >= 31 check (AssistantEngineFactory), so devices
+         below 31 never touch it — this override is safe only because of that gate. -->
+    <uses-sdk tools:overrideLibrary="com.google.ai.edge.litertlm" />
 
     <application
         android:name=".CrowdTransitApp"
@@ -62,6 +71,35 @@
             android:name=".service.NavigationService"
             android:exported="false"
             android:foregroundServiceType="location" />
+
+        <!-- Hopper AI assistant: downloads the on-device Gemma 4 model (~2-2.6 GB). -->
+        <service
+            android:name=".service.AssistantDownloadService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <!-- Hopper AI assistant: keeps the app process foreground-priority while a
+             message is generating. On-device CPU inference over an image can run well
+             past a minute; without this, the process was observed getting killed by the
+             system the moment the user briefly left the app (e.g. the system camera
+             taking focus during "scan a stop sign"), silently losing the reply. -->
+        <service
+            android:name=".service.AssistantInferenceService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <!-- Full-resolution camera capture for "scan a stop sign" (multimodal Hopper
+             tier only). Existing photo-upload flows use TakePicturePreview's thumbnail,
+             which is too low-res to read text off a sign. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

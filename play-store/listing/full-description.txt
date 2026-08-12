@@ -1,6 +1,6 @@
 CrowdTransit — Find your ride. Share the knowledge.
 
-CrowdTransit is a free, community-powered transit companion that shows you every bus, train, and ferry stop near you — who runs it, when it's coming, and where it goes. No subscriptions, no in-app purchases, no catch.
+CrowdTransit is a free, community-powered transit companion that shows you every bus, train, and ferry stop near you — who runs it, when it's coming, and where it goes. Every feature works with no purchase required; an optional ad-free subscription is available for riders who want it.
 
 DISCLAIMER: CrowdTransit is an independent, community-built app. It is not affiliated with, endorsed by, or operated by any government entity or transit agency. Stop, route, and schedule information is sourced from the official public GTFS feeds that transit agencies publish via the Transitland open data platform (https://www.transit.land) — the same feeds each agency publishes for their own riders. For the authoritative, official version of any agency's schedules, visit that agency's own website.
 
@@ -40,8 +40,11 @@ Save an agency's stops for offline access, so a dead zone doesn't leave you stra
 🏆 Earn points as you contribute
 Every review, photo, and check-in earns points and unlocks levels and badges — friendly competition for the most helpful local transit nerds.
 
+🤖 Chat with Hopper, your on-device AI assistant (optional)
+Ask Hopper to help plan a route, explain the trip you're on, or snap a photo of a stop or station sign and ask what it shows — it runs entirely on your phone, so nothing you say or show it ever leaves your device. Completely optional, free to enable from Settings, and — like any AI — it can be wrong, so always double-check times with your transit agency.
+
 FREE TO USE
 
-CrowdTransit is free to download and use, with no subscriptions and no in-app purchases. It's supported by ads and built by transit riders, for transit riders.
+CrowdTransit is free to download, and every feature works without paying anything. It's supported by ads. Riders who'd rather not see ads can subscribe to Remove Ads from Settings at any time — entirely optional, cancel anytime from Google Play.
 
 Whether you're catching the bus to work, exploring a new city, or just tired of guessing when the next train shows up, CrowdTransit has your stop covered.

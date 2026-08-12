@@ -1,0 +1,558 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "1c29539bb311151a9cf518bf62c17608",
+    "entities": [
+      {
+        "tableName": "cached_stops",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`stopId` TEXT NOT NULL, `name` TEXT NOT NULL, `lat` REAL NOT NULL, `lng` REAL NOT NULL, `state` TEXT NOT NULL, `country` TEXT NOT NULL, `agencyOnestopId` TEXT NOT NULL, PRIMARY KEY(`stopId`))",
+        "fields": [
+          {
+            "fieldPath": "stopId",
+            "columnName": "stopId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lat",
+            "columnName": "lat",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lng",
+            "columnName": "lng",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "country",
+            "columnName": "country",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "agencyOnestopId",
+            "columnName": "agencyOnestopId",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "stopId"
+          ]
+        }
+      },
+      {
+        "tableName": "cached_agencies",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`onestopId` TEXT NOT NULL, `name` TEXT NOT NULL, `stopCount` INTEGER NOT NULL, `downloadedAt` INTEGER NOT NULL, PRIMARY KEY(`onestopId`))",
+        "fields": [
+          {
+            "fieldPath": "onestopId",
+            "columnName": "onestopId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stopCount",
+            "columnName": "stopCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "downloadedAt",
+            "columnName": "downloadedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "onestopId"
+          ]
+        }
+      },
+      {
+        "tableName": "gtfs_stops",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`stopId` TEXT NOT NULL, `agencyOnestopId` TEXT NOT NULL, `gtfsStopId` TEXT NOT NULL, `name` TEXT NOT NULL, `lat` REAL NOT NULL, `lng` REAL NOT NULL, PRIMARY KEY(`stopId`))",
+        "fields": [
+          {
+            "fieldPath": "stopId",
+            "columnName": "stopId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "agencyOnestopId",
+            "columnName": "agencyOnestopId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gtfsStopId",
+            "columnName": "gtfsStopId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lat",
+            "columnName": "lat",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lng",
+            "columnName": "lng",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "stopId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_gtfs_stops_agencyOnestopId",
+            "unique": false,
+            "columnNames": [
+              "agencyOnestopId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gtfs_stops_agencyOnestopId` ON `${TABLE_NAME}` (`agencyOnestopId`)"
+          },
+          {
+            "name": "index_gtfs_stops_lat",
+            "unique": false,
+            "columnNames": [
+              "lat"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gtfs_stops_lat` ON `${TABLE_NAME}` (`lat`)"
+          },
+          {
+            "name": "index_gtfs_stops_lng",
+            "unique": false,
+            "columnNames": [
+              "lng"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gtfs_stops_lng` ON `${TABLE_NAME}` (`lng`)"
+          }
+        ]
+      },
+      {
+        "tableName": "gtfs_routes",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`routeId` TEXT NOT NULL, `agencyOnestopId` TEXT NOT NULL, `gtfsRouteId` TEXT NOT NULL, `shortName` TEXT NOT NULL, `longName` TEXT NOT NULL, `routeType` INTEGER NOT NULL, `color` TEXT NOT NULL, PRIMARY KEY(`routeId`))",
+        "fields": [
+          {
+            "fieldPath": "routeId",
+            "columnName": "routeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "agencyOnestopId",
+            "columnName": "agencyOnestopId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gtfsRouteId",
+            "columnName": "gtfsRouteId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shortName",
+            "columnName": "shortName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longName",
+            "columnName": "longName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeType",
+            "columnName": "routeType",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "routeId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_gtfs_routes_agencyOnestopId",
+            "unique": false,
+            "columnNames": [
+              "agencyOnestopId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gtfs_routes_agencyOnestopId` ON `${TABLE_NAME}` (`agencyOnestopId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "gtfs_trips",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`tripId` TEXT NOT NULL, `agencyOnestopId` TEXT NOT NULL, `routeId` TEXT NOT NULL, `serviceId` TEXT NOT NULL, `headsign` TEXT NOT NULL, `shapeId` TEXT NOT NULL, `lastSeq` INTEGER NOT NULL, PRIMARY KEY(`tripId`))",
+        "fields": [
+          {
+            "fieldPath": "tripId",
+            "columnName": "tripId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "agencyOnestopId",
+            "columnName": "agencyOnestopId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeId",
+            "columnName": "routeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serviceId",
+            "columnName": "serviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "headsign",
+            "columnName": "headsign",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shapeId",
+            "columnName": "shapeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSeq",
+            "columnName": "lastSeq",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "tripId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_gtfs_trips_routeId",
+            "unique": false,
+            "columnNames": [
+              "routeId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gtfs_trips_routeId` ON `${TABLE_NAME}` (`routeId`)"
+          },
+          {
+            "name": "index_gtfs_trips_agencyOnestopId",
+            "unique": false,
+            "columnNames": [
+              "agencyOnestopId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gtfs_trips_agencyOnestopId` ON `${TABLE_NAME}` (`agencyOnestopId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "gtfs_stop_times",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`tripId` TEXT NOT NULL, `seq` INTEGER NOT NULL, `stopId` TEXT NOT NULL, `arrSec` INTEGER NOT NULL, `depSec` INTEGER NOT NULL, PRIMARY KEY(`tripId`, `seq`))",
+        "fields": [
+          {
+            "fieldPath": "tripId",
+            "columnName": "tripId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seq",
+            "columnName": "seq",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stopId",
+            "columnName": "stopId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "arrSec",
+            "columnName": "arrSec",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "depSec",
+            "columnName": "depSec",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "tripId",
+            "seq"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_gtfs_stop_times_stopId_depSec",
+            "unique": false,
+            "columnNames": [
+              "stopId",
+              "depSec"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gtfs_stop_times_stopId_depSec` ON `${TABLE_NAME}` (`stopId`, `depSec`)"
+          }
+        ]
+      },
+      {
+        "tableName": "gtfs_calendars",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`serviceId` TEXT NOT NULL, `agencyOnestopId` TEXT NOT NULL, `daysMask` INTEGER NOT NULL, `startDate` INTEGER NOT NULL, `endDate` INTEGER NOT NULL, PRIMARY KEY(`serviceId`))",
+        "fields": [
+          {
+            "fieldPath": "serviceId",
+            "columnName": "serviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "agencyOnestopId",
+            "columnName": "agencyOnestopId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "daysMask",
+            "columnName": "daysMask",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startDate",
+            "columnName": "startDate",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endDate",
+            "columnName": "endDate",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "serviceId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_gtfs_calendars_agencyOnestopId",
+            "unique": false,
+            "columnNames": [
+              "agencyOnestopId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gtfs_calendars_agencyOnestopId` ON `${TABLE_NAME}` (`agencyOnestopId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "gtfs_calendar_dates",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`serviceId` TEXT NOT NULL, `agencyOnestopId` TEXT NOT NULL, `date` INTEGER NOT NULL, `exceptionType` INTEGER NOT NULL, PRIMARY KEY(`serviceId`, `date`))",
+        "fields": [
+          {
+            "fieldPath": "serviceId",
+            "columnName": "serviceId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "agencyOnestopId",
+            "columnName": "agencyOnestopId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "date",
+            "columnName": "date",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "exceptionType",
+            "columnName": "exceptionType",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "serviceId",
+            "date"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_gtfs_calendar_dates_agencyOnestopId",
+            "unique": false,
+            "columnNames": [
+              "agencyOnestopId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gtfs_calendar_dates_agencyOnestopId` ON `${TABLE_NAME}` (`agencyOnestopId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "gtfs_shapes",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`shapeId` TEXT NOT NULL, `agencyOnestopId` TEXT NOT NULL, `encodedPolyline` TEXT NOT NULL, PRIMARY KEY(`shapeId`))",
+        "fields": [
+          {
+            "fieldPath": "shapeId",
+            "columnName": "shapeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "agencyOnestopId",
+            "columnName": "agencyOnestopId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "encodedPolyline",
+            "columnName": "encodedPolyline",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "shapeId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_gtfs_shapes_agencyOnestopId",
+            "unique": false,
+            "columnNames": [
+              "agencyOnestopId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gtfs_shapes_agencyOnestopId` ON `${TABLE_NAME}` (`agencyOnestopId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "assistant_message",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sessionId` TEXT NOT NULL, `role` TEXT NOT NULL, `text` TEXT NOT NULL, `createdAt` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sessionId",
+            "columnName": "sessionId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "role",
+            "columnName": "role",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1c29539bb311151a9cf518bf62c17608')"
+    ]
+  }
+}

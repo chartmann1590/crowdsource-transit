@@ -1,5 +1,6 @@
 package com.charles.crowdtransit.app.ui.screens.stop
 
+import android.app.Activity
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,6 +8,7 @@ import com.charles.crowdtransit.app.data.repository.CommentRepository
 import com.charles.crowdtransit.app.data.repository.GamificationRepository
 import com.charles.crowdtransit.app.data.repository.PhotoRepository
 import com.charles.crowdtransit.app.data.repository.RatingRepository
+import com.charles.crowdtransit.app.data.review.ReviewPrompter
 import com.charles.crowdtransit.model.PointAction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +30,7 @@ class RateStopViewModel @Inject constructor(
     private val commentRepository: CommentRepository,
     private val photoRepository: PhotoRepository,
     private val gamificationRepository: GamificationRepository,
+    private val reviewPrompter: ReviewPrompter,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RateStopUiState())
@@ -74,5 +77,10 @@ class RateStopViewModel @Inject constructor(
                 _uiState.update { it.copy(isSubmitting = false, error = e.message) }
             }
         }
+    }
+
+    /** Called once the UI has confirmed the rating was submitted and has an Activity to work with. */
+    fun maybeRequestReview(activity: Activity) {
+        viewModelScope.launch { reviewPrompter.maybeRequestReview(activity) }
     }
 }

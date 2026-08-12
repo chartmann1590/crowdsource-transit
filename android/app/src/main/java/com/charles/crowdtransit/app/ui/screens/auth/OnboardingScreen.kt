@@ -23,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +37,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.charles.crowdtransit.app.ai.device.DeviceCapability
+import com.charles.crowdtransit.app.ai.device.DeviceProbe
+import com.charles.crowdtransit.app.ui.assistant.HopperMascot
+import com.charles.crowdtransit.app.ui.assistant.MascotState
 import com.charles.crowdtransit.app.ui.theme.OnSurface
 import com.charles.crowdtransit.app.ui.theme.OnSurfaceSecondary
 import com.charles.crowdtransit.app.ui.theme.SurfaceElevated
@@ -53,12 +58,25 @@ fun OnboardingScreen(
                 PackageManager.PERMISSION_GRANTED
         )
     }
+    // Skipped entirely on devices below Hopper's capability floor.
+    val assistantSupported = remember { DeviceProbe(context).tier() != DeviceCapability.Tier.Unsupported }
+    var showHopperStep by remember { mutableStateOf(false) }
+
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
         locationGranted = granted
-        viewModel.markOnboardingComplete()
-        onFinish()
+        if (assistantSupported) showHopperStep = true else { viewModel.markOnboardingComplete(); onFinish() }
+    }
+
+    if (showHopperStep) {
+        HopperOnboardingStep(
+            onFinish = {
+                viewModel.markOnboardingComplete()
+                onFinish()
+            },
+        )
+        return
     }
 
     Column(
@@ -120,6 +138,8 @@ fun OnboardingScreen(
             onClick = {
                 if (!locationGranted) {
                     locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                } else if (assistantSupported) {
+                    showHopperStep = true
                 } else {
                     viewModel.markOnboardingComplete()
                     onFinish()
@@ -141,6 +161,68 @@ fun OnboardingScreen(
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall,
             )
+        }
+    }
+}
+
+/**
+ * "Meet Hopper" opt-in step, shown after location permission on capable devices only
+ * (see [DeviceCapability]). Enabling here does not download anything — the model
+ * download is a separate, explicit action from Settings, guarded by its own
+ * cellular-network confirmation.
+ */
+@Composable
+private fun HopperOnboardingStep(onFinish: () -> Unit) {
+    val viewModel: HopperOnboardingViewModel = hiltViewModel()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .safeDrawingPadding()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        HopperMascot(state = MascotState.Idle, size = 120.dp)
+
+        Spacer(Modifier.height(16.dp))
+
+        Text(
+            text = "Meet Hopper",
+            style = MaterialTheme.typography.displaySmall,
+            color = OnSurface,
+            textAlign = TextAlign.Center,
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        Text(
+            text = "Hopper is an optional AI assistant that can help plan your route and " +
+                "answer questions about the trip you're on — entirely on your device. " +
+                "Nothing you say to Hopper ever leaves your phone.\n\n" +
+                "It's a free download (2+ GB) you can start any time from Settings, and " +
+                "you can turn it off or delete it whenever you like.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = OnSurfaceSecondary,
+            textAlign = TextAlign.Center,
+        )
+
+        Spacer(Modifier.height(32.dp))
+
+        Button(
+            onClick = {
+                viewModel.enable()
+                onFinish()
+            },
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+        ) {
+            Text("Enable Hopper", style = MaterialTheme.typography.titleMedium)
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        TextButton(onClick = onFinish) {
+            Text("Not now", color = OnSurfaceSecondary)
         }
     }
 }

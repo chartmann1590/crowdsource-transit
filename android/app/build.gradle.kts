@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
     id("com.google.gms.google-services")
     id("com.google.firebase.firebase-perf")
     id("com.google.firebase.crashlytics")
@@ -113,6 +114,15 @@ android {
         buildConfig = true
     }
 
+    // Ships only the device's ABI in the Play bundle. The LiteRT-LM runtime (Hopper AI
+    // assistant, gated to API 31+) carries native libs for every ABI; without this every
+    // install — including devices that can never run the assistant — pays for all of them.
+    bundle {
+        abi {
+            enableSplit = true
+        }
+    }
+
     lint {
         // Works around a lint-tooling crash (not a real issue in our code): this AGP/Kotlin
         // analysis API version combo throws "Found class ...KaCallableMemberCall, but
@@ -122,13 +132,19 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        // Bumped from 17: the Hopper AI assistant's litertlm-android dependency ships
+        // class files compiled to Java 21 bytecode (major version 65); kapt's javac stub
+        // pass can't read those under a 17 toolchain ("bad class file ... should be 61.0").
+        // This only changes the JVM level used to *compile* app code — minSdk (26),
+        // targetSdk, and compileSdk are untouched, and D8/R8 still desugar down to what
+        // the device's runtime needs regardless of source/target level.
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
         isCoreLibraryDesugaringEnabled = true
     }
 
     kotlin {
-        jvmToolchain(17)
+        jvmToolchain(21)
     }
 
     sourceSets {
@@ -172,8 +188,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-service:2.8.7")
 
-    implementation("com.google.dagger:hilt-android:2.56.2")
-    kapt("com.google.dagger:hilt-android-compiler:2.56.2")
+    implementation("com.google.dagger:hilt-android:2.58")
+    kapt("com.google.dagger:hilt-android-compiler:2.58")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
@@ -185,13 +201,21 @@ dependencies {
 
     implementation("com.google.android.gms:play-services-auth:21.3.0")
     implementation("com.google.android.gms:play-services-ads:23.6.0")
+    implementation("com.google.android.play:review-ktx:2.0.2")
+    // "Remove Ads" subscription — see data/billing/BillingRepository.kt.
+    implementation("com.android.billingclient:billing-ktx:9.1.0")
 
     implementation("org.maplibre.gl:android-sdk:11.8.0")
 
     implementation("com.google.android.gms:play-services-location:21.3.0")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.9.0")
+    // Bumped 1.9.0 -> 1.11.0 alongside litertlm-android 0.15.0 (see gradle/libs.versions.toml):
+    // 0.15.0's Conversation.sendMessageAsync completion callback calls a SendChannel.close
+    // overload that doesn't exist in 1.9.0, confirmed via a live-device crash
+    // (NoSuchMethodError: close$default) that fired right after a real multimodal reply
+    // had already finished streaming.
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.11.0")
 
     implementation("io.coil-kt:coil-compose:2.7.0")
 
@@ -199,13 +223,27 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-moshi:3.0.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.2")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-    kapt("com.squareup.moshi:moshi-kotlin-codegen:1.15.2")
+    // KSP, not kapt: moshi-kotlin-codegen's kapt path doesn't support Kotlin 2.3.0
+    // metadata (see gradle/libs.versions.toml for why Kotlin was bumped to 2.3.0).
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.2")
 
     implementation("androidx.room:room-runtime:2.8.4")
     implementation("androidx.room:room-ktx:2.8.4")
     kapt("androidx.room:room-compiler:2.8.4")
 
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // Hopper on-device AI assistant (Gemma 4 E2B). Requires API 31+ at runtime — this app's
+    // minSdk stays 26, so every reference to this library is confined to
+    // app/ai/engine/LiteRtAssistantEngine.kt and TransitToolSet.kt, loaded only behind an
+    // SDK_INT check (see AssistantEngineFactory). Pinned exact version — never latest.release.
+    // Pinned to 0.9.0-beta specifically for Kotlin-metadata compatibility (see
+    // gradle/libs.versions.toml). It has a real native-library-loading race — "No
+    // implementation found for NativeLibraryLoader.nativeCheckLoaded()" — confirmed on real
+    // hardware; worked around in LiteRtAssistantEngine.tryInitialize() with an explicit
+    // pre-load + retry rather than by chasing a newer library version (see that file's
+    // comment for why the version-bump path is a dead end without a Moshi/KSP migration).
+    implementation("com.google.ai.edge.litertlm:litertlm-android:0.15.0")
 
     // Force 16 KB-aligned version; the Compose BOM pulls in an older build via
     // androidx.graphics:graphics-core that contains a misaligned libandroidx.graphics.path.so

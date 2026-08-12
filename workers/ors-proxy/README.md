@@ -4,10 +4,15 @@ Proxies walking-directions requests to OpenRouteService so the ORS API key never
 in the public APK/AAB (GitHub Releases) or the web bundle (GitHub Pages). The key exists
 ONLY as a Cloudflare Worker secret.
 
-## Endpoint
+## Endpoints
 
 `POST /walk` with body `{"coordinates": [[lng, lat], [lng, lat], ...]}` (2–5 waypoints,
 within a ~50 km box). Returns the ORS `foot-walking` GeoJSON directions response.
+
+`POST /geocode` with body `{"text": "1703 Foster Ave, Schenectady, NY"}`. Returns the ORS
+Pelias geocode-search response (up to 3 candidates) — used to resolve a free-typed street
+address to coordinates when a stop-name search finds nothing, e.g. Hopper's `planTrip`
+tool.
 
 Browser calls must come from an origin listed in the `ALLOWED_ORIGINS` var in
 `wrangler.jsonc`; requests without an Origin header (the Android app) are allowed.

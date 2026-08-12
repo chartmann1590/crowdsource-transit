@@ -57,4 +57,19 @@ class AppDatabaseMigrationTest {
             cursor.close()
         }
     }
+
+    @Test
+    fun migrate2To3_addsAssistantMessageTable() {
+        helper.createDatabase(dbName, 2).apply { close() }
+
+        val migrated = helper.runMigrationsAndValidate(dbName, 3, true, AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
+
+        migrated.execSQL(
+            "INSERT INTO assistant_message (sessionId, role, text, createdAt) VALUES ('default', 'user', 'hi', 1690000000000)",
+        )
+        val cursor = migrated.query("SELECT COUNT(*) FROM assistant_message")
+        cursor.moveToFirst()
+        assert(cursor.getInt(0) == 1) { "assistant_message should accept inserts after migration" }
+        cursor.close()
+    }
 }

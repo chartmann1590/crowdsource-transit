@@ -22,4 +22,7 @@ sealed class Screen(val route: String) {
     object TripPlanner : Screen("plan")
     object ItineraryDetail : Screen("itinerary")
     object Navigation : Screen("navigation")
+    object Assistant : Screen("assistant")
+    object AssistantSettings : Screen("assistant_settings")
+    object Subscription : Screen("subscription")
 }

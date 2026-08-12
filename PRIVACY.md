@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** July 22, 2026
+**Last updated:** August 7, 2026
 
 ## Overview
 
@@ -21,11 +21,13 @@ CrowdTransit is a community-powered public transit locator. This policy explains
 - **Crash reports** – Firebase Crashlytics collects crash logs and device information (OS version, device model) to help us fix bugs.
 - **Performance data** – Firebase Performance Monitoring collects app responsiveness and latency metrics.
 - **Usage data** – Firebase Analytics collects anonymized interaction data to improve the app.
+- **AI Assistant ("Hopper")** – Hopper is an optional, opt-in on-device AI assistant. If you enable it, an AI model (Gemma, provided by Google) is downloaded to your device and runs entirely locally. Your messages to Hopper, and Hopper's replies, are processed on-device and are **never transmitted to us, to Google, or to any other server** — the feature works even in airplane mode once the model is downloaded. Chat history is stored only in the app's local database on your device and is never synced to Firebase or anywhere else; you can clear it at any time from Settings. If your device supports it and you choose the camera-enabled version, photos you take to "scan a stop sign" are processed on-device and deleted immediately after Hopper responds — they are never saved or uploaded. Hopper can make mistakes; always verify times and route information with your transit agency.
 
 ### Permissions
 - **Location** (`ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`) – Required to show nearby transit stops and, when you start it, to run live turn-by-turn navigation.
 - **Camera** – Optional, used only when uploading a photo of a stop.
-- **Foreground service / notifications** (`FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`, `POST_NOTIFICATIONS`) – Used only while you have an active turn-by-turn navigation session, to keep tracking your trip reliably and show the ongoing navigation notification. No background location access is requested.
+- **Foreground service / notifications** (`FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_LOCATION`, `FOREGROUND_SERVICE_DATA_SYNC`, `POST_NOTIFICATIONS`) – Used while you have an active turn-by-turn navigation session, and separately while downloading the optional Hopper AI model, so each can run reliably and show a progress notification. No background location access is requested.
+- **Camera (Hopper, optional)** – If you enable Hopper's camera-capable variant on a supported device, the camera may be used to let Hopper read a stop or station sign on request. Images are processed on-device and deleted immediately afterward.
 
 ## How We Use Data
 
@@ -42,6 +44,8 @@ CrowdTransit is a community-powered public transit locator. This policy explains
 - **OpenRouteService (via our own Cloudflare Worker proxy)** – To draw walking directions for a planned trip, the app sends only the walking leg's coordinates (no account or device identifiers) through a CrowdTransit-operated proxy to OpenRouteService. See [openrouteservice.org](https://openrouteservice.org/) and [Cloudflare's Privacy Policy](https://www.cloudflare.com/privacypolicy/).
 - **Shared trip links** – When you copy a trip's share link or plain-text directions, the itinerary is encoded directly into that link/text — no separate copy is stored or transmitted to us unless you also choose to save the trip to your account.
 - **AdMob** – This app displays banner and interstitial ads served by Google AdMob. AdMob may collect advertising identifiers and other device information to serve and measure ads. See [Google's Privacy Policy](https://policies.google.com/privacy) and [How Google uses information from sites or apps that use our services](https://policies.google.com/technologies/partner-sites).
+- **Google Play Billing** – The optional Remove Ads subscription is purchased and managed entirely through Google Play Billing. We never see or store your payment details — Google handles the transaction and only tells the app whether an active subscription exists, so ads can be turned off for that device/account. See [Google Play's Privacy Policy](https://policies.google.com/privacy) and [Play Billing terms](https://play.google/play-billing-pricing/).
+- **Hopper AI model download** – If you enable Hopper, the AI model file (an open-weight Gemma model, licensed Apache 2.0) is downloaded directly from Hugging Face's servers to your device. That download request is the only network activity involved in setting up Hopper; no account or device identifiers beyond what any file download requires are sent, and once downloaded, Hopper needs no further network access to function.
 
 We do **not** sell, rent, or share your personal data with third parties for their own marketing purposes.
 
@@ -55,6 +59,7 @@ User-generated content (ratings, comments, photos, activity) remains visible unt
 - **Account deletion** – Submit a request on our <a href="https://chartmann1590.github.io/crowdsource-transit/account-deletion.html" target="_blank">Account Deletion page</a>, or email us at the address below.
 - **Location** – You can deny or revoke location permission at any time via your device settings.
 - **Opt out of analytics** – You can disable analytics sharing via your device settings (Android: Settings > Privacy > Ads).
+- **Hopper AI Assistant** – Hopper is entirely optional. You can decline it during onboarding, and enable, disable, or delete it (and its downloaded model and chat history) at any time from Settings > AI Assistant.
 
 ## Children's Privacy
 

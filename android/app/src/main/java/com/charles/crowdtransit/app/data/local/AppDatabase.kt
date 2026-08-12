@@ -4,8 +4,10 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.migration.Migration
+import com.charles.crowdtransit.app.data.local.dao.AssistantMessageDao
 import com.charles.crowdtransit.app.data.local.dao.GtfsDao
 import com.charles.crowdtransit.app.data.local.dao.OfflineDao
+import com.charles.crowdtransit.app.data.local.entities.AssistantMessageEntity
 import com.charles.crowdtransit.app.data.local.entities.CachedAgencyEntity
 import com.charles.crowdtransit.app.data.local.entities.CachedStopEntity
 import com.charles.crowdtransit.app.data.local.entities.GtfsCalendarDateEntity
@@ -27,14 +29,17 @@ import com.charles.crowdtransit.app.data.local.entities.GtfsTripEntity
         GtfsCalendarEntity::class,
         GtfsCalendarDateEntity::class,
         GtfsShapeEntity::class,
+        AssistantMessageEntity::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun offlineDao(): OfflineDao
 
     abstract fun gtfsDao(): GtfsDao
+
+    abstract fun assistantMessageDao(): AssistantMessageDao
 
     companion object {
         /** v1→v2: purely additive — the new offline-GTFS tables (Phase F). */
@@ -77,6 +82,15 @@ abstract class AppDatabase : RoomDatabase() {
                     "CREATE TABLE IF NOT EXISTS `gtfs_shapes` (`shapeId` TEXT NOT NULL, `agencyOnestopId` TEXT NOT NULL, `encodedPolyline` TEXT NOT NULL, PRIMARY KEY(`shapeId`))",
                 )
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_gtfs_shapes_agencyOnestopId` ON `gtfs_shapes` (`agencyOnestopId`)")
+            }
+        }
+
+        /** v2→v3: adds local-only Hopper chat history (never synced to Firebase). */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `assistant_message` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `sessionId` TEXT NOT NULL, `role` TEXT NOT NULL, `text` TEXT NOT NULL, `createdAt` INTEGER NOT NULL)",
+                )
             }
         }
     }

@@ -26,9 +26,12 @@ import com.charles.crowdtransit.app.ui.screens.profile.LeaderboardScreen
 import com.charles.crowdtransit.app.ui.screens.profile.ProfileScreen
 import com.charles.crowdtransit.app.ui.screens.route.RouteDetailScreen
 import com.charles.crowdtransit.app.ui.screens.search.SearchScreen
+import com.charles.crowdtransit.app.ui.screens.settings.AssistantSettingsScreen
 import com.charles.crowdtransit.app.ui.screens.settings.SettingsScreen
+import com.charles.crowdtransit.app.ui.screens.settings.SubscriptionScreen
 import com.charles.crowdtransit.app.ui.screens.stop.RateStopScreen
 import com.charles.crowdtransit.app.ui.screens.stop.StopDetailScreen
+import com.charles.crowdtransit.app.ui.assistant.AssistantScreen
 
 @Composable
 fun CrowdTransitNavGraph(
@@ -66,6 +69,18 @@ fun CrowdTransitNavGraph(
             SettingsScreen(
                 onBack = { navController.popBackStack() },
                 onDownloadsClick = { navController.navigate(Screen.Downloads.route) },
+                onAssistantClick = { navController.navigate(Screen.AssistantSettings.route) },
+                onSubscriptionClick = { navController.navigate(Screen.Subscription.route) },
+            )
+        }
+        composable(Screen.AssistantSettings.route) {
+            AssistantSettingsScreen(
+                onBack = { navController.popBackStack() },
+            )
+        }
+        composable(Screen.Subscription.route) {
+            SubscriptionScreen(
+                onBack = { navController.popBackStack() },
             )
         }
         composable(Screen.Downloads.route) {
@@ -80,6 +95,14 @@ fun CrowdTransitNavGraph(
                 onProfileClick = { navController.navigate(Screen.Profile.route) },
                 onAddStopClick = { navController.navigate(Screen.AddStop.route) },
                 onPlanTripClick = { navController.navigate(Screen.TripPlanner.route) },
+                onAssistantClick = { navController.navigate(Screen.Assistant.route) },
+            )
+        }
+        composable(Screen.Assistant.route) {
+            AssistantScreen(
+                onBack = { navController.popBackStack() },
+                onSetUpHopper = { navController.navigate(Screen.AssistantSettings.route) },
+                onOpenItinerary = { navController.navigate(Screen.ItineraryDetail.route) },
             )
         }
         composable(

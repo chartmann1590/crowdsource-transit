@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Temp full-resolution photos for the "scan a stop sign" Hopper feature. Deleted
+         immediately after inference (see TransitToolSet / AssistantViewModel). -->
+    <cache-path name="assistant_captures" path="assistant/" />
+</paths>

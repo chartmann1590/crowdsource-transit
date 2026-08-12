@@ -1,6 +1,20 @@
 [versions]
-agp = "8.7.3"
-kotlin = "2.1.0"
+# Bumped 8.7.3 -> 8.13.2 alongside the Kotlin 2.3.0 bump (see below): KSP's Kotlin-2.3.0
+# plugin build needs an AndroidComponentsExtension API (addKspConfigurations) that AGP
+# 8.7.3 doesn't have. Still well under AGP 9.0, which Hilt 2.58 (pinned below) doesn't
+# require — only Dagger 2.59+ would force that.
+agp = "8.13.2"
+# Bumped 2.1.0 -> 2.3.0 (2026-08-08) specifically to unblock litertlm-android past
+# 0.9.0-beta: every release after it carries Kotlin metadata 2.3.0 (confirmed against
+# 0.9.0, the very next patch release), and 0.9.0-beta's own vision/multimodal path has a
+# real, confirmed-on-device native crash (SIGSEGV null pointer inside liblitertlm_jni.so)
+# when actually sent an image — "scan a stop sign" cannot work at all on that pin. Moshi
+# codegen moved from kapt to KSP as part of this bump (see app/build.gradle.kts) since
+# moshi-kotlin-codegen's kapt path doesn't support 2.3.0 metadata; Room and Hilt stayed
+# on kapt (both handle 2.3.0 metadata fine). Do not revert this without re-confirming the
+# native crash is actually fixed downstream — that's the only reason for the bump.
+kotlin = "2.3.0"
+ksp = "2.3.11"
 core-ktx = "1.19.0"
 
 [libraries]
@@ -10,3 +24,4 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
