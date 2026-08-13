@@ -2,7 +2,8 @@ Category: Maps & Navigation
 Content rating: Everyone
 Price: Free
 Contains ads: Yes
-In-app purchases: None
+In-app purchases: Yes — Remove Ads subscription (remove_ads_monthly /
+  monthly-autorenewing, $1.99/mo USD, US only, ACTIVE as of 2026-08-13)
 Website: (add production URL here)
 Support email: (add support email here)
 Privacy policy URL: (add privacy policy URL here)

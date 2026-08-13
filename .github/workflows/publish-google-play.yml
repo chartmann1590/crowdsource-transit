@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       confirm_play_publish:
-        description: 'Type "publish" to confirm a full production release (100% rollout, no draft)'
+        description: 'Type "publish" to confirm uploading a production-track DRAFT release (roll out from the Play Console)'
         required: true
         type: string
       release_notes:
@@ -120,14 +120,20 @@ jobs:
           fi
           echo "Service account key present."
 
-      # Uploads directly to 100% rollout on the production track once CI's own tests/lint
-      # gates above have passed. No draft step — ships straight to real users.
-      - name: Upload release to Google Play (production track)
+      # Uploads as a DRAFT release on the production track. This is not a style preference:
+      # Play hard-rejects the transition to live over the API with 403 PERMISSION_DENIED,
+      # "You must let us know whether your app uses any Foreground Service permissions."
+      # Verified 2026-08-13 — both status=completed and a 20% staged status=inProgress fail,
+      # while status=draft commits fine. The app uses FOREGROUND_SERVICE_LOCATION and
+      # FOREGROUND_SERVICE_DATA_SYNC, and Play attaches that declaration to the release
+      # itself; there is no API field for it, so the rollout click has to happen in the
+      # Console: Release > Production > this draft > Review release > Start rollout.
+      - name: Upload draft release to Google Play (production track)
         uses: r0adkll/upload-google-play@v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.charles.crowdtransit.app
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
           track: production
-          status: completed
+          status: draft
           whatsNewDirectory: distribution/whatsnew
