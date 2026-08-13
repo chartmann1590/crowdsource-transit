@@ -51,7 +51,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
-import com.charles.crowdtransit.app.BuildConfig
 import com.charles.crowdtransit.app.ui.theme.AppBackground
 import com.charles.crowdtransit.app.ui.theme.Error
 import com.charles.crowdtransit.app.ui.theme.ErrorContainer
@@ -60,7 +59,6 @@ import com.charles.crowdtransit.app.ui.theme.OnSurfaceSecondary
 import com.charles.crowdtransit.app.ui.theme.Primary
 import com.charles.crowdtransit.app.ui.theme.PrimaryLight
 import com.charles.crowdtransit.app.ui.theme.Surface
-import com.charles.crowdtransit.app.ui.theme.Warning
 
 @Composable
 fun ReportDialog(
@@ -139,21 +137,6 @@ fun ReportDialog(
                         color = OnSurface,
                         modifier = Modifier.padding(12.dp),
                     )
-                }
-
-                if (!BuildConfig.GITHUB_API_TOKEN.isNotEmpty() || !BuildConfig.GITHUB_REPO_OWNER.isNotEmpty() || !BuildConfig.GITHUB_REPO_NAME.isNotEmpty()) {
-                    Spacer(Modifier.height(8.dp))
-                    Card(
-                        colors = CardDefaults.cardColors(containerColor = Warning.copy(alpha = 0.15f)),
-                        shape = RoundedCornerShape(8.dp),
-                    ) {
-                        Text(
-                            text = "GitHub is not configured. Add github.api.token, github.repo.owner, and github.repo.name to local.properties.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = OnSurface,
-                            modifier = Modifier.padding(8.dp),
-                        )
-                    }
                 }
 
                 Spacer(Modifier.height(16.dp))

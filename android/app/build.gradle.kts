@@ -50,27 +50,6 @@ android {
             "TRANSITLAND_API_KEY",
             "\"${localProperties.getProperty("transitland.apiKey", "")}\"",
         )
-        buildConfigField(
-            "String",
-            "GITHUB_API_TOKEN",
-            "\"${localProperties.getProperty("github.api.token", "")}\"",
-        )
-        buildConfigField(
-            "String",
-            "GITHUB_REPO_OWNER",
-            "\"${localProperties.getProperty("github.repo.owner", "")}\"",
-        )
-        buildConfigField(
-            "String",
-            "GITHUB_REPO_NAME",
-            "\"${localProperties.getProperty("github.repo.name", "")}\"",
-        )
-        buildConfigField(
-            "String",
-            "FEEDBACK_ASSETS_DIR",
-            "\"feedback-assets\"",
-        )
-
         // Google's official AdMob test IDs (safe to use/hardcode; never serve real ads).
         // Used as the default everywhere except the release build type, which pulls the
         // real production IDs from local.properties (populated from GitHub secrets in CI).

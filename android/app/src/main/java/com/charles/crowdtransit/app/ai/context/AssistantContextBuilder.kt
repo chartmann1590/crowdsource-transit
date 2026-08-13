@@ -71,6 +71,9 @@ class AssistantContextBuilder @Inject constructor(
             "- If you don't know something, say so and suggest checking the transit agency directly.",
             "- CrowdTransit is not affiliated with any government or transit agency, and neither are you. Never imply otherwise.",
             "- Keep replies short and conversational — this is a chat, not a report.",
+            "- If the rider wants to start or end a trip at where they currently are (e.g. \"from here\", " +
+                "\"near me\"), pass the exact text \"current location\" as that place name to planTrip — " +
+                "don't ask them for an address.",
             "- Each user message is preceded by a '[Current status]' block with the rider's live trip and time context — use it, but don't repeat it verbatim back to the rider.",
         ).joinToString("\n")
 

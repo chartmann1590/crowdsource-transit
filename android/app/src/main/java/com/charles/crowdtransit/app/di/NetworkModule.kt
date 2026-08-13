@@ -17,7 +17,6 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
-import javax.inject.Qualifier
 import javax.inject.Singleton
 
 @Module
@@ -94,51 +93,31 @@ object NetworkModule {
             .build()
             .create(com.charles.crowdtransit.app.data.remote.OrsApi::class.java)
 
-    @Qualifier
-    @Retention(AnnotationRetention.BINARY)
-    annotation class GithubOkHttp
-
+    // Same Worker as ORS_PROXY_BASE_URL, routed to its /feedback/* handlers. The GitHub
+    // token this needs (issue + repo-contents write) lives only as a Worker secret —
+    // never in this app. See workers/ors-proxy/src/index.ts for why: a token able to
+    // reach that scope would be trivially extractable from any downloaded APK/AAB.
     @Provides
     @Singleton
-    @GithubOkHttp
-    fun provideGithubOkHttpClient(): OkHttpClient {
-        return OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
-            .writeTimeout(15, TimeUnit.SECONDS)
-            .addInterceptor { chain ->
-                val original = chain.request()
-                val builder = original.newBuilder()
-                    .header("Accept", "application/vnd.github+json")
-                    .header("X-GitHub-Api-Version", "2022-11-28")
-                    .header("User-Agent", "CrowdTransit-Android/1.0.0")
-                val token = BuildConfig.GITHUB_API_TOKEN
-                if (token.isNotEmpty()) {
-                    builder.header("Authorization", "Bearer $token")
-                }
-                chain.proceed(builder.build())
-            }
-            .addInterceptor(
-                HttpLoggingInterceptor().apply {
-                    level = if (BuildConfig.DEBUG) {
-                        HttpLoggingInterceptor.Level.BASIC
-                    } else {
-                        HttpLoggingInterceptor.Level.NONE
-                    }
-                },
-            )
-            .build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideGithubApi(
-        @GithubOkHttp client: OkHttpClient,
-        moshi: Moshi,
-    ): GithubApi =
+    fun provideGithubApi(moshi: Moshi): GithubApi =
         Retrofit.Builder()
-            .baseUrl("https://api.github.com/".toHttpUrl())
-            .client(client)
+            .baseUrl(ORS_PROXY_BASE_URL.toHttpUrl())
+            .client(
+                OkHttpClient.Builder()
+                    .connectTimeout(10, TimeUnit.SECONDS)
+                    .readTimeout(15, TimeUnit.SECONDS)
+                    .writeTimeout(15, TimeUnit.SECONDS)
+                    .addInterceptor(
+                        HttpLoggingInterceptor().apply {
+                            level = if (BuildConfig.DEBUG) {
+                                HttpLoggingInterceptor.Level.BASIC
+                            } else {
+                                HttpLoggingInterceptor.Level.NONE
+                            }
+                        },
+                    )
+                    .build(),
+            )
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
             .create(GithubApi::class.java)

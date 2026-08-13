@@ -1,5 +1,6 @@
 package com.charles.crowdtransit.app.ai.context
 
+import com.charles.crowdtransit.app.data.location.RiderLocationProvider
 import com.charles.crowdtransit.app.data.navigation.NavigationSessionRepository
 import com.charles.crowdtransit.app.data.preferences.UserPreferencesStore
 import com.charles.crowdtransit.app.data.remote.OrsApi
@@ -39,9 +40,20 @@ class TransitToolSet @Inject constructor(
     private val itineraryTextFormatter: ItineraryTextFormatter,
     private val userPreferences: UserPreferencesStore,
     private val orsApi: OrsApi,
+    private val riderLocationProvider: RiderLocationProvider,
 ) : ToolSet {
 
     private data class ResolvedPlace(val name: String, val lat: Double, val lng: Double)
+
+    /**
+     * The rider's current fix for tool use: NavigationSessionRepository's live fix while
+     * a trip is actively being navigated (freshest, GPS-driven), falling back to
+     * [RiderLocationProvider]'s cached last-known location the rest of the time — which
+     * is when planTrip/findNearbyStops are actually called in practice, since asking
+     * Hopper to plan a *new* trip only makes sense before navigation starts.
+     */
+    private suspend fun currentFix(): Pair<Double, Double>? =
+        navigationSession.lastFix.value ?: riderLocationProvider.lastFix()
 
     /**
      * `stopRepository.searchStops` only matches GTFS stop/station names (e.g. "Crossgates
@@ -52,6 +64,9 @@ class TransitToolSet @Inject constructor(
      * lookup) when the stop search comes up empty.
      */
     private suspend fun resolvePlace(query: String, bias: Pair<Double, Double>?): ResolvedPlace? {
+        if (query.trim().lowercase() in SELF_LOCATION_PHRASES) {
+            return bias?.let { ResolvedPlace("your current location", it.first, it.second) }
+        }
         stopRepository.searchStops(query, bias).firstOrNull()?.let {
             Log.d(TAG, "resolvePlace(\"$query\") -> stop \"${it.name}\" (${it.lat}, ${it.lng})")
             return ResolvedPlace(it.name, it.lat, it.lng)
@@ -77,14 +92,16 @@ class TransitToolSet @Inject constructor(
 
     @Tool(
         description = "Plan a transit trip between two named places (street addresses, landmarks, " +
-            "or transit stops). Returns a short human-readable summary of the best itinerary found.",
+            "or transit stops). Pass \"current location\" for from or to when the rider means " +
+            "where they are right now (e.g. \"from here\", \"near me\") — never ask them for an " +
+            "address in that case. Returns a short human-readable summary of the best itinerary found.",
     )
     fun planTrip(
-        @ToolParam(description = "Starting place name or address") from: String,
-        @ToolParam(description = "Destination place name or address") to: String,
+        @ToolParam(description = "Starting place name, address, or \"current location\"") from: String,
+        @ToolParam(description = "Destination place name, address, or \"current location\"") to: String,
     ): Map<String, Any> = runBlocking(Dispatchers.IO) {
         try {
-            val bias = navigationSession.lastFix.value
+            val bias = currentFix()
             val fromPlace = resolvePlace(from, bias)
                 ?: return@runBlocking mapOf("error" to "couldn't find a place named \"$from\"")
             val toPlace = resolvePlace(to, bias)
@@ -117,7 +134,7 @@ class TransitToolSet @Inject constructor(
     fun findNearbyStops(
         @ToolParam(description = "Search radius in meters, default 800") radiusMeters: Int,
     ): Map<String, Any> = runBlocking(Dispatchers.IO) {
-        val fix = navigationSession.lastFix.value
+        val fix = currentFix()
             ?: return@runBlocking mapOf("error" to "the rider's current location isn't available right now")
         try {
             val stops = stopRepository.getStopsNearby(fix.first, fix.second, radiusMeters.coerceAtLeast(50) / 1000.0)
@@ -136,7 +153,7 @@ class TransitToolSet @Inject constructor(
         @ToolParam(description = "Stop name") stopName: String,
     ): Map<String, Any> = runBlocking(Dispatchers.IO) {
         try {
-            val bias = navigationSession.lastFix.value
+            val bias = currentFix()
             val stop = stopRepository.searchStops(stopName, bias).firstOrNull()
                 ?: return@runBlocking mapOf("error" to "couldn't find a stop named \"$stopName\"")
             val schedule = stopRepository.getRoutesAndScheduleForStop(stop.stopId)
@@ -171,5 +188,9 @@ class TransitToolSet @Inject constructor(
 
     private companion object {
         const val TAG = "TransitToolSet"
+        val SELF_LOCATION_PHRASES = setOf(
+            "current location", "my current location", "here", "my location",
+            "where i am", "where i'm at",
+        )
     }
 }

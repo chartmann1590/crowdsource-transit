@@ -47,9 +47,9 @@ data class PostCommentRequest(
 )
 
 @JsonClass(generateAdapter = true)
-data class UploadAssetRequest(
-    val message: String,
-    val content: String,
+data class UploadImageRequest(
+    val filename: String,
+    val contentBase64: String,
 )
 
 @JsonClass(generateAdapter = true)

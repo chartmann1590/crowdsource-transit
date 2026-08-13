@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.charles.crowdtransit.app.BuildConfig
 import com.charles.crowdtransit.app.data.feedback.BugReport
 import com.charles.crowdtransit.app.data.feedback.BugReportRepo
 import com.charles.crowdtransit.app.data.feedback.CreateIssueRequest
@@ -13,7 +12,7 @@ import com.charles.crowdtransit.app.data.feedback.GithubApi
 import com.charles.crowdtransit.app.data.feedback.GithubComment
 import com.charles.crowdtransit.app.data.feedback.GithubIssue
 import com.charles.crowdtransit.app.data.feedback.PostCommentRequest
-import com.charles.crowdtransit.app.data.feedback.UploadAssetRequest
+import com.charles.crowdtransit.app.data.feedback.UploadImageRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -74,11 +73,6 @@ class FeedbackViewModel @Inject constructor(
     private val _selectedReport = MutableStateFlow<BugReport?>(null)
     val selectedReport: StateFlow<BugReport?> = _selectedReport.asStateFlow()
 
-    val isConfigured: Boolean
-        get() = BuildConfig.GITHUB_API_TOKEN.isNotEmpty() &&
-                BuildConfig.GITHUB_REPO_OWNER.isNotEmpty() &&
-                BuildConfig.GITHUB_REPO_NAME.isNotEmpty()
-
     fun openReportDialog() {
         _reportState.value = ReportDialogState()
         _showReportDialog.value = true
@@ -122,11 +116,6 @@ class FeedbackViewModel @Inject constructor(
             _reportState.value = state.copy(error = "Description is required")
             return
         }
-        if (!isConfigured) {
-            _reportState.value = state.copy(error = "GitHub repository is not configured. Check local.properties.")
-            return
-        }
-
         _reportState.value = state.copy(isSubmitting = true, error = null)
         viewModelScope.launch {
             try {
@@ -152,12 +141,10 @@ class FeedbackViewModel @Inject constructor(
                     body += "\n\n${DiagnosticsHelper.collect(context)}\n"
                 }
 
-                val owner = BuildConfig.GITHUB_REPO_OWNER
-                val repo = BuildConfig.GITHUB_REPO_NAME
                 val issueTitle = "[Feedback] ${state.title}"
                 val request = CreateIssueRequest(title = issueTitle, body = body)
 
-                val response = githubApi.createIssue(owner, repo, request)
+                val response = githubApi.createIssue(request)
                 if (response.isSuccessful) {
                     val issue = response.body()!!
                     val report = BugReport(
@@ -205,11 +192,8 @@ class FeedbackViewModel @Inject constructor(
         _issueDetailState.value = _issueDetailState.value.copy(isLoading = true, error = null)
         viewModelScope.launch {
             try {
-                val owner = BuildConfig.GITHUB_REPO_OWNER
-                val repo = BuildConfig.GITHUB_REPO_NAME
-
-                val issueResponse = githubApi.getIssue(owner, repo, issueNumber)
-                val commentsResponse = githubApi.getComments(owner, repo, issueNumber)
+                val issueResponse = githubApi.getIssue(issueNumber)
+                val commentsResponse = githubApi.getComments(issueNumber)
 
                 if (issueResponse.isSuccessful) {
                     val issue = issueResponse.body()!!
@@ -282,11 +266,9 @@ class FeedbackViewModel @Inject constructor(
                     }
                 }
 
-                val owner = BuildConfig.GITHUB_REPO_OWNER
-                val repo = BuildConfig.GITHUB_REPO_NAME
                 val request = PostCommentRequest(body = body)
 
-                val response = githubApi.postComment(owner, repo, issueNumber, request)
+                val response = githubApi.postComment(issueNumber, request)
                 if (response.isSuccessful) {
                     _issueDetailState.value = _issueDetailState.value.copy(
                         replyText = "",
@@ -314,16 +296,9 @@ class FeedbackViewModel @Inject constructor(
         val dateStr = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
         val random = UUID.randomUUID().toString().take(8)
         val filename = "issue-$dateStr-$random.png"
-        val path = "${BuildConfig.FEEDBACK_ASSETS_DIR}/$filename"
+        val request = UploadImageRequest(filename = filename, contentBase64 = base64)
 
-        val owner = BuildConfig.GITHUB_REPO_OWNER
-        val repo = BuildConfig.GITHUB_REPO_NAME
-        val request = UploadAssetRequest(
-            message = "Upload $filename",
-            content = base64,
-        )
-
-        val response = githubApi.uploadAsset(owner, repo, path, request)
+        val response = githubApi.uploadAsset(request)
         return if (response.isSuccessful) {
             response.body()?.content?.downloadUrl
         } else {
