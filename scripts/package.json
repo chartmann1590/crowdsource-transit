@@ -21,7 +21,7 @@
     "dotenv": "^17.4.2",
     "firebase-admin": "^14.1.0",
     "googleapis": "^173.0.0",
-    "ngeohash": "^0.6.3",
+    "ngeohash": "^0.6.4",
     "node-fetch": "^3.3.2"
   },
   "overrides": {
