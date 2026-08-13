@@ -71,7 +71,11 @@ fun CrowdTransitNavGraph(
                 onDownloadsClick = { navController.navigate(Screen.Downloads.route) },
                 onAssistantClick = { navController.navigate(Screen.AssistantSettings.route) },
                 onSubscriptionClick = { navController.navigate(Screen.Subscription.route) },
+                onMoreAppsClick = { navController.navigate(Screen.MoreApps.route) },
             )
+        }
+        composable(Screen.MoreApps.route) {
+            com.charles.crowdtransit.app.ui.screens.settings.MoreAppsScreen(onBack = { navController.popBackStack() })
         }
         composable(Screen.AssistantSettings.route) {
             AssistantSettingsScreen(

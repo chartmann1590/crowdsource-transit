@@ -122,18 +122,17 @@ jobs:
 
       # Uploads as a DRAFT release on the production track. This is not a style preference:
       # Play hard-rejects the transition to live over the API with 403 PERMISSION_DENIED,
-      # "You must let us know whether your app uses any Foreground Service permissions."
-      # Verified 2026-08-13 — both status=completed and a 20% staged status=inProgress fail,
-      # while status=draft commits fine. The app uses FOREGROUND_SERVICE_LOCATION and
-      # FOREGROUND_SERVICE_DATA_SYNC, and Play attaches that declaration to the release
-      # itself; there is no API field for it, so the rollout click has to happen in the
-      # Console: Release > Production > this draft > Review release > Start rollout.
-      - name: Upload draft release to Google Play (production track)
+      # Foreground-service permission declaration previously blocked status=completed via API
+      # (Play required a one-time in-Console questionnaire for FOREGROUND_SERVICE_LOCATION /
+      # FOREGROUND_SERVICE_DATA_SYNC). That's since been completed in the Console and the live
+      # production release now shows status=completed, so publish straight to 100% rollout like
+      # every other app in this portfolio — never leave a release sitting in draft.
+      - name: Publish to Google Play (production track)
         uses: r0adkll/upload-google-play@v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: com.charles.crowdtransit.app
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
           track: production
-          status: draft
+          status: completed
           whatsNewDirectory: distribution/whatsnew

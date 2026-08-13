@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Download
@@ -67,6 +68,7 @@ fun SettingsScreen(
     onDownloadsClick: () -> Unit = {},
     onAssistantClick: () -> Unit = {},
     onSubscriptionClick: () -> Unit = {},
+    onMoreAppsClick: () -> Unit = {},
     settingsViewModel: SettingsViewModel = hiltViewModel(),
     feedbackViewModel: FeedbackViewModel = hiltViewModel(),
 ) {
@@ -176,6 +178,30 @@ fun SettingsScreen(
                     Text("Offline Downloads", style = MaterialTheme.typography.bodyLarge, color = OnSurface)
                     Text(
                         "Download agencies for offline use",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = OnSurfaceSecondary,
+                    )
+                }
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = OnSurfaceSecondary)
+            }
+
+            Spacer(Modifier.height(8.dp))
+            Divider(color = OnSurfaceSecondary.copy(alpha = 0.2f))
+            Spacer(Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onMoreAppsClick)
+                    .padding(vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Filled.Apps, contentDescription = null, tint = Primary)
+                Spacer(Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("More Apps", style = MaterialTheme.typography.bodyLarge, color = OnSurface)
+                    Text(
+                        "Check out our other privacy-first apps",
                         style = MaterialTheme.typography.bodySmall,
                         color = OnSurfaceSecondary,
                     )
