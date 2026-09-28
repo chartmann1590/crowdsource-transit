@@ -178,7 +178,7 @@ dependencies {
     implementation("com.google.firebase:firebase-crashlytics-ktx")
     implementation("com.google.firebase:firebase-perf-ktx")
 
-    implementation("com.google.android.gms:play-services-auth:21.3.0")
+    implementation("com.google.android.gms:play-services-auth:21.4.0")
     implementation("com.google.android.gms:play-services-ads:23.6.0")
     implementation("com.google.android.play:review-ktx:2.0.2")
     // "Remove Ads" subscription — see data/billing/BillingRepository.kt.
@@ -186,7 +186,7 @@ dependencies {
 
     implementation("org.maplibre.gl:android-sdk:11.8.0")
 
-    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.google.android.gms:play-services-location:21.4.0")
 
     // Bumped 1.9.0 -> 1.11.0 alongside litertlm-android 0.15.0 (see gradle/libs.versions.toml):
     // 0.15.0's Conversation.sendMessageAsync completion callback calls a SendChannel.close
