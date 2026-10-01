@@ -179,7 +179,7 @@ dependencies {
     implementation("com.google.firebase:firebase-perf-ktx")
 
     implementation("com.google.android.gms:play-services-auth:21.4.0")
-    implementation("com.google.android.gms:play-services-ads:23.6.0")
+    implementation("com.google.android.gms:play-services-ads:25.5.0")
     implementation("com.google.android.play:review-ktx:2.0.2")
     // "Remove Ads" subscription — see data/billing/BillingRepository.kt.
     implementation("com.android.billingclient:billing-ktx:9.1.0")
