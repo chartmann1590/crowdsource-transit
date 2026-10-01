@@ -171,7 +171,7 @@ dependencies {
     kapt("com.google.dagger:hilt-android-compiler:2.58")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-database-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")
