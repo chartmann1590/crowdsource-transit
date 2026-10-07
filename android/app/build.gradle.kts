@@ -187,7 +187,7 @@ dependencies {
 
     implementation("org.maplibre.gl:android-sdk:11.8.0")
 
-    implementation("com.google.android.gms:play-services-location:22.0.0")
+    implementation("com.google.android.gms:play-services-location:21.4.0")
 
     // Bumped 1.9.0 -> 1.11.0 alongside litertlm-android 0.15.0 (see gradle/libs.versions.toml):
     // 0.15.0's Conversation.sendMessageAsync completion callback calls a SendChannel.close
