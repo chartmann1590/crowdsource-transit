@@ -2,14 +2,15 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     id("com.google.gms.google-services")
     id("com.google.firebase.firebase-perf")
     id("com.google.firebase.crashlytics")
     id("com.google.dagger.hilt.android")
-    kotlin("kapt")
+    // AGP 9 ships built-in Kotlin support; kapt (Room + Hilt) now comes from AGP's
+    // legacy-kapt plugin instead of org.jetbrains.kotlin.kapt.
+    alias(libs.plugins.android.legacy.kapt)
 }
 
 val localProperties = Properties().apply {
@@ -21,7 +22,7 @@ val localProperties = Properties().apply {
 
 android {
     namespace = "com.charles.crowdtransit.app"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.charles.crowdtransit.app"
@@ -154,7 +155,7 @@ configurations.all {
 }
 
 dependencies {
-    implementation(platform("androidx.compose:compose-bom:2024.12.01"))
+    implementation(platform("androidx.compose:compose-bom:2026.09.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -167,19 +168,19 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.11.0")
     implementation("androidx.lifecycle:lifecycle-service:2.11.0")
 
-    implementation("com.google.dagger:hilt-android:2.58")
-    kapt("com.google.dagger:hilt-android-compiler:2.58")
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation("com.google.dagger:hilt-android:2.60.1")
+    kapt("com.google.dagger:hilt-android-compiler:2.60.1")
+    implementation("androidx.hilt:hilt-navigation-compose:1.4.0")
 
-    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
-    implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-database-ktx")
-    implementation("com.google.firebase:firebase-analytics-ktx")
-    implementation("com.google.firebase:firebase-crashlytics-ktx")
-    implementation("com.google.firebase:firebase-perf-ktx")
+    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-crashlytics")
+    implementation("com.google.firebase:firebase-perf")
 
     implementation("com.google.android.gms:play-services-auth:21.4.0")
-    implementation("com.google.android.gms:play-services-ads:23.6.0")
+    implementation("com.google.android.gms:play-services-ads:25.5.0")
     implementation("com.google.android.play:review-ktx:2.0.2")
     // "Remove Ads" subscription — see data/billing/BillingRepository.kt.
     implementation("com.android.billingclient:billing-ktx:9.1.0")
@@ -198,10 +199,10 @@ dependencies {
 
     implementation("io.coil-kt:coil-compose:2.7.0")
 
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-moshi:3.0.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.2")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:5.5.0")
     // KSP, not kapt: moshi-kotlin-codegen's kapt path doesn't support Kotlin 2.3.0
     // metadata (see gradle/libs.versions.toml for why Kotlin was bumped to 2.3.0).
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.2")
@@ -231,7 +232,7 @@ dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 
     testImplementation("junit:junit:4.13.2")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.12.01"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2026.09.00"))
     androidTestImplementation("androidx.test:runner:1.7.0")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
