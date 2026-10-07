@@ -1,0 +1,105 @@
+name: Web & JS CI
+
+# Build + test gate for everything JavaScript in this repo: the web app (web/), the
+# ORS proxy Cloudflare Worker (workers/ors-proxy/) and the Node import scripts (scripts/).
+# Runs on every PR (including Dependabot's) and needs no secrets: the web build falls
+# back to empty Firebase/Transitland config, which is fine for compiling and testing.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - 'workers/**'
+      - 'scripts/**'
+      - '.github/workflows/web-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - 'workers/**'
+      - 'scripts/**'
+      - '.github/workflows/web-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Web app (lint, typecheck, build, test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck + build
+        run: npm run build
+
+      - name: Unit tests
+        run: npm test
+
+  ors-proxy:
+    name: ORS proxy worker (typecheck)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: workers/ors-proxy
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: workers/ors-proxy/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run check
+
+  scripts:
+    name: Import scripts (syntax + dependency smoke)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scripts
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: scripts/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Syntax check
+        run: for f in *.js lib/*.js; do node --check "$f"; done
+
+      - name: Dependencies load
+        run: |
+          node -e "for (const m of ['dotenv','googleapis','firebase-admin','adm-zip','csv-parser','ngeohash']) { require(m); console.log('ok', m); }"
+          node --input-type=module -e "await import('node-fetch'); console.log('ok node-fetch')"
