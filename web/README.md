@@ -27,6 +27,19 @@ npm run build    # outputs to dist/
 npm run preview  # preview production build locally
 ```
 
+## Lint, Typecheck & Tests
+
+```bash
+npm run lint     # oxlint
+npm run build    # tsc -b (typecheck) + vite build
+npm test         # vitest (jsdom) — unit tests + MapView smoke test
+```
+
+Tests live next to the code as `*.test.ts(x)`. `MapView.test.tsx` mocks `maplibre-gl`
+(jsdom has no WebGL) and checks the map wiring: sources/layers, stop features, polylines,
+popups and cleanup. CI (`.github/workflows/web-ci.yml`) runs lint, build and tests on every
+PR that touches `web/`, `workers/` or `scripts/`, including Dependabot PRs.
+
 Deployment to GitHub Pages is automated via `.github/workflows/deploy-web.yml` — pushes to `main` on `web/**` paths trigger a build and deploy.
 
 ## Project Layout
