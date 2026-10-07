@@ -16,6 +16,7 @@ const h = vi.hoisted(() => {
     maps: [] as unknown[],
     popups: [] as { lngLat: unknown; content: HTMLElement | null; added: boolean }[],
     controls: [] as string[],
+    workerUrl: null as string | null,
   };
   return { state };
 });
@@ -110,7 +111,10 @@ vi.mock('maplibre-gl', () => {
   class NavigationControl {
     kind = 'navigation';
   }
-  const lib = { Map: FakeMap, LngLatBounds, Popup, GeolocateControl, NavigationControl };
+  const setWorkerUrl = (url: string) => {
+    h.state.workerUrl = url;
+  };
+  const lib = { Map: FakeMap, LngLatBounds, Popup, GeolocateControl, NavigationControl, setWorkerUrl };
   return { default: lib, ...lib };
 });
 
@@ -149,6 +153,10 @@ function makeStop(over: Partial<Stop>): Stop {
 const lastMap = () => h.state.maps[h.state.maps.length - 1] as unknown as FakeMap;
 
 describe('MapView', () => {
+  it('points MapLibre at the bundled worker (required since maplibre-gl v6)', () => {
+    expect(h.state.workerUrl).toEqual(expect.stringContaining('maplibre-gl-worker'));
+  });
+
   beforeEach(() => {
     h.state.maps.length = 0;
     h.state.popups.length = 0;
