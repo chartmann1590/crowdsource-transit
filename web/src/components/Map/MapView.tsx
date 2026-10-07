@@ -1,9 +1,15 @@
 import { useEffect, useRef, useCallback } from 'react';
-import maplibregl from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+// maplibre-gl v6 is ESM-only and locates its web worker via import.meta.url, which doesn't
+// survive bundling — Vite must emit the worker as its own self-contained asset and we hand
+// MapLibre its URL once. See maplibre-gl docs "ESM → Installation → Vite".
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import type { Stop } from '../../types/transit';
 import { TRANSIT_COLORS } from '../../utils/transit-colors';
 import '../../styles/maplibre-overrides.css';
+
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 
 /** A polyline to draw on the map (itinerary legs). Dashed = walking, solid = transit. */
 export interface MapPolyline {
