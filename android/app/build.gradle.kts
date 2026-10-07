@@ -185,7 +185,7 @@ dependencies {
     // "Remove Ads" subscription — see data/billing/BillingRepository.kt.
     implementation("com.android.billingclient:billing-ktx:9.1.0")
 
-    implementation("org.maplibre.gl:android-sdk:11.8.0")
+    implementation("org.maplibre.gl:android-sdk:13.6.1")
 
     implementation("com.google.android.gms:play-services-location:21.4.0")
 
