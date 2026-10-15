@@ -223,7 +223,7 @@ dependencies {
     // hardware; worked around in LiteRtAssistantEngine.tryInitialize() with an explicit
     // pre-load + retry rather than by chasing a newer library version (see that file's
     // comment for why the version-bump path is a dead end without a Moshi/KSP migration).
-    implementation("com.google.ai.edge.litertlm:litertlm-android:0.15.0")
+    implementation("com.google.ai.edge.litertlm:litertlm-android:0.18.0")
 
     // Force 16 KB-aligned version; the Compose BOM pulls in an older build via
     // androidx.graphics:graphics-core that contains a misaligned libandroidx.graphics.path.so
