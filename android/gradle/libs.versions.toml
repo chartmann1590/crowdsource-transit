@@ -17,7 +17,7 @@ agp = "9.4.1"
 # moshi-kotlin-codegen's kapt path doesn't support 2.3.0 metadata; Room and Hilt stayed
 # on kapt (both handle 2.3.0 metadata fine). Do not revert this without re-confirming the
 # native crash is actually fixed downstream — that's the only reason for the bump.
-kotlin = "2.4.20"
+kotlin = "2.4.21"
 ksp = "2.3.12"
 core-ktx = "1.19.1"
 
