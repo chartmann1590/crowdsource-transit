@@ -7,7 +7,7 @@
 # and Hilt 2.60.1: androidx.lifecycle 2.11 (merged Sep 28) requires AGP 9.1+ and compileSdk 37,
 # and Dagger 2.59+ requires AGP 9. AGP 9 has built-in Kotlin, so the kotlin-android plugin is
 # no longer applied to :app and kapt comes from com.android.legacy-kapt.
-agp = "9.4.1"
+agp = "9.5.0"
 # Bumped 2.1.0 -> 2.3.0 (2026-08-08) specifically to unblock litertlm-android past
 # 0.9.0-beta: every release after it carries Kotlin metadata 2.3.0 (confirmed against
 # 0.9.0, the very next patch release), and 0.9.0-beta's own vision/multimodal path has a
@@ -17,7 +17,7 @@ agp = "9.4.1"
 # moshi-kotlin-codegen's kapt path doesn't support 2.3.0 metadata; Room and Hilt stayed
 # on kapt (both handle 2.3.0 metadata fine). Do not revert this without re-confirming the
 # native crash is actually fixed downstream — that's the only reason for the bump.
-kotlin = "2.4.20"
+kotlin = "2.4.21"
 ksp = "2.3.12"
 core-ktx = "1.19.1"
 

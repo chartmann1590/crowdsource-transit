@@ -147,10 +147,10 @@ configurations.all {
         // kotlinx-serialization to 1.7.3, but androidx.room:room-testing's
         // room-migration-jvm needs 1.8.1's GeneratedSerializer ABI (AbstractMethodError
         // otherwise). Force the newer, ABI-compatible version everywhere.
-        force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.11.0")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.11.0")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.11.0")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.12.0")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.12.0")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.12.0")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.12.0")
     }
 }
 
@@ -185,7 +185,7 @@ dependencies {
     // "Remove Ads" subscription — see data/billing/BillingRepository.kt.
     implementation("com.android.billingclient:billing-ktx:9.1.0")
 
-    implementation("org.maplibre.gl:android-sdk:13.6.1")
+    implementation("org.maplibre.gl:android-sdk:13.7.1")
 
     implementation("com.google.android.gms:play-services-location:21.4.0")
 
@@ -194,15 +194,15 @@ dependencies {
     // overload that doesn't exist in 1.9.0, confirmed via a live-device crash
     // (NoSuchMethodError: close$default) that fired right after a real multimodal reply
     // had already finished streaming.
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.12.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.12.0")
 
     implementation("io.coil-kt:coil-compose:2.7.0")
 
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-moshi:3.0.0")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.2")
-    implementation("com.squareup.okhttp3:logging-interceptor:5.5.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:5.5.1")
     // KSP, not kapt: moshi-kotlin-codegen's kapt path doesn't support Kotlin 2.3.0
     // metadata (see gradle/libs.versions.toml for why Kotlin was bumped to 2.3.0).
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.2")
@@ -211,7 +211,7 @@ dependencies {
     implementation("androidx.room:room-ktx:2.8.5")
     kapt("androidx.room:room-compiler:2.8.5")
 
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("androidx.datastore:datastore-preferences:1.3.0")
 
     // Hopper on-device AI assistant (Gemma 4 E2B). Requires API 31+ at runtime — this app's
     // minSdk stays 26, so every reference to this library is confined to
@@ -223,7 +223,7 @@ dependencies {
     // hardware; worked around in LiteRtAssistantEngine.tryInitialize() with an explicit
     // pre-load + retry rather than by chasing a newer library version (see that file's
     // comment for why the version-bump path is a dead end without a Moshi/KSP migration).
-    implementation("com.google.ai.edge.litertlm:litertlm-android:0.15.0")
+    implementation("com.google.ai.edge.litertlm:litertlm-android:0.18.1")
 
     // Force 16 KB-aligned version; the Compose BOM pulls in an older build via
     // androidx.graphics:graphics-core that contains a misaligned libandroidx.graphics.path.so
