@@ -35,6 +35,8 @@ class ReviewPrompter @Inject constructor(
     }
 
     suspend fun maybeRequestReview(activity: Activity) {
+
+        if (com.charles.crowdtransit.app.BuildConfig.STORE == "amazon") return // Amazon Appstore build: no Play review prompt
         var shouldRequest = false
         context.dataStore.edit { prefs ->
             val alreadyRequested = prefs[Keys.REQUESTED] ?: false

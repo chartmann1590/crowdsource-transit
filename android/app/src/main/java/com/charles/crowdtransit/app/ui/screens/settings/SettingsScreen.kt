@@ -214,7 +214,8 @@ fun SettingsScreen(
             Spacer(Modifier.height(8.dp))
 
             val isSubscribed by context.billingRepository().isSubscribed.collectAsState()
-            Row(
+            // Amazon Appstore build: no Play subscription, so no "Remove Ads" entry.
+            if (!(com.charles.crowdtransit.app.BuildConfig.STORE == "amazon")) Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(onClick = onSubscriptionClick)

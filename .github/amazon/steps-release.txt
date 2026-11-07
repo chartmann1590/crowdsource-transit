@@ -1,0 +1,42 @@
+launch
+wait 15
+shot 01-launch
+tap (?i)^get started$
+wait 10
+taploop (?i)^(allow|ok|while using the app|only this time|continue|got it)$
+shot 02-after-get-started
+tap (?i)^not now$
+wait 5
+taploop (?i)^(allow|ok|while using the app|only this time|continue|got it)$
+adclose
+wait 8
+shot 03-map-home
+tap (?i)^plan a trip$
+wait 5
+adclose
+shot 04-plan
+back
+wait 3
+tap (?i)^add stop$
+wait 4
+shot 05-add-stop
+back
+wait 3
+tap (?i)^profile$
+wait 4
+adclose
+shot 06-profile
+tap (?i)^settings$
+wait 4
+adclose
+shot 07-settings
+swipeup
+swipeup
+shot 08-settings-bottom
+swipeup
+swipeup
+shot 09-settings-end
+back
+back
+wait 3
+shot 10-back-map

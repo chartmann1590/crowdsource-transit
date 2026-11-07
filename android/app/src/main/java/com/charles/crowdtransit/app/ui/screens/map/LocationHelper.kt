@@ -20,8 +20,29 @@ fun hasLocationPermission(context: Context): Boolean =
     ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) ==
         PackageManager.PERMISSION_GRANTED
 
+// Amazon Appstore (Fire) build: Fire tablets have no Google Play services, so the fused
+// location provider is unavailable there; use the platform LocationManager (Wi-Fi/network,
+// GPS when present) instead. The Play build keeps the fused provider unchanged.
+fun locationFlow(context: Context): Flow<UserLocation> =
+    if (com.charles.crowdtransit.app.BuildConfig.STORE == "amazon") platformLocationFlow(context) else fusedLocationFlow(context)
+
 @SuppressLint("MissingPermission")
-fun locationFlow(context: Context): Flow<UserLocation> = callbackFlow {
+private fun platformLocationFlow(context: Context): Flow<UserLocation> = callbackFlow {
+    val lm = context.getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
+    val providers = runCatching { lm.getProviders(true) }.getOrDefault(emptyList())
+        .filter { it != android.location.LocationManager.PASSIVE_PROVIDER }
+    providers.mapNotNull { runCatching { lm.getLastKnownLocation(it) }.getOrNull() }
+        .maxByOrNull { it.time }
+        ?.let { trySend(UserLocation(it.latitude, it.longitude)) }
+    val listener = android.location.LocationListener { location ->
+        trySend(UserLocation(location.latitude, location.longitude))
+    }
+    providers.forEach { p -> runCatching { lm.requestLocationUpdates(p, 5_000L, 0f, listener, context.mainLooper) } }
+    awaitClose { runCatching { lm.removeUpdates(listener) } }
+}
+
+@SuppressLint("MissingPermission")
+private fun fusedLocationFlow(context: Context): Flow<UserLocation> = callbackFlow {
     val client = LocationServices.getFusedLocationProviderClient(context)
 
     client.lastLocation.addOnSuccessListener { location ->

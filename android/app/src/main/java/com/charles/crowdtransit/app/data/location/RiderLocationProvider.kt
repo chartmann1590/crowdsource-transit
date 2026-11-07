@@ -32,6 +32,14 @@ class RiderLocationProvider @Inject constructor(
                 ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED
         if (!hasPermission) return null
+        // Amazon Appstore (Fire) build: no Google Play services, so read the platform LocationManager.
+        if (com.charles.crowdtransit.app.BuildConfig.STORE == "amazon") {
+            val lm = context.getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
+            return runCatching {
+                lm.getProviders(true).mapNotNull { p -> runCatching { lm.getLastKnownLocation(p) }.getOrNull() }
+                    .maxByOrNull { it.time }?.let { it.latitude to it.longitude }
+            }.getOrNull()
+        }
         return try {
             LocationServices.getFusedLocationProviderClient(context).lastLocation.await()
                 ?.let { it.latitude to it.longitude }

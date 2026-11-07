@@ -25,6 +25,9 @@ android {
     compileSdk = 37
 
     defaultConfig {
+        // Store this build is for: "play" (default) or "amazon" (./gradlew ... -Pstore=amazon).
+        // Amazon builds drop Google Play links, the Play in-app review prompt and Play purchases.
+        buildConfigField("String", "STORE", "\"${(project.findProperty("store") as String?) ?: "play"}\"")
         applicationId = "com.charles.crowdtransit.app"
         // API 26: the navigation foreground service requires startForegroundService +
         // notification channels (mandatory since Android 8). Below 26 those calls crash, so

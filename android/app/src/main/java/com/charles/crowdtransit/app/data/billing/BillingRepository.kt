@@ -73,7 +73,8 @@ class BillingRepository @Inject constructor(
         .build()
 
     init {
-        connect()
+        // Amazon Appstore build: Google Play Billing is never started (no Remove Ads purchase there).
+        if (!(com.charles.crowdtransit.app.BuildConfig.STORE == "amazon")) connect()
     }
 
     private fun connect() {
@@ -115,6 +116,7 @@ class BillingRepository @Inject constructor(
 
     /** Re-checks entitlement — call on app start and whenever the subscription screen opens. */
     suspend fun refreshPurchases() {
+        if (com.charles.crowdtransit.app.BuildConfig.STORE == "amazon") return
         val params = QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build()
         val result = billingClient.queryPurchasesAsync(params)
         val purchases = result.purchasesList
@@ -124,6 +126,7 @@ class BillingRepository @Inject constructor(
 
     /** No-ops with a log warning if [productDetails] hasn't loaded (Play Console not configured yet). */
     fun launchPurchaseFlow(activity: Activity) {
+        if (com.charles.crowdtransit.app.BuildConfig.STORE == "amazon") return
         val details = _productDetails.value
         val offerToken = details?.subscriptionOfferDetails?.firstOrNull()?.offerToken
         if (details == null || offerToken == null) {
