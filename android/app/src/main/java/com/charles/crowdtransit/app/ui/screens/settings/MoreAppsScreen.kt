@@ -90,7 +90,7 @@ fun MoreAppsScreen(onBack: () -> Unit) {
                         .fillMaxWidth()
                         .clickable {
                             context.startActivity(
-                                Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=${app.packageName}"))
+                                Intent(Intent.ACTION_VIEW, Uri.parse((if (com.charles.crowdtransit.app.BuildConfig.STORE == "direct") "https://charleshartmann.com/apps/" else "https://play.google.com/store/apps/details?id=${app.packageName}")))
                             )
                         },
                     colors = CardDefaults.cardColors()

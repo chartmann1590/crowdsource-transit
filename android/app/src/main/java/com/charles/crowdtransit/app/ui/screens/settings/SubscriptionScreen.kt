@@ -78,10 +78,13 @@ fun SubscriptionScreen(
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Thanks for supporting CrowdTransit. Manage or cancel anytime from Google Play's subscriptions page.",
+                    if (com.hartmannstudios.direct.DirectBilling.isDirect) "Thanks for supporting CrowdTransit. Manage or cancel anytime below." else "Thanks for supporting CrowdTransit. Manage or cancel anytime from Google Play's subscriptions page.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = OnSurfaceSecondary,
                 )
+                if (com.hartmannstudios.direct.DirectBilling.isDirect) {
+                    TextButton(onClick = { (context as? android.app.Activity)?.let { viewModel.manageSubscription(it) } }) { Text("Manage subscription") }
+                }
             } else {
                 Text("Ride without interruptions", style = MaterialTheme.typography.titleLarge, color = OnSurface)
                 Spacer(Modifier.height(16.dp))
@@ -122,6 +125,19 @@ fun SubscriptionScreen(
                 }
 
                 Spacer(Modifier.height(12.dp))
+                if (com.hartmannstudios.direct.DirectBilling.isDirect) {
+                    Text(
+                        "Prices in USD. Secure checkout by Stripe. Renews monthly until you cancel (Manage subscription). Your purchase is tied to the email you enter at checkout.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = OnSurfaceSecondary,
+                    )
+                    TextButton(onClick = { (context as? android.app.Activity)?.let { viewModel.restoreDirect(it) } }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Restore purchases")
+                    }
+                    TextButton(onClick = { (context as? android.app.Activity)?.let { viewModel.manageSubscription(it) } }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Manage subscription")
+                    }
+                } else
                 TextButton(onClick = { viewModel.restorePurchases() }, modifier = Modifier.fillMaxWidth()) {
                     Text("Restore purchases")
                 }

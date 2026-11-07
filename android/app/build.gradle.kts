@@ -21,10 +21,15 @@ val localProperties = Properties().apply {
 }
 
 android {
+    // DirectBilling: real Stripe client in direct builds, a no-op stub in Play builds
+    sourceSets.getByName("main").java.srcDir(if (((project.findProperty("store") as String?) ?: "play") == "direct") "src/hsdirect/java" else "src/hsplay/java")
     namespace = "com.charles.crowdtransit.app"
     compileSdk = 37
 
     defaultConfig {
+        // Store this build is for: "play" (default) or "direct" (./gradlew ... -Pstore=direct, GitHub/charleshartmann.com APK).
+        // Direct builds use Stripe Checkout (DirectBilling) instead of Google Play Billing, and drop Play links + the Play review prompt.
+        buildConfigField("String", "STORE", "\"${(project.findProperty("store") as String?) ?: "play"}\"")
         applicationId = "com.charles.crowdtransit.app"
         // API 26: the navigation foreground service requires startForegroundService +
         // notification channels (mandatory since Android 8). Below 26 those calls crash, so

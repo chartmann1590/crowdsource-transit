@@ -32,8 +32,8 @@ class SubscriptionViewModel @Inject constructor(
         val phase = offer?.pricingPhases?.pricingPhaseList?.firstOrNull()
         SubscriptionUiState(
             isSubscribed = subscribed,
-            price = phase?.formattedPrice,
-            period = phase?.billingPeriod?.let { describeBillingPeriod(it) },
+            price = if (com.hartmannstudios.direct.DirectBilling.isDirect) BillingRepository.DIRECT_PRICE else phase?.formattedPrice,
+            period = if (com.hartmannstudios.direct.DirectBilling.isDirect) "month" else phase?.billingPeriod?.let { describeBillingPeriod(it) },
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SubscriptionUiState())
 
@@ -48,6 +48,10 @@ class SubscriptionViewModel @Inject constructor(
     fun restorePurchases() {
         viewModelScope.launch { billingRepository.refreshPurchases() }
     }
+
+    /** Direct (GitHub / charleshartmann.com) builds: restore Stripe purchases by email / open Stripe's portal. */
+    fun restoreDirect(activity: Activity) = billingRepository.restore(activity)
+    fun manageSubscription(activity: Activity) = billingRepository.manageSubscription(activity)
 }
 
 /** ISO 8601 durations Play uses for billing periods — only the ones any subscription plan would realistically use. */

@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.hartmannstudios.direct.DirectBilling
 
 /**
  * "Remove Ads" subscription via Play Billing — the sole SKU, deliberately: this app has
@@ -50,6 +51,9 @@ class BillingRepository @Inject constructor(
 
     companion object {
         const val REMOVE_ADS_PRODUCT_ID = "remove_ads_monthly"
+        /** Stripe catalog key of the same subscription (direct GitHub / charleshartmann.com builds). */
+        const val DIRECT_REMOVE_ADS_KEY = "remove_ads_monthly"
+        const val DIRECT_PRICE = "$1.99"
         private const val TAG = "BillingRepository"
     }
 
@@ -63,18 +67,31 @@ class BillingRepository @Inject constructor(
     private val _productDetails = MutableStateFlow<ProductDetails?>(null)
     val productDetails: StateFlow<ProductDetails?> = _productDetails.asStateFlow()
 
-    private val billingClient = BillingClient.newBuilder(context)
-        .setListener(this)
-        .enablePendingPurchases(
-            com.android.billingclient.api.PendingPurchasesParams.newBuilder()
-                .enableOneTimeProducts()
-                .build(),
-        )
-        .build()
+    private val billingClient by lazy {
+        BillingClient.newBuilder(context)
+            .setListener(this)
+            .enablePendingPurchases(
+                com.android.billingclient.api.PendingPurchasesParams.newBuilder()
+                    .enableOneTimeProducts()
+                    .build(),
+            )
+            .build()
+    }
 
     init {
-        connect()
+        if (DirectBilling.isDirect) startDirect() else connect()
     }
+
+    // Direct (GitHub / charleshartmann.com) build: Stripe Checkout through DirectBilling instead of Google Play.
+    private fun startDirect() {
+        DirectBilling.init(context, "crowdtransit")
+        DirectBilling.addListener { updateDirect() }
+        updateDirect()
+    }
+    private fun updateDirect() { _isSubscribed.value = DirectBilling.isEntitled(DIRECT_REMOVE_ADS_KEY) }
+    /** Direct builds: look up Stripe purchases by email (new phone, reinstall). */
+    fun restore(activity: Activity) { if (DirectBilling.isDirect) DirectBilling.restore(activity) }
+    fun manageSubscription(activity: Activity) { if (DirectBilling.isDirect) DirectBilling.manageSubscription(activity) }
 
     private fun connect() {
         billingClient.startConnection(object : BillingClientStateListener {
@@ -115,6 +132,7 @@ class BillingRepository @Inject constructor(
 
     /** Re-checks entitlement — call on app start and whenever the subscription screen opens. */
     suspend fun refreshPurchases() {
+        if (DirectBilling.isDirect) { updateDirect(); return }
         val params = QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build()
         val result = billingClient.queryPurchasesAsync(params)
         val purchases = result.purchasesList
@@ -124,6 +142,7 @@ class BillingRepository @Inject constructor(
 
     /** No-ops with a log warning if [productDetails] hasn't loaded (Play Console not configured yet). */
     fun launchPurchaseFlow(activity: Activity) {
+        if (DirectBilling.isDirect) { DirectBilling.purchase(activity, DIRECT_REMOVE_ADS_KEY); return }
         val details = _productDetails.value
         val offerToken = details?.subscriptionOfferDetails?.firstOrNull()?.offerToken
         if (details == null || offerToken == null) {

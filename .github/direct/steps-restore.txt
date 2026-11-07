@@ -1,0 +1,36 @@
+launch
+wait 15
+shot 01-launch
+tap (?i)^get started$
+wait 10
+taploop (?i)^(allow|ok|while using the app|only this time|continue|got it)$
+tap (?i)^not now$
+wait 5
+taploop (?i)^(allow|ok|while using the app|only this time|continue|got it)$
+adclose
+wait 8
+shot 02-map-home
+tap (?i)^profile$
+wait 4
+adclose
+tap (?i)^settings$
+wait 4
+adclose
+scrollto (?i)^remove ads$
+wait 4
+shot 20-paywall
+tap (?i)^restore purchases$
+wait 3
+shot 21-restore-email
+type hartmannstudios@mail.tab.bot
+tap (?i)^continue$
+wait 15
+shot 22-after-restore-subscribed
+back
+wait 2
+back
+wait 2
+back
+wait 3
+shot 23-map-no-banner
+sh logcat -d -s DirectBilling
