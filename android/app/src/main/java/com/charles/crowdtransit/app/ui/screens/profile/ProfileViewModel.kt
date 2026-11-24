@@ -94,6 +94,9 @@ class ProfileViewModel @Inject constructor(
     val canReauthenticateWithPassword: Boolean
         get() = authRepository.canReauthenticateWithPassword()
 
+    private val isGoogleOnlyAccount: Boolean
+        get() = authRepository.isGoogleOnlyAccount()
+
     /**
      * Deletes the account (Profile -> Delete Account). When [password] is
      * given it re-authenticates first, which covers Firebase's recent-login
@@ -101,6 +104,26 @@ class ProfileViewModel @Inject constructor(
      */
     fun deleteAccount(password: String?) {
         viewModelScope.launch {
+            // Google-only accounts cannot be re-authenticated in this app
+            // (it has no Google sign-in flow), so route them to the web
+            // deletion page BEFORE anything is deleted.
+            if (isGoogleOnlyAccount) {
+                _uiState.update {
+                    it.copy(
+                        deleteError = "This account uses Google sign-in, which the app cannot re-verify. To delete the account, use the Account Deletion page linked from the Privacy Policy instead.",
+                    )
+                }
+                return@launch
+            }
+            // Password accounts must confirm with their password, so the
+            // recent-login guard in the repository passes before any data
+            // cleanup starts.
+            if (canReauthenticateWithPassword && password.isNullOrEmpty()) {
+                _uiState.update {
+                    it.copy(deleteError = "Enter your password to confirm deletion.")
+                }
+                return@launch
+            }
             _uiState.update { it.copy(isDeleting = true, deleteError = null) }
             try {
                 if (!password.isNullOrEmpty()) {

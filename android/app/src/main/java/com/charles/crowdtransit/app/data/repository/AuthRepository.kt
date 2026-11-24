@@ -2,6 +2,7 @@
 
 import com.charles.crowdtransit.model.UserProfile
 import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
@@ -87,6 +88,23 @@ class AuthRepository @Inject constructor(
         auth.currentUser?.providerData?.any { it.providerId == EmailAuthProvider.PROVIDER_ID } == true
 
     /**
+     * True for accounts whose only sign-in provider is Google. The app has
+     * no Google sign-in flow of its own, so it cannot re-authenticate these
+     * accounts in-app; account deletion routes them to the web deletion
+     * page instead (see ProfileViewModel).
+     */
+    fun isGoogleOnlyAccount(): Boolean {
+        val providers = auth.currentUser?.providerData?.map { it.providerId } ?: return false
+        return GoogleAuthProvider.PROVIDER_ID in providers &&
+            EmailAuthProvider.PROVIDER_ID !in providers
+    }
+
+    private companion object {
+        /** user.delete() demands a recent sign-in (~5 min); keep a safety margin. */
+        const val RECENT_LOGIN_WINDOW_MS = 4 * 60 * 1000L
+    }
+
+    /**
      * Deletes the signed-in account and all of its CrowdTransit data.
      *
      * The Realtime Database cleanup runs first because the database rules
@@ -105,9 +123,26 @@ class AuthRepository @Inject constructor(
         val user = auth.currentUser ?: throw IllegalStateException("Not authenticated")
         val uid = user.uid
 
+        // Fail BEFORE any destructive write when the sign-in is too old for
+        // user.delete(): otherwise the database cleanup below would succeed
+        // and the Auth deletion would then throw, stranding a live account
+        // whose data is already gone. Callers re-authenticate first
+        // (password accounts) so this guard passes.
+        val lastSignIn = user.metadata?.lastSignInTimestamp ?: 0L
+        if (System.currentTimeMillis() - lastSignIn > RECENT_LOGIN_WINDOW_MS) {
+            throw FirebaseAuthRecentLoginRequiredException(
+                "ERROR_REQUIRES_RECENT_LOGIN",
+                "Sign-in is too old for account deletion; re-authenticate first.",
+            )
+        }
+
         db.reference.child("users/$uid").removeValue().await()
         db.reference.child("leaderboard/$uid").removeValue().await()
         db.reference.child("savedTrips/$uid").removeValue().await()
+        db.reference.child("blockedUsers/$uid").removeValue().await()
+
+        // The user's "helpful" votes live under other riders' comments.
+        removeOwnHelpfulVotes(uid)
 
         // Ratings are stored under the author's uid key.
         removeOwnEntries("ratings", uid, matchUidKey = true, uidField = "userId")
@@ -158,6 +193,30 @@ class AuthRepository @Inject constructor(
         walk(snapshot, root, 0)
         for (path in removals) {
             db.reference.child(path).removeValue().await()
+        }
+    }
+
+    /**
+     * Removes this user's "helpful" votes from other riders' comments
+     * (comments/{type}/{target}/{commentId}/helpful/{uid}) and decrements
+     * each comment's helpfulCount, so no identifier of the deleted account
+     * is left behind in the comments tree.
+     */
+    private suspend fun removeOwnHelpfulVotes(uid: String) {
+        val snapshot = db.reference.child("comments").get().await()
+        for (typeNode in snapshot.children) {
+            for (targetNode in typeNode.children) {
+                for (commentNode in targetNode.children) {
+                    if (!commentNode.child("helpful").hasChild(uid)) continue
+                    val base = "comments/${typeNode.key}/${targetNode.key}/${commentNode.key}"
+                    db.reference.child("$base/helpful/$uid").removeValue().await()
+                    val count = commentNode.child("helpfulCount").getValue(Long::class.java)
+                    if (count != null) {
+                        db.reference.child("$base/helpfulCount")
+                            .setValue(maxOf(0L, count - 1)).await()
+                    }
+                }
+            }
         }
     }
 

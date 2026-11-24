@@ -12,10 +12,12 @@ import javax.inject.Singleton
 
 /**
  * User blocking for community content (Play UGC policy). Blocks are stored
- * per account at users/{uid}/blockedUsers/{blockedUid} (value: the blocked
- * user's display name, for the Settings list). Blocked users' reviews,
- * photos and check-ins are hidden from the blocking user; the blocked user
- * is never notified.
+ * per account at blockedUsers/{uid}/{blockedUid} (value: the blocked user's
+ * display name, for the Settings list). They deliberately do NOT live under
+ * users/{uid}: the users tree is publicly readable, while the blockedUsers
+ * tree has owner-only rules in firebase/database.rules.json, so nobody can
+ * see who blocked whom. Blocked users' reviews, photos and check-ins are
+ * hidden from the blocking user; the blocked user is never notified.
  */
 @Singleton
 class ModerationRepository @Inject constructor(
@@ -27,7 +29,7 @@ class ModerationRepository @Inject constructor(
 
     fun observeBlockedUsers(): Flow<List<BlockedUser>> {
         val uid = auth.currentUser?.uid ?: return flowOf(emptyList())
-        return db.reference.child("users/$uid/blockedUsers").observeAsFlow()
+        return db.reference.child("blockedUsers/$uid").observeAsFlow()
             .map { snapshot ->
                 snapshot?.children?.mapNotNull { child ->
                     val id = child.key ?: return@mapNotNull null
@@ -39,11 +41,11 @@ class ModerationRepository @Inject constructor(
     suspend fun blockUser(userId: String, displayName: String) {
         val uid = auth.currentUser?.uid ?: throw IllegalStateException("Not authenticated")
         require(userId != uid) { "You cannot block yourself" }
-        db.reference.child("users/$uid/blockedUsers/$userId").setValue(displayName).await()
+        db.reference.child("blockedUsers/$uid/$userId").setValue(displayName).await()
     }
 
     suspend fun unblockUser(userId: String) {
         val uid = auth.currentUser?.uid ?: throw IllegalStateException("Not authenticated")
-        db.reference.child("users/$uid/blockedUsers/$userId").removeValue().await()
+        db.reference.child("blockedUsers/$uid/$userId").removeValue().await()
     }
 }
