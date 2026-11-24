@@ -28,6 +28,9 @@ data class ProfileUiState(
     val stats: UserStats = UserStats(),
     val badges: Map<String, Boolean> = emptyMap(),
     val level: Level = Level.PEDESTRIAN,
+    val isDeleting: Boolean = false,
+    val deleteError: String? = null,
+    val accountDeleted: Boolean = false,
 )
 
 @HiltViewModel
@@ -85,6 +88,46 @@ class ProfileViewModel @Inject constructor(
                 _uiState.update { it.copy(badges = badges) }
             }
         }
+    }
+
+    /** Whether the delete-account dialog should ask for the account password. */
+    val canReauthenticateWithPassword: Boolean
+        get() = authRepository.canReauthenticateWithPassword()
+
+    /**
+     * Deletes the account (Profile -> Delete Account). When [password] is
+     * given it re-authenticates first, which covers Firebase's recent-login
+     * requirement for password accounts.
+     */
+    fun deleteAccount(password: String?) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeleting = true, deleteError = null) }
+            try {
+                if (!password.isNullOrEmpty()) {
+                    authRepository.reauthenticateWithPassword(password)
+                }
+                authRepository.deleteAccount()
+                _uiState.update { it.copy(isDeleting = false, accountDeleted = true) }
+            } catch (e: com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException) {
+                _uiState.update {
+                    it.copy(
+                        isDeleting = false,
+                        deleteError = "For your security, Google needs a fresh sign-in before an account can be deleted. Sign out, sign back in, then try again.",
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isDeleting = false,
+                        deleteError = e.message ?: "Account deletion failed. Please try again.",
+                    )
+                }
+            }
+        }
+    }
+
+    fun dismissDeleteError() {
+        _uiState.update { it.copy(deleteError = null) }
     }
 
     fun signOut() {

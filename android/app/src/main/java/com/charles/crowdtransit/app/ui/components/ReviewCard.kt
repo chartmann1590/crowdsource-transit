@@ -13,13 +13,20 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.ThumbUp
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
@@ -39,7 +46,11 @@ fun ReviewCard(
     comment: Comment,
     onHelpfulClick: () -> Unit,
     modifier: Modifier = Modifier,
+    showModerationActions: Boolean = false,
+    onReportClick: () -> Unit = {},
+    onBlockClick: () -> Unit = {},
 ) {
+    var menuExpanded by remember { mutableStateOf(false) }
     val dateStr = remember(comment.createdAt) {
         SimpleDateFormat("MMM d, yyyy", Locale.getDefault()).format(Date(comment.createdAt))
     }
@@ -78,6 +89,37 @@ fun ReviewCard(
             Spacer(Modifier.weight(1f))
             if (comment.rating > 0) {
                 StarRating(rating = comment.rating.toFloat(), starSize = 14.dp)
+            }
+            if (showModerationActions) {
+                Box {
+                    IconButton(onClick = { menuExpanded = true }) {
+                        Icon(
+                            Icons.Filled.MoreVert,
+                            contentDescription = "Review options",
+                            tint = OnSurfaceSecondary,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false },
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Report review") },
+                            onClick = {
+                                menuExpanded = false
+                                onReportClick()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Block ${comment.displayName}") },
+                            onClick = {
+                                menuExpanded = false
+                                onBlockClick()
+                            },
+                        )
+                    }
+                }
             }
         }
 

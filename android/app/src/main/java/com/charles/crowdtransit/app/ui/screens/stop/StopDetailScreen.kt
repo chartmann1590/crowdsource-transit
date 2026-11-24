@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PersonPin
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
@@ -52,6 +53,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -76,6 +78,7 @@ import com.charles.crowdtransit.app.ui.components.ReviewCard
 import com.charles.crowdtransit.app.ui.components.StarRating
 import com.charles.crowdtransit.app.ui.components.TransitBadge
 import com.charles.crowdtransit.app.ui.theme.AppBackground
+import com.charles.crowdtransit.app.ui.theme.Error
 import com.charles.crowdtransit.app.ui.theme.OnPrimary
 import com.charles.crowdtransit.app.ui.theme.OnSecondary
 import com.charles.crowdtransit.app.ui.theme.OnSurface
@@ -115,6 +118,9 @@ fun StopDetailScreen(
     val context = LocalContext.current
     val haptics = LocalHapticFeedback.current
     var fullscreenPhotoIndex by remember { mutableStateOf<Int?>(null) }
+    var reportTarget by remember { mutableStateOf<com.charles.crowdtransit.model.Comment?>(null) }
+    var blockTarget by remember { mutableStateOf<com.charles.crowdtransit.model.Comment?>(null) }
+    var reportConfirmed by remember { mutableStateOf(false) }
 
     LaunchedEffectClearBurst(uiState.pointsBurst, viewModel::clearPointsBurst)
 
@@ -376,6 +382,10 @@ fun StopDetailScreen(
                         comment = comment,
                         onHelpfulClick = { viewModel.markHelpful(comment.commentId) },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                        showModerationActions = comment.userId.isNotBlank() &&
+                            comment.userId != viewModel.currentUserId,
+                        onReportClick = { reportTarget = comment },
+                        onBlockClick = { blockTarget = comment },
                     )
                 }
 
@@ -405,6 +415,84 @@ fun StopDetailScreen(
             photos = uiState.photos,
             startIndex = photoIndex.coerceIn(0, uiState.photos.lastIndex),
             onDismiss = { fullscreenPhotoIndex = null },
+        )
+    }
+
+    reportTarget?.let { target ->
+        AlertDialog(
+            onDismissRequest = { reportTarget = null },
+            title = { Text("Report this review?") },
+            text = {
+                Text(
+                    "This flags the review for moderation. Reviews that break the community rules are removed. The author is not told who reported it.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = OnSurface,
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.reportComment(target.commentId)
+                        reportTarget = null
+                        reportConfirmed = true
+                    },
+                ) {
+                    Text("Report")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { reportTarget = null }) {
+                    Text("Cancel")
+                }
+            },
+        )
+    }
+
+    if (reportConfirmed) {
+        AlertDialog(
+            onDismissRequest = { reportConfirmed = false },
+            title = { Text("Thanks for reporting") },
+            text = {
+                Text(
+                    "Our moderators will take a look. If the review breaks the rules it will be removed.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = OnSurface,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { reportConfirmed = false }) {
+                    Text("OK")
+                }
+            },
+        )
+    }
+
+    blockTarget?.let { target ->
+        AlertDialog(
+            onDismissRequest = { blockTarget = null },
+            title = { Text("Block ${target.displayName}?") },
+            text = {
+                Text(
+                    "You will no longer see reviews, photos or check-ins from ${target.displayName}. You can unblock them anytime in Settings.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = OnSurface,
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.blockUser(target.userId, target.displayName)
+                        blockTarget = null
+                    },
+                ) {
+                    Text("Block", color = Error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { blockTarget = null }) {
+                    Text("Cancel")
+                }
+            },
         )
     }
 }

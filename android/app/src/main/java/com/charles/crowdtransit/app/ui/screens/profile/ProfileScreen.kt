@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -22,23 +23,32 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.WorkspacePremium
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -77,6 +87,14 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var deletePassword by remember { mutableStateOf("") }
+
+    LaunchedEffect(uiState.accountDeleted) {
+        if (uiState.accountDeleted) {
+            onBack()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -248,8 +266,78 @@ fun ProfileScreen(
                 ) {
                     Text("Sign Out")
                 }
+
+                TextButton(
+                    onClick = { showDeleteDialog = true },
+                    enabled = !uiState.isDeleting,
+                ) {
+                    Text("Delete Account", color = Error)
+                }
             }
         }
+    }
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                if (!uiState.isDeleting) {
+                    showDeleteDialog = false
+                    viewModel.dismissDeleteError()
+                }
+            },
+            title = { Text("Delete your account?") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        "This permanently deletes your CrowdTransit account and all of your data: profile, points and badges, saved trips, ratings, reviews, photos, check-ins and stops you added. This cannot be undone.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = OnSurface,
+                    )
+                    Text(
+                        "Deleting your account does not cancel a Remove Ads subscription. Manage subscriptions in Google Play.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = OnSurfaceSecondary,
+                    )
+                    if (viewModel.canReauthenticateWithPassword) {
+                        OutlinedTextField(
+                            value = deletePassword,
+                            onValueChange = { deletePassword = it },
+                            label = { Text("Confirm your password") },
+                            singleLine = true,
+                            visualTransformation = PasswordVisualTransformation(),
+                            enabled = !uiState.isDeleting,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                    uiState.deleteError?.let { errorText ->
+                        Text(errorText, style = MaterialTheme.typography.bodySmall, color = Error)
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { viewModel.deleteAccount(deletePassword.ifEmpty { null }) },
+                    enabled = !uiState.isDeleting &&
+                        (!viewModel.canReauthenticateWithPassword || deletePassword.isNotEmpty()),
+                ) {
+                    if (uiState.isDeleting) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    Text("Delete", color = Error)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        viewModel.dismissDeleteError()
+                    },
+                    enabled = !uiState.isDeleting,
+                ) {
+                    Text("Cancel")
+                }
+            },
+        )
     }
 }
 

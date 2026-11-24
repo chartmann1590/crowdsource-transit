@@ -4,9 +4,9 @@ Price: Free
 Contains ads: Yes
 In-app purchases: Yes — Remove Ads subscription (remove_ads_monthly /
   monthly-autorenewing, $1.99/mo USD, US only, ACTIVE as of 2026-08-13)
-Website: (add production URL here)
-Support email: (add support email here)
-Privacy policy URL: (add privacy policy URL here)
+Website: https://chartmann1590.github.io/crowdsource-transit/
+Support email: crowdtransit.app@gmail.com
+Privacy policy URL: https://github.com/chartmann1590/crowdsource-transit/blob/main/PRIVACY.md
 
 Tags / keywords (for reference only — Play Store no longer uses a keywords field,
 title/description ASO matters instead):

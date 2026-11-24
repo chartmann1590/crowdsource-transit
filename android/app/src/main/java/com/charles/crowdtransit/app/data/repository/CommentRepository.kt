@@ -87,6 +87,16 @@ class CommentRepository @Inject constructor(
         return comment
     }
 
+    /**
+     * Flags a comment for moderation review (Play UGC policy). Moderators
+     * find reported content by its flagged flag; the author is not notified.
+     */
+    suspend fun reportComment(targetType: String, targetId: String, commentId: String) {
+        auth.currentUser ?: throw IllegalStateException("Not authenticated")
+        db.reference.child("comments/$targetType/$targetId/$commentId/flagged")
+            .setValue(true).await()
+    }
+
     suspend fun markHelpful(targetType: String, targetId: String, commentId: String) {
         val user = auth.currentUser ?: return
         val helpfulRef = db.reference.child("comments/$targetType/$targetId/$commentId/helpful/${user.uid}")

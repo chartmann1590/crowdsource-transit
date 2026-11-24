@@ -5,8 +5,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charles.crowdtransit.app.data.repository.ActivityRepository
+import com.charles.crowdtransit.app.data.repository.AuthRepository
 import com.charles.crowdtransit.app.data.repository.CommentRepository
 import com.charles.crowdtransit.app.data.repository.GamificationRepository
+import com.charles.crowdtransit.app.data.repository.ModerationRepository
 import com.charles.crowdtransit.app.data.repository.PhotoRepository
 import com.charles.crowdtransit.app.data.repository.RatingRepository
 import com.charles.crowdtransit.app.data.repository.StopRepository
@@ -55,6 +57,8 @@ class StopDetailViewModel @Inject constructor(
     private val activityRepository: ActivityRepository,
     private val photoRepository: PhotoRepository,
     private val gamificationRepository: GamificationRepository,
+    private val authRepository: AuthRepository,
+    private val moderationRepository: ModerationRepository,
 ) : ViewModel() {
 
     private val stopId: String = checkNotNull(savedStateHandle["stopId"])
@@ -63,6 +67,25 @@ class StopDetailViewModel @Inject constructor(
     val uiState: StateFlow<StopDetailUiState> = _uiState.asStateFlow()
 
     private var hasLoadedSchedule = false
+
+    private var allComments: List<Comment> = emptyList()
+    private var allPhotos: List<StopPhoto> = emptyList()
+    private var allActivity: List<ActivityEvent> = emptyList()
+    private var blockedUserIds: Set<String> = emptySet()
+
+    /** The signed-in user's id, so the UI hides moderation actions on their own content. */
+    val currentUserId: String? get() = authRepository.currentUser?.uid
+
+    /** Reapplies the blocked-user filter (Play UGC policy) to the raw content lists. */
+    private fun refreshFilteredContent() {
+        _uiState.update {
+            it.copy(
+                comments = allComments.filter { comment -> comment.userId !in blockedUserIds },
+                photos = allPhotos.filter { photo -> photo.uid !in blockedUserIds },
+                activity = allActivity.filter { event -> event.uid !in blockedUserIds },
+            )
+        }
+    }
 
     init {
         viewModelScope.launch {
@@ -75,7 +98,8 @@ class StopDetailViewModel @Inject constructor(
         }
         viewModelScope.launch {
             commentRepository.observeComments("stops", stopId).collect { comments ->
-                _uiState.update { it.copy(comments = comments) }
+                allComments = comments
+                refreshFilteredContent()
             }
         }
         viewModelScope.launch {
@@ -84,12 +108,20 @@ class StopDetailViewModel @Inject constructor(
         }
         viewModelScope.launch {
             activityRepository.observeActivity(stopId).collect { events ->
-                _uiState.update { it.copy(activity = events) }
+                allActivity = events
+                refreshFilteredContent()
             }
         }
         viewModelScope.launch {
             photoRepository.observePhotos(stopId).collect { photos ->
-                _uiState.update { it.copy(photos = photos) }
+                allPhotos = photos
+                refreshFilteredContent()
+            }
+        }
+        viewModelScope.launch {
+            moderationRepository.observeBlockedUsers().collect { blocked ->
+                blockedUserIds = blocked.map { it.userId }.toSet()
+                refreshFilteredContent()
             }
         }
     }
@@ -222,6 +254,24 @@ class StopDetailViewModel @Inject constructor(
     fun markHelpful(commentId: String) {
         viewModelScope.launch {
             commentRepository.markHelpful("stops", stopId, commentId)
+        }
+    }
+
+    /** Flags a review for moderation review (Play UGC policy). */
+    fun reportComment(commentId: String) {
+        viewModelScope.launch {
+            try {
+                commentRepository.reportComment("stops", stopId, commentId)
+            } catch (_: Exception) { }
+        }
+    }
+
+    /** Blocks a user: their reviews, photos and check-ins stop appearing for this account. */
+    fun blockUser(userId: String, displayName: String) {
+        viewModelScope.launch {
+            try {
+                moderationRepository.blockUser(userId, displayName)
+            } catch (_: Exception) { }
         }
     }
 
