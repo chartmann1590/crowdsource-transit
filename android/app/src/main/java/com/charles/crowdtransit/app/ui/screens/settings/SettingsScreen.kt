@@ -35,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -232,6 +233,49 @@ fun SettingsScreen(
                     )
                 }
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = OnSurfaceSecondary)
+            }
+
+            Spacer(Modifier.height(24.dp))
+            Divider(color = OnSurfaceSecondary.copy(alpha = 0.2f))
+            Spacer(Modifier.height(16.dp))
+
+            Text(
+                text = "Blocked Users",
+                style = MaterialTheme.typography.titleMedium,
+                color = OnSurface,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = "Reviews, photos and check-ins from blocked users are hidden from you.",
+                style = MaterialTheme.typography.bodySmall,
+                color = OnSurfaceSecondary,
+            )
+            Spacer(Modifier.height(12.dp))
+
+            val blockedUsers by settingsViewModel.blockedUsers.collectAsStateWithLifecycle()
+            if (blockedUsers.isEmpty()) {
+                Text(
+                    text = "You have not blocked anyone. To block a user, open one of their reviews and choose Block from its menu.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = OnSurfaceSecondary,
+                )
+            } else {
+                blockedUsers.forEach { blocked ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = blocked.displayName,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = OnSurface,
+                            modifier = Modifier.weight(1f),
+                        )
+                        TextButton(onClick = { settingsViewModel.unblockUser(blocked.userId) }) {
+                            Text("Unblock", color = Primary)
+                        }
+                    }
+                }
             }
 
             Spacer(Modifier.height(24.dp))

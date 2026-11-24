@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated:** August 7, 2026
+**Last updated:** November 23, 2026
 
 ## Overview
 
@@ -49,6 +49,22 @@ CrowdTransit is a community-powered public transit locator. This policy explains
 
 We do **not** sell, rent, or share your personal data with third parties for their own marketing purposes.
 
+## Community Content Rules
+
+CrowdTransit shows content from other riders: ratings, reviews (comments), photos, check-ins, and stops added by the community. By posting content you agree to these rules:
+
+- Keep it about transit. No spam, advertising, or repetitive junk.
+- No harassment, hate speech, threats, or content that targets another rider.
+- No sexually explicit, violent, or otherwise objectionable content.
+- No personal information about anyone else (names, phone numbers, or photos of identifiable people taken without their consent).
+- No deliberately false schedule or safety information.
+
+**Reporting.** If you see content that breaks these rules, open its menu (on a review, the three-dot menu on the review card) and choose **Report**. Reported content is flagged for moderation review; we review flagged content promptly and remove content that breaks the rules. The author is not told who reported their content.
+
+**Blocking.** You can block any user from the same menu. A blocked user's reviews, photos, and check-ins are hidden from you everywhere in the app, and they are not notified. Manage blocked users in **Settings > Blocked Users**.
+
+**Enforcement.** We may remove content that breaks these rules, and repeat or serious violations can lead to loss of posting privileges or account termination.
+
 ## Data Retention
 
 User-generated content (ratings, comments, photos, activity) remains visible until you delete it or request account deletion. Crash logs are retained per Firebase Crashlytics retention policy (typically 90 days).
@@ -56,7 +72,7 @@ User-generated content (ratings, comments, photos, activity) remains visible unt
 ## Your Rights & Choices
 
 - **Anonymous browsing** – You can use the app without an account. Most features (map, stop details, schedules) are available anonymously.
-- **Account deletion** – Submit a request on our <a href="https://chartmann1590.github.io/crowdsource-transit/account-deletion.html" target="_blank">Account Deletion page</a>, or email us at the address below.
+- **Account deletion** — Delete your account and all of your data in the app at any time (Profile > Delete Account). You can also submit a request on our <a href="https://chartmann1590.github.io/crowdsource-transit/account-deletion.html" target="_blank">Account Deletion page</a>, or email us at the address below.
 - **Location** – You can deny or revoke location permission at any time via your device settings.
 - **Opt out of analytics** – You can disable analytics sharing via your device settings (Android: Settings > Privacy > Ads).
 - **Hopper AI Assistant** – Hopper is entirely optional. You can decline it during onboarding, and enable, disable, or delete it (and its downloaded model and chat history) at any time from Settings > AI Assistant.
@@ -72,5 +88,5 @@ We may update this policy. Changes will be posted here with an updated "Last upd
 ## Contact
 
 For questions or data deletion requests:  
-**Email:** (add support email here)  
+**Email:** crowdtransit.app@gmail.com  
 **GitHub:** [github.com/chartmann1590/crowdsource-transit](https://github.com/chartmann1590/crowdsource-transit)
