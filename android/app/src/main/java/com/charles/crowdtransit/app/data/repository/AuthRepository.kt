@@ -163,6 +163,13 @@ class AuthRepository @Inject constructor(
      * "uid" child is also accepted when [uidField] names something else).
      * Collections nest at most three levels deep (type / target / entry), so
      * the walk is bounded.
+     *
+     * Trade-off: the sweep reads whole collections because RTDB keeps no
+     * per-user index of legacy content - an index maintained at write time
+     * would miss everything posted before it existed and silently
+     * under-delete, a worse failure for a privacy feature than a heavy
+     * one-time download on a rare, user-initiated action. Revisit if the
+     * dataset grows enough for the download to matter.
      */
     private suspend fun removeOwnEntries(
         root: String,

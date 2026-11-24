@@ -258,11 +258,9 @@ class StopDetailViewModel @Inject constructor(
     }
 
     /** Flags a review for moderation review (Play UGC policy). */
-    fun reportComment(commentId: String) {
+    fun reportComment(commentId: String, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
-            try {
-                commentRepository.reportComment("stops", stopId, commentId)
-            } catch (_: Exception) { }
+            onResult(commentRepository.reportComment("stops", stopId, commentId))
         }
     }
 

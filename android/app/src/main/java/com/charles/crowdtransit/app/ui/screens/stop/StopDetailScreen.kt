@@ -121,6 +121,7 @@ fun StopDetailScreen(
     var reportTarget by remember { mutableStateOf<com.charles.crowdtransit.model.Comment?>(null) }
     var blockTarget by remember { mutableStateOf<com.charles.crowdtransit.model.Comment?>(null) }
     var reportConfirmed by remember { mutableStateOf(false) }
+    var reportFailed by remember { mutableStateOf(false) }
 
     LaunchedEffectClearBurst(uiState.pointsBurst, viewModel::clearPointsBurst)
 
@@ -432,9 +433,10 @@ fun StopDetailScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.reportComment(target.commentId)
                         reportTarget = null
-                        reportConfirmed = true
+                        viewModel.reportComment(target.commentId) { sent ->
+                            if (sent) reportConfirmed = true else reportFailed = true
+                        }
                     },
                 ) {
                     Text("Report")
@@ -461,6 +463,25 @@ fun StopDetailScreen(
             },
             confirmButton = {
                 TextButton(onClick = { reportConfirmed = false }) {
+                    Text("OK")
+                }
+            },
+        )
+    }
+
+    if (reportFailed) {
+        AlertDialog(
+            onDismissRequest = { reportFailed = false },
+            title = { Text("Report not sent") },
+            text = {
+                Text(
+                    "The report could not be sent. Check your connection and try again.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = OnSurface,
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { reportFailed = false }) {
                     Text("OK")
                 }
             },
