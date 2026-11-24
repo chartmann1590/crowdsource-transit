@@ -54,9 +54,14 @@ async function main() {
     });
     console.log(`Updated ${LANGUAGE} listing (title/shortDescription/fullDescription${video ? '/video' : ''})`);
 
+    // changesNotSentForReview: while the app is in its removed state, Play
+    // refuses commits that would auto-send changes for review (HTTP 400).
+    // The listing change is committed as a pending change instead, and is
+    // sent for review from the Play Console together with the draft release.
     await publisher.edits.commit({
       packageName: PACKAGE_NAME,
       editId,
+      changesNotSentForReview: true,
     });
     console.log(`Committed edit ${editId}`);
   } catch (err) {
